@@ -27,4 +27,4 @@ replay_pid*
 .idea/
 
 ###TEMP###
-*.yml
+/master/src/main/resources/application.yml
