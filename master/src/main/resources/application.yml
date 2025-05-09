@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://100.127.131.70:5432/overlookhoteldb
-    username: dev
-    password: _GB7rG-@*d649Pab
+    url:
+    username:
+    password:
     driver-class-name: org.postgresql.Driver
 
 
