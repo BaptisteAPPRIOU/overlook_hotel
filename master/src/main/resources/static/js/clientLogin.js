@@ -27,7 +27,7 @@ document.getElementById("clientLoginForm").addEventListener("submit", async func
     // localStorage.setItem("token", token);
 
     // Redirect to client dashboard page
-    window.location.href = "/clientDashboard.html"; // à adapter selon ton front
+    window.location.href = "/clientDashboard.html";
   } catch (error) {
     messageElem.textContent = "Network error, please try again.";
   }

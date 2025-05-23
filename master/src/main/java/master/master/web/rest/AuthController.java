@@ -11,8 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -39,7 +39,7 @@ public class AuthController {
 
     // Handle user registration requests
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@ModelAttribute RegisterRequestDto request) {
+    public ResponseEntity<?> registerUser(@RequestBody RegisterRequestDto request) {
         // Check if email is already registered
         if (userRepository.findByEmail(request.getEmail()) != null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email already exists");
@@ -60,7 +60,7 @@ public class AuthController {
 
     // Handle user login requests
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@ModelAttribute LoginRequestDto request) {
+    public ResponseEntity<?> loginUser(@RequestBody LoginRequestDto request) {
         try {
             // Authenticate user with provided email and password
             authenticationManager.authenticate(
