@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
+    <title>OverLookHostel</title>
+    <link rel="stylesheet" th:href="@{/css/homeLoginPage.css}"/>
+</head>
+<body>
+
+<div class="main-card">
+    <img alt="OverLookHostel Logo" class="main-logo" th:src="@{/image/logo_noBg.png}"/>
+
+    <div class="card-container">
+        <a class="card" th:href="@{/clientLogin}">
+            <img alt="User Logo" th:src="@{/image/Client_logo.png}"/>
+            <h3>Client</h3>
+        </a>
+
+        <a class="card" th:href="@{/employeeLogin}">
+            <img alt="User Logo" th:src="@{/image/Employee_logo.png}"/>
+            <h3>Employee</h3>
+        </a>
+
+        <a class="card" th:href="@{/register}">
+            <img alt="User Logo" th:src="@{/image/Register_logo.png}"/>
+            <h3>Register</h3>
+        </a>
+    </div>
+</div>
+
+</body>
+</html>

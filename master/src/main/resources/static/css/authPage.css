@@ -1,0 +1,167 @@
+/* Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-image: url("../image/home_bg_login_choice.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 1.5s ease-in;
+}
+
+.logo {
+  max-width: 100px;
+  margin-bottom: 1.5rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+  transition: transform 0.3s ease;
+}
+
+.logo:hover {
+  transform: scale(1.05);
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Central Card */
+.main-card {
+  background: rgba(17, 56, 38, 0.85);
+  padding: 2.5rem;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  max-width: 400px;
+  backdrop-filter: blur(6px);
+  animation: fadeIn 1.2s ease forwards;
+}
+
+.main-card h1 {
+  color: #fff;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  letter-spacing: 1px;
+}
+
+/* Form Styling */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+input {
+  padding: 0.9rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  background-color: #f4f4f4;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(156, 121, 69, 0.5);
+  transform: scale(1.02);
+}
+
+/* Button */
+button {
+  padding: 0.9rem;
+  border: none;
+  border-radius: 10px;
+  background-color: rgba(156, 121, 69, 0.85);
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+  background-color: rgb(156, 121, 69);
+  transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main-card {
+    width: 90%;
+    padding: 2rem;
+  }
+
+  .main-card h1 {
+    font-size: 1.6rem;
+  }
+
+  input, button {
+    font-size: 1rem;
+    padding: 0.8rem;
+  }
+}
+
+
+.email-wrapper {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: white;
+  overflow: hidden;
+  height: 50px;
+  margin-bottom: 10px;
+}
+
+.email-wrapper input {
+  border: none;
+  outline: none;
+  padding: 0 10px;
+  font-size: 16px;
+  flex: 1;
+  height: 100%;
+}
+
+.email-suffix {
+  background-color: white;
+  color: #333;
+  font-size: 16px;
+  padding: 0 10px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  border-left: 1px solid #ccc;
+}
+
+
+@media (max-width: 480px) {
+  .main-card {
+    padding: 1.5rem;
+  }
+
+  .main-card h1 {
+    font-size: 1.4rem;
+  }
+
+  input, button {
+    font-size: 0.95rem;
+    padding: 0.7rem;
+  }
+}
