@@ -1,5 +1,6 @@
 package master.master.config;
 
+import master.master.filter.JwtAuthenticationFilter;
 import master.master.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,45 +12,42 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    // Custom service to load user details for authentication
     private final CustomUserDetailsService userDetailsService;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(CustomUserDetailsService userDetailsService) {
+    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.userDetailsService = userDetailsService;
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
-    // Configure HTTP security rules and filters
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .csrf(csrf -> csrf.disable()) // Disable CSRF for API simplicity (adjust if needed)
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // Allow public access to login, register, error pages, and static resources
                         .requestMatchers("/api/v1/login", "/api/v1/register", "/error").permitAll()
-                        .requestMatchers("/", "/clientLogin", "/employeeLogin", "/register").permitAll()
+                        .requestMatchers("/", "/clientLogin", "/employeeLogin", "/register", "/employeeDashboard").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/image/**").permitAll()
-                        // All other requests need authentication
                         .anyRequest().authenticated()
                 )
-                // Disable default form login and HTTP basic authentication
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form.disable())
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .build();
     }
 
-    // Password encoder bean using BCrypt hashing
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // Configure AuthenticationManager with user details service and password encoder
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http, PasswordEncoder passwordEncoder)
             throws Exception {

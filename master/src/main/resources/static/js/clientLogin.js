@@ -5,7 +5,7 @@ document.getElementById("clientLoginForm").addEventListener("submit", async func
   const password = document.getElementById("password").value.trim();
   const messageElem = document.getElementById("message");
 
-  messageElem.textContent = ""; // Clear previous messages
+  messageElem.textContent = "";
 
   try {
     const response = await fetch("/api/v1/login", {
@@ -22,11 +22,16 @@ document.getElementById("clientLoginForm").addEventListener("submit", async func
       return;
     }
 
-    const token = await response.text();
-    // Save token in localStorage/sessionStorage or cookie if needed
-    // localStorage.setItem("token", token);
+    const data = await response.json();
+    const token = data.token;
 
-    // Redirect to client dashboard page
+    if (!token) {
+      messageElem.textContent = "Token not received.";
+      return;
+    }
+
+    localStorage.setItem("jwtToken", token);
+
     window.location.href = "/clientDashboard.html";
   } catch (error) {
     messageElem.textContent = "Network error, please try again.";

@@ -25,7 +25,12 @@ document.getElementById("employeeLoginForm").addEventListener("submit", async fu
     const data = await response.json();
     const { token, role } = data;
 
-    // localStorage.setItem("token", token); // if needed
+    if (!token) {
+      messageElem.textContent = "Token not received.";
+      return;
+    }
+
+    localStorage.setItem("jwtToken", token);
 
     if (role === "EMPLOYEE" || role === "ADMIN") {
       window.location.href = "/employeeDashboard";
