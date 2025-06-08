@@ -29,4 +29,10 @@ public class PageController {
         model.addAttribute("title", "Register");
         return "registerPage";
     }
+
+    @GetMapping("/employeeDashboard")
+    public String employeeDashboardPgae(Model model) {
+        model.addAttribute("title", "Register");
+        return "employeeDashboard";
+    }
 }
