@@ -1,12 +1,22 @@
 package master.master.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
+import java.util.List;
 
 @Entity
-@Table(name = "employee")
 public class Employee {
     @Id
-    private Integer userId;
+    private Long userId;
+
+    @OneToOne
+    @MapsId
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @OneToMany(mappedBy = "employee")
+    private List<EmployeeVacation> vacations;
+
+    @OneToMany(mappedBy = "employee")
+    private List<EmployeeWorkday> workdays;
 }
