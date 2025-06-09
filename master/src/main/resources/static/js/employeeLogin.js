@@ -1,3 +1,14 @@
+/**
+ * Sends a POST request to the "/api/v1/login" endpoint with the provided email and password.
+ * 
+ * @constant
+ * @type {Response}
+ * @async
+ * @param {string} email - The user's email address.
+ * @param {string} password - The user's password.
+ * @returns {Promise<Response>} The fetch API Response object from the login request.
+ */
+
 document.getElementById("employeeLoginForm").addEventListener("submit", async function (e) {
   e.preventDefault();
 
