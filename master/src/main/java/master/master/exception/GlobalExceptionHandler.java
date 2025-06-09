@@ -9,6 +9,13 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Global exception handler for the application that provides centralized exception handling
+ * across all controllers using Spring's @ControllerAdvice annotation.
+ * 
+ * This class intercepts exceptions thrown by controllers and converts them into
+ * appropriate HTTP responses with structured error information.
+ */
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
