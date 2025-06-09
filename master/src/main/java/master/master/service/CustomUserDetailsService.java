@@ -10,6 +10,25 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 
+/**
+ * Service implementation for loading user-specific data for authentication.
+ * <p>
+ * This class implements the {@link org.springframework.security.core.userdetails.UserDetailsService}
+ * interface and is used by Spring Security to retrieve user details from the database
+ * based on the user's email address.
+ * </p>
+ *
+ * <p>
+ * It uses a {@link UserRepository} to fetch the {@link User} entity and converts it
+ * into a Spring Security {@link org.springframework.security.core.userdetails.User} object,
+ * including the user's email, password, and granted authorities (roles).
+ * </p>
+ *
+ * @author [Your Name]
+ * @see org.springframework.security.core.userdetails.UserDetailsService
+ * @see UserRepository
+ */
+
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
