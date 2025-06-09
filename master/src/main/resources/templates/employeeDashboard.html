@@ -1,31 +1,145 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Register</title>
-    <link rel="stylesheet" th:href="@{/css/authPage.css}"/>
-    <script defer th:src="@{/js/register.js}"></script>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>Employee Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/employeeDashboard.css}">
 </head>
 <body>
 
-<div class="main-card">
-    <img alt="Logo" class="logo" th:src="@{/image/logo_noBg_no_name.png}"/>
-    <h1>Create Account</h1>
+<!-- Sidebar -->
+<nav class="sidebar">
+    <div class="sidebar-logo">
+        <img alt="Company Logo" th:src="@{/image/logo_noBg_no_name.png}">
+    </div>
+    <button class="nav-btn active" data-cat="booking">Room Booking</button>
+    <button class="nav-btn" data-cat="leave">Leave Request</button>
+    <button class="nav-btn" data-cat="schedule">Work Schedule</button>
+    <button class="nav-btn" data-cat="reviews">Room Reviews</button>
+    <button class="nav-btn" data-cat="employees">Employee Management</button>
+    <button class="nav-btn" data-cat="approval">Leave Approval</button>
+</nav>
 
-    <form id="registerForm">
-        <input id="firstName" name="firstName" placeholder="First Name" required type="text"/>
-        <input id="lastName" name="lastName" placeholder="Last Name" required type="text"/>
-
-        <div class="email-wrapper">
-            <input id="emailPrefix" placeholder="Email" required type="text"/>
-            <div class="email-suffix">@olh.fr</div>
+<!-- Content area -->
+<main class="content">
+    <!-- 1) Room Booking -->
+    <section class="main-card" data-cat="booking">
+        <div class="card">
+            <h4>Create Room</h4>
+            <form method="post" th:action="@{/rooms}">
+                <input name="number" placeholder="Room number" required type="text">
+                <select name="type">
+                    <option>Single</option>
+                    <option>Double</option>
+                    <option>Suite</option>
+                </select>
+                <button type="submit">Create</button>
+            </form>
         </div>
-        <input id="email" name="email" type="hidden"/>
-        <input id="password" name="password" placeholder="Password" required type="password"/>
-        <button type="submit">Register</button>
-    </form>
+        <div class="card">
+            <h4>Modify Room</h4>
+            <form method="post" th:action="@{/rooms/update}">
+                <select name="id" th:each="r : ${rooms}" th:text="${r.number}" th:value="${r.id}"></select>
+                <select name="type">
+                    <option>Single</option>
+                    <option>Double</option>
+                    <option>Suite</option>
+                </select>
+                <button type="submit">Modify</button>
+            </form>
+        </div>
+        <div class="card">
+            <h4>Cancel Room</h4>
+            <form method="post" th:action="@{/rooms/delete}">
+                <select name="id" th:each="r : ${rooms}" th:text="${r.number}" th:value="${r.id}"></select>
+                <button type="submit">Delete</button>
+            </form>
+        </div>
+    </section>
 
-    <div id="message" style="color: red; margin-top: 10px;"></div>
-</div>
+    <!-- 2) Leave Request -->
+    <section class="main-card hidden" data-cat="leave">
+        <div class="card">
+            <h4>Request Leave</h4>
+            <div class="calendar-placeholder" id="leave-calendar">[Leave Calendar Here]</div>
+        </div>
+    </section>
 
+    <!-- 3) Work Schedule -->
+    <section class="main-card hidden" data-cat="schedule">
+        <div class="card">
+            <h4>Work Schedule</h4>
+            <div class="calendar-placeholder" id="work-calendar">[Work Calendar Here]</div>
+        </div>
+    </section>
+
+    <!-- 4) Room Reviews -->
+    <section class="main-card hidden" data-cat="reviews">
+        <div class="card">
+            <h4>Room Reviews</h4>
+            <ul>
+                <li th:each="rev : ${reviews}">
+                    <strong th:text="${rev.author}">Author</strong>:
+                    <span th:text="${rev.comment}">Comment</span>
+                </li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- 5) Employee Management -->
+    <section class="main-card hidden" data-cat="employees">
+        <div class="card">
+            <h4>Add Employee</h4>
+            <form id="registerForm" method="post" th:action="@{/employees}">
+                <input name="firstName" placeholder="First Name" required>
+                <input name="lastName" placeholder="Last Name" required>
+                <div class="email-wrapper">
+                    <input id="emailPrefix" placeholder="Email" required>
+                    <div class="email-suffix">@olh.fr</div>
+                </div>
+                <input id="email" name="email" type="hidden">
+                <input name="password" placeholder="Password" required type="password">
+                <button type="submit">Register</button>
+            </form>
+            <div class="form-message" id="message"></div>
+        </div>
+        <div class="card">
+            <h4>Edit Employee</h4>
+            <form method="post" th:action="@{/employees/update}">
+                <select name="id" th:each="e : ${employees}" th:text="${e.firstName + ' ' + e.lastName}"
+                        th:value="${e.id}"></select>
+                <input name="firstName" placeholder="New First Name">
+                <input name="lastName" placeholder="New Last Name">
+                <button type="submit">Modify</button>
+            </form>
+        </div>
+        <div class="card">
+            <h4>Delete Employee</h4>
+            <form method="post" th:action="@{/employees/delete}">
+                <select name="id" th:each="e : ${employees}" th:text="${e.firstName + ' ' + e.lastName}"
+                        th:value="${e.id}"></select>
+                <button type="submit">Delete</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- 6) Leave Approval -->
+    <section class="main-card hidden" data-cat="approval">
+        <div class="card">
+            <h4>Pending Leaves</h4>
+            <ul>
+                <li th:each="req : ${leaveRequests}">
+                    <span th:text="${req.employeeName}">Name</span> —
+                    <span th:text="${req.dates}">Dates</span>
+                    <button th:onclick="'/leave/approve/'+${req.id}">Approve</button>
+                    <button th:onclick="'/leave/reject/'+${req.id}">Reject</button>
+                </li>
+            </ul>
+        </div>
+    </section>
+</main>
+
+<script th:src="@{/js/employeeDashboard.js}"></script>
 </body>
 </html>
