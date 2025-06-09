@@ -34,6 +34,9 @@ document.getElementById("employeeLoginForm").addEventListener("submit", async fu
 
     if (role === "EMPLOYEE" || role === "ADMIN") {
       window.location.href = "/employeeDashboard";
+      }
+    else if (role === "CLIENT"){
+        window.location.href = "/clientDashboard";
     } else {
       messageElem.textContent = "Unauthorized role for this page.";
     }
