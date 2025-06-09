@@ -1,19 +1,11 @@
 package master.master.domain;
 
-
 import jakarta.persistence.*;
 
 import java.io.Serializable;
 
 @Entity
-@Table(name = "\"user\"")
-@Access(AccessType.FIELD)
-@NamedEntityGraphs({
-        @NamedEntityGraph(
-                name = "User.role",
-                attributeNodes = @NamedAttributeNode("role")
-        )
-})
+@Table(name = "\"user\"") // Attention : nom réservé en SQL, donc les guillemets
 public class User implements Serializable {
 
     @Id
@@ -27,7 +19,7 @@ public class User implements Serializable {
     @Column(name = "last_name", nullable = false, length = 100)
     private String lastName;
 
-    @Column(nullable = false, length = 150)
+    @Column(nullable = false, unique = true, length = 150)
     private String email;
 
     @Column(nullable = false)
@@ -37,6 +29,53 @@ public class User implements Serializable {
     @Column(nullable = false)
     private RoleType role;
 
+    // Getters & Setters
+
+    public Integer getId() {
+        return id;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public RoleType getRole() {
+        return role;
+    }
+
+    public void setRole(RoleType role) {
+        this.role = role;
+    }
+
+    // equals/hashCode basé sur id
 
     @Override
     public boolean equals(Object o) {
