@@ -9,6 +9,37 @@ import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.util.Date;
 
+/**
+ * Utility class for handling JSON Web Tokens (JWT) operations such as generation, extraction, and validation.
+ * <p>
+ * This class provides methods to generate JWT tokens for a given email, extract the email from a token,
+ * and validate the authenticity and integrity of a token using a secret key.
+ * </p>
+ *
+ * <ul>
+ *   <li>{@link #generateToken(String)}: Generates a JWT token for the specified email.</li>
+ *   <li>{@link #extractEmail(String)}: Extracts the email (subject) from the provided JWT token.</li>
+ *   <li>{@link #isTokenValid(String)}: Validates the provided JWT token.</li>
+ * </ul>
+ *
+ * <p>
+ * The secret key used for signing and verifying tokens should be kept secure and at least 256 bits long.
+ * The expiration time for tokens is set to 1 day (86400000 milliseconds).
+ * </p>
+ *
+ * <p>
+ * Example usage:
+ * <pre>
+ *     JwtUtil jwtUtil = new JwtUtil();
+ *     String token = jwtUtil.generateToken("user@example.com");
+ *     String email = jwtUtil.extractEmail(token);
+ *     boolean isValid = jwtUtil.isTokenValid(token);
+ * </pre>
+ * </p>
+ *
+ * @author Your Name
+ */
+
 @Component
 public class JwtUtil {
 
