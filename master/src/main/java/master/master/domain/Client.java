@@ -1,19 +1,16 @@
 package master.master.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
+import jakarta.persistence.*;
 
 @Entity
-@Table(name = "client")
 public class Client {
     @Id
-    private Integer userId;
+    private Long userId;
 
-    private Integer reservationId;
+    @OneToOne
+    @MapsId
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @Column(name = "fidelity_point")
-    private final Integer fidelityPoint = 0;
+    private int fidelityPoint;
 }

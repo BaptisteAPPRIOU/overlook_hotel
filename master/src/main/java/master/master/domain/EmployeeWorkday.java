@@ -1,25 +1,21 @@
 package master.master.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
-import jakarta.persistence.Table;
-
-import java.io.Serializable;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Table(name = "employee_workday")
-@IdClass(EmployeeWorkdayId.class)
+@Getter
+@Setter
+@NoArgsConstructor
 public class EmployeeWorkday {
-    @Id
-    private Integer employeeId;
 
-    @Id
-    private Short weekday;
-}
+    @EmbeddedId
+    private WorkdayId id;
 
-class EmployeeWorkdayId implements Serializable {
-    private Integer employeeId;
-    private Short weekday;
-
+    @ManyToOne
+    @MapsId("employeeId")
+    @JoinColumn(name = "employee_id")
+    private Employee employee;
 }

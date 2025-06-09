@@ -31,7 +31,7 @@ public class PageController {
     }
 
     @GetMapping("/employeeDashboard")
-    public String employeeDashboardPgae(Model model) {
+    public String employeeDashboardPage(Model model) {
         model.addAttribute("title", "Register");
         return "employeeDashboard";
     }

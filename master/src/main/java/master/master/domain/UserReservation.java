@@ -1,39 +1,25 @@
 package master.master.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
-import java.io.Serializable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
-
 @Entity
-@Table(name = "user_reservation")
-@IdClass(UserReservationId.class)
 public class UserReservation {
-    @Id
-    private Integer userId;
+    @EmbeddedId
+    private ReservationId id;
 
-    @Id
-    private Integer roomId;
+    @ManyToOne
+    @MapsId("userId")
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @Id
+    @ManyToOne
+    @MapsId("roomId")
+    @JoinColumn(name = "room_id")
+    private Room room;
+
     private LocalDate reservationDateStart;
-
     private LocalDate reservationDateEnd;
-
-    private Boolean isPayed;
-
-    private Boolean isAccepted;
-
-    private BigDecimal price;
-}
-
-class UserReservationId implements Serializable {
-    private Integer userId;
-    private Integer roomId;
-    private LocalDate reservationDateStart;
+    private boolean isPayed;
 }
