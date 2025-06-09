@@ -4,20 +4,33 @@ import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
+/**
+ * Represents feedback provided by a user.
+ * <p>
+ * Each Feedback instance contains the feedback content, the date it was given,
+ * and a reference to the user who submitted it.
+ * </p>
+ *
+ * Fields:
+ * <ul>
+ *   <li>id - Unique identifier for the feedback.</li>
+ *   <li>user - The user who submitted the feedback.</li>
+ *   <li>content - The textual content of the feedback.</li>
+ *   <li>date - The date and time when the feedback was submitted.</li>
+ * </ul>
+ */
 @Entity
-@Table(name = "feedback")
 public class Feedback {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "feedback_id_seq")
-    @SequenceGenerator(name = "feedback_id_seq", sequenceName = "feedback_id_seq", allocationSize = 1)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private Integer userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @Column(nullable = false)
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     private LocalDateTime date;
-
-    private String answer;
 }

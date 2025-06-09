@@ -4,6 +4,38 @@ import jakarta.persistence.*;
 
 import java.io.Serializable;
 
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * Represents a user entity in the system.
+ * <p>
+ * This class is mapped to the "user" table in the database.
+ * It contains user-related information such as first name, last name, email, password, and role.
+ * </p>
+ *
+ * <p>
+ * <b>Note:</b> The table name is quoted because "user" is a reserved keyword in SQL.
+ * </p>
+ *
+ * <ul>
+ *   <li><b>id</b>: Unique identifier for the user (auto-generated).</li>
+ *   <li><b>firstName</b>: User's first name (required, max 100 characters).</li>
+ *   <li><b>lastName</b>: User's last name (required, max 100 characters).</li>
+ *   <li><b>email</b>: User's email address (required, unique, max 150 characters).</li>
+ *   <li><b>password</b>: User's password (required).</li>
+ *   <li><b>role</b>: User's role in the system, represented by the {@link RoleType} enum (required).</li>
+ * </ul>
+ *
+ * <p>
+ * Equality and hash code are based on the {@code id} field.
+ * </p>
+ *
+ * @author 
+ */
+
+@Getter
+@Setter
 @Entity
 @Table(name = "\"user\"") // Attention : nom réservé en SQL, donc les guillemets
 public class User implements Serializable {
@@ -28,52 +60,6 @@ public class User implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RoleType role;
-
-    // Getters & Setters
-
-    public Integer getId() {
-        return id;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public RoleType getRole() {
-        return role;
-    }
-
-    public void setRole(RoleType role) {
-        this.role = role;
-    }
 
     // equals/hashCode basé sur id
 

@@ -1,25 +1,38 @@
 package master.master.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.io.Serializable;
-
+/**
+ * Entity representing the association between an Employee and a specific workday.
+ * Utilizes a composite primary key defined by {@link WorkdayId}.
+ *
+ * <p>
+ * Fields:
+ * <ul>
+ *   <li>{@code id} - Composite key containing employee and workday identifiers.</li>
+ *   <li>{@code employee} - Reference to the associated {@link Employee} entity.</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * The {@code @MapsId("employeeId")} annotation ensures that the employee part of the composite key
+ * is mapped to the {@code employee_id} column in the database.
+ * </p>
+ */
 @Entity
-@Table(name = "employee_workday")
-@IdClass(EmployeeWorkdayId.class)
+@Getter
+@Setter
+@NoArgsConstructor
 public class EmployeeWorkday {
-    @Id
-    private Integer employeeId;
 
-    @Id
-    private Short weekday;
-}
+    @EmbeddedId
+    private WorkdayId id;
 
-class EmployeeWorkdayId implements Serializable {
-    private Integer employeeId;
-    private Short weekday;
-
+    @ManyToOne
+    @MapsId("employeeId")
+    @JoinColumn(name = "employee_id")
+    private Employee employee;
 }

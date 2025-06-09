@@ -2,21 +2,31 @@ package master.master.domain;
 
 import jakarta.persistence.*;
 
+/**
+ * Represents a hotel room entity.
+ * <p>
+ * Each room has a unique room number, a type (as defined by {@link RoomType}),
+ * and an occupancy status.
+ * </p>
+ *
+ * <ul>
+ *   <li>{@code id} - The unique identifier for the room (auto-generated).</li>
+ *   <li>{@code roomNumber} - The unique number assigned to the room.</li>
+ *   <li>{@code roomType} - The type/category of the room.</li>
+ *   <li>{@code isOccupied} - Indicates whether the room is currently occupied.</li>
+ * </ul>
+ */
 @Entity
-@Table(name = "room")
 public class Room {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "room_id_seq")
-    @SequenceGenerator(name = "room_id_seq", sequenceName = "room_id_seq", allocationSize = 1)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(name = "room_number", nullable = false, length = 10, unique = true)
+    @Column(unique = true)
     private String roomNumber;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "room_type", nullable = false)
     private RoomType roomType;
 
-    @Column(name = "is_occupied")
-    private final Boolean isOccupied = false;
+    private boolean isOccupied;
 }

@@ -1,39 +1,49 @@
 package master.master.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
-import java.io.Serializable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
-
+/**
+ * Entity representing a reservation made by a user for a specific room.
+ * Utilizes a composite primary key (ReservationId) consisting of user and room identifiers.
+ *
+ * <p>
+ * Fields:
+ * <ul>
+ *   <li>{@code id} - Composite primary key for the reservation, embedding user and room IDs.</li>
+ *   <li>{@code user} - The user who made the reservation.</li>
+ *   <li>{@code room} - The room that is reserved.</li>
+ *   <li>{@code reservationDateStart} - The start date of the reservation period.</li>
+ *   <li>{@code reservationDateEnd} - The end date of the reservation period.</li>
+ *   <li>{@code isPayed} - Indicates whether the reservation has been paid for.</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * Relationships:
+ * <ul>
+ *   <li>{@code @ManyToOne} with {@code User} and {@code Room} entities.</li>
+ *   <li>{@code @EmbeddedId} for composite key management.</li>
+ * </ul>
+ * </p>
+ */
 @Entity
-@Table(name = "user_reservation")
-@IdClass(UserReservationId.class)
 public class UserReservation {
-    @Id
-    private Integer userId;
+    @EmbeddedId
+    private ReservationId id;
 
-    @Id
-    private Integer roomId;
+    @ManyToOne
+    @MapsId("userId")
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @Id
+    @ManyToOne
+    @MapsId("roomId")
+    @JoinColumn(name = "room_id")
+    private Room room;
+
     private LocalDate reservationDateStart;
-
     private LocalDate reservationDateEnd;
-
-    private Boolean isPayed;
-
-    private Boolean isAccepted;
-
-    private BigDecimal price;
-}
-
-class UserReservationId implements Serializable {
-    private Integer userId;
-    private Integer roomId;
-    private LocalDate reservationDateStart;
+    private boolean isPayed;
 }

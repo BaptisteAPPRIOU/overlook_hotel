@@ -19,6 +19,27 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * REST controller for handling authentication-related operations such as user registration and login.
+ * <p>
+ * Exposes endpoints for:
+ * <ul>
+ *     <li>User registration: <code>POST /api/v1/register</code></li>
+ *     <li>User login: <code>POST /api/v1/login</code></li>
+ * </ul>
+ * <p>
+ * Dependencies:
+ * <ul>
+ *     <li>{@link UserRepository} for user data access</li>
+ *     <li>{@link PasswordEncoder} for password hashing</li>
+ *     <li>{@link AuthenticationManager} for authentication logic</li>
+ *     <li>{@link JwtUtil} for JWT token generation</li>
+ * </ul>
+ * <p>
+ * Registration endpoint checks for existing email, encodes the password, assigns the CLIENT role, and saves the user.
+ * Login endpoint authenticates credentials and returns a JWT token and user role upon success.
+ */
+
 @RestController
 @RequestMapping("/api/v1")
 public class AuthController {

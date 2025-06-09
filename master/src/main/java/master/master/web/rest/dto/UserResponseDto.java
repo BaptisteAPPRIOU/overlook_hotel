@@ -1,6 +1,18 @@
 package master.master.web.rest.dto;
 
+import lombok.Getter;
 import master.master.domain.RoleType;
+
+/**
+ * Data Transfer Object (DTO) representing a user response.
+ * <p>
+ * This class encapsulates user information to be sent in API responses.
+ * </p>
+ *
+ * @author 
+ */
+
+@Getter
 
 public class UserResponseDto {
     private final Integer id;
@@ -15,25 +27,5 @@ public class UserResponseDto {
         this.lastName = lastName;
         this.email = email;
         this.role = role;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public RoleType getRole() {
-        return role;
     }
 }

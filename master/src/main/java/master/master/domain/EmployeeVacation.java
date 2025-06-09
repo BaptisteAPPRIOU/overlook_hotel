@@ -4,23 +4,31 @@ import jakarta.persistence.*;
 
 import java.time.LocalDate;
 
+/**
+ * Represents a vacation request made by an employee.
+ * Stores information about the vacation period, acceptance status, and the associated employee.
+ *
+ * Fields:
+ * <ul>
+ *   <li>id - Unique identifier for the vacation request.</li>
+ *   <li>vacationStart - Start date of the vacation.</li>
+ *   <li>vacationEnd - End date of the vacation.</li>
+ *   <li>isAccepted - Indicates whether the vacation request has been accepted.</li>
+ *   <li>employee - The employee who requested the vacation.</li>
+ * </ul>
+ */
+
 @Entity
-@Table(name = "employee_vacation")
 public class EmployeeVacation {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "employee_vacation_id_seq")
-    @SequenceGenerator(name = "employee_vacation_id_seq", sequenceName = "employee_vacation_id_seq", allocationSize = 1)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private Integer employeeId;
-
-    @Column(name = "vacation_start", nullable = false)
     private LocalDate vacationStart;
-
-    @Column(name = "vacation_end", nullable = false)
     private LocalDate vacationEnd;
-
-    @Column(name = "is_accepted")
     private Boolean isAccepted;
-}
 
+    @ManyToOne
+    @JoinColumn(name = "employee_id")
+    private Employee employee;
+}

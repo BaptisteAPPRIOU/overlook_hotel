@@ -1,3 +1,18 @@
+/**
+ * Performs a fetch request with JWT authentication.
+ *
+ * Retrieves the JWT token from localStorage and adds it to the Authorization header.
+ * If the token is missing, alerts the user and redirects to the login page.
+ * If the response status is 403 (Forbidden), alerts the user and redirects to the login page.
+ *
+ * @async
+ * @param {string} url - The URL to fetch.
+ * @param {Object} [options={}] - Optional fetch options.
+ * @param {Object} [options.headers] - Additional headers to include in the request.
+ * @returns {Promise<Response>} The fetch response object.
+ * @throws {Error} If no JWT token is found or if access is forbidden.
+ */
+
 export async function fetchWithAuth(url, options = {}) {
   const token = localStorage.getItem("jwtToken");
   if (!token) {
