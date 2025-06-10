@@ -8,5 +8,5 @@ package master.master.domain;
  * </ul>
  */
 public enum RoomType {
-    CHAMBRE, EVENT
+    CHAMBER, EVENT
 }
