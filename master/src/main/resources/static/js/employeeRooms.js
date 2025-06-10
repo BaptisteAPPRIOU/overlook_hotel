@@ -40,7 +40,6 @@ document.addEventListener("DOMContentLoaded", () => {
         rooms.forEach(r => {
             const row = tbody.insertRow();
             row.innerHTML = `
-        <td>${r.id}</td>
         <td>${r.roomNumber}</td>
         <td>${r.roomType}</td>
         <td>${r.occupied}</td>
