@@ -37,7 +37,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Allow access without authentication to public endpoints
                         .requestMatchers("/api/v1/login", "/api/v1/register", "/error").permitAll()
-                        .requestMatchers("/", "/clientLogin", "/employeeLogin", "/register", "/employeeDashboard").permitAll()
+                        .requestMatchers("/", "/clientLogin", "/employeeLogin", "/register", "/employeeDashboard", "/roomManagement").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/image/**").permitAll()
                         // All other requests require authentication
                         .anyRequest().authenticated()

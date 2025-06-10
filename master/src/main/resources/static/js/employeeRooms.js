@@ -20,6 +20,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let editId = null;
 
+    function boolToIcon(val) {
+        return val ? "✔️" : "❌";
+    }
+
     async function request(url, opts = {}) {
         const res = await fetch(url, { ...opts, headers });
         if (res.status === 403) {
@@ -42,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
             row.innerHTML = `
         <td>${r.roomNumber}</td>
         <td>${r.roomType}</td>
-        <td>${r.occupied}</td>
+        <td>${boolToIcon(r.occupied)}</td>
         <td>
           <button data-id="${r.id}" class="btn-icon edit" title="Edit room">✏️</button>
           <button data-id="${r.id}" class="btn-icon del"  title="Delete room">🗑️</button>

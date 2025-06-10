@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.GetMapping;
  *   <li>{@code "/employeeLogin"} - Displays the employee login page.</li>
  *   <li>{@code "/register"} - Displays the registration page.</li>
  *   <li>{@code "/employeeDashboard"} - Displays the employee dashboard page.</li>
+ *   <li>{@code "/roomManagement"} - Displays the employee room management page.</li>
  * </ul>
  *
  * Each method adds a "title" attribute to the model where appropriate, to be used in the view.
@@ -49,9 +50,9 @@ public class PageController {
         return "registerPage";
     }
 
-    @GetMapping("/employeeDashboard")
-    public String employeeDashboardPage(Model model) {
+    @GetMapping("/roomManagement")
+    public String roomManagementPage(Model model) {
         model.addAttribute("title", "Room Management");
-        return "employeeDashboard";
+        return "roomManagement";
     }
 }
