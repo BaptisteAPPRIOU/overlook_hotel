@@ -9,6 +9,28 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * REST controller for managing Room entities.
+ * <p>
+ * Provides endpoints for listing, retrieving, creating, updating, and deleting rooms.
+ * All endpoints require the user to have the 'EMPLOYEE' authority.
+ * </p>
+ *
+ * <ul>
+ *   <li><b>GET /api/v1/rooms</b>: List all rooms.</li>
+ *   <li><b>GET /api/v1/rooms/{id}</b>: Retrieve a specific room by its ID.</li>
+ *   <li><b>POST /api/v1/rooms</b>: Create a new room.</li>
+ *   <li><b>PUT /api/v1/rooms/{id}</b>: Update an existing room by its ID.</li>
+ *   <li><b>DELETE /api/v1/rooms/{id}</b>: Delete a room by its ID.</li>
+ * </ul>
+ *
+ * <p>
+ * Access to these endpoints is restricted to users with the 'EMPLOYEE' authority.
+ * </p>
+ *
+ * @author tiste
+ */
+
 @RestController
 @RequestMapping("/api/v1/rooms")
 @PreAuthorize("hasAuthority('EMPLOYEE')")    // only employees (and admins) can call any of these
