@@ -1,46 +1,37 @@
 package master.master.domain;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * Composite primary key class for Reservation entity.
- * <p>
- * This class is used as an embedded ID for the Reservation entity,
- * combining userId and roomId to uniquely identify a reservation.
- * </p>
- *
- * <p>
- * Implements {@link Serializable} as required by JPA for primary key classes.
- * </p>
- *
- * <p>
- * Overrides {@code equals} and {@code hashCode} to ensure correct behavior
- * when used as a key in collections or by JPA.
- * </p>
- *
- * @see javax.persistence.Embeddable
+ * Composite key for UserReservation, **sans** la date.
  */
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Embeddable
 public class ReservationId implements Serializable {
+
+    @Column(name = "user_id")
     private Long userId;
+
+    @Column(name = "room_id")
     private Long roomId;
-
-    public ReservationId() {
-    }
-
-    public ReservationId(Long userId, Long roomId) {
-        this.userId = userId;
-        this.roomId = roomId;
-    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof ReservationId that)) return false;
-        return Objects.equals(userId, that.userId) && Objects.equals(roomId, that.roomId);
+        return Objects.equals(userId, that.userId)
+                && Objects.equals(roomId, that.roomId);
     }
 
     @Override

@@ -1,106 +1,58 @@
 package master.master.web.rest;
 
-import master.master.domain.RoleType;
+import jakarta.validation.Valid;
 import master.master.domain.User;
-import master.master.repository.UserRepository;
 import master.master.security.JwtUtil;
+import master.master.service.ClientService;
+import master.master.service.UserService;
+import master.master.web.rest.dto.AuthResponseDto;
 import master.master.web.rest.dto.LoginRequestDto;
 import master.master.web.rest.dto.RegisterRequestDto;
-import org.springframework.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.Map;
-
-/**
- * REST controller for handling authentication-related operations such as user registration and login.
- * <p>
- * Exposes endpoints for:
- * <ul>
- *     <li>User registration: <code>POST /api/v1/register</code></li>
- *     <li>User login: <code>POST /api/v1/login</code></li>
- * </ul>
- * <p>
- * Dependencies:
- * <ul>
- *     <li>{@link UserRepository} for user data access</li>
- *     <li>{@link PasswordEncoder} for password hashing</li>
- *     <li>{@link AuthenticationManager} for authentication logic</li>
- *     <li>{@link JwtUtil} for JWT token generation</li>
- * </ul>
- * <p>
- * Registration endpoint checks for existing email, encodes the password, assigns the CLIENT role, and saves the user.
- * Login endpoint authenticates credentials and returns a JWT token and user role upon success.
- */
-
 @RestController
 @RequestMapping("/api/v1")
 public class AuthController {
 
-    // Inject dependencies for user data, password encoding, authentication, and JWT creation
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
+
+    private final UserService userService;
+    private final ClientService clientService;
     private final JwtUtil jwtUtil;
 
-    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder,
-                          AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.authenticationManager = authenticationManager;
+    public AuthController(UserService userService,
+                          ClientService clientService,
+                          JwtUtil jwtUtil) {
+        this.userService = userService;
+        this.clientService = clientService;
         this.jwtUtil = jwtUtil;
     }
 
-    // Handle user registration requests
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody RegisterRequestDto request) {
-        // Check if email is already registered
-        if (userRepository.findByEmail(request.getEmail()) != null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email already exists");
-        }
+    public ResponseEntity<AuthResponseDto> register(
+            @Valid @RequestBody RegisterRequestDto dto
+    ) {
+        User user = userService.register(dto);
+        log.info("Nouvel utilisateur créé, id={} rôle={}", user.getId(), user.getRole());
 
-        // Create new user and encode password
-        User user = new User();
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(RoleType.CLIENT); // Default role is CLIENT
+        clientService.createFromUser(user);
+        log.info("Enregistrement en table client effectué pour user={}", user.getId());
 
-        // Save new user in the database
-        userRepository.save(user);
-        return ResponseEntity.ok("User registered successfully");
+        String token = jwtUtil.generateToken(user.getEmail());
+        return ResponseEntity.ok(new AuthResponseDto(token));
     }
 
-    // Handle user login requests
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody LoginRequestDto request) {
-        try {
-            // Authenticate user with provided email and password
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-            );
-
-            // If successful, find user and generate JWT token
-            User user = userRepository.findByEmail(request.getEmail());
-            String token = jwtUtil.generateToken(user.getEmail());
-
-            // Prepare response with token and user role
-            Map<String, Object> response = new HashMap<>();
-            response.put("token", token);
-            response.put("role", user.getRole().name());
-            return ResponseEntity.ok(response);
-
-        } catch (Exception ex) {
-            // Return 401 Unauthorized if authentication fails
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
-        }
+    public ResponseEntity<AuthResponseDto> login(
+            @Valid @RequestBody LoginRequestDto dto
+    ) {
+        String token = userService.authenticateAndGetToken(dto);
+        return ResponseEntity.ok(new AuthResponseDto(token));
     }
 }

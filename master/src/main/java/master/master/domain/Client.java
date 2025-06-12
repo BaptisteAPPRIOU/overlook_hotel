@@ -1,6 +1,8 @@
 package master.master.domain;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Represents a client entity in the hotel reservation system.
@@ -18,6 +20,8 @@ import jakarta.persistence.*;
  * @author YourName
  */
 
+@Getter
+@Setter
 @Entity
 public class Client {
     @Id
@@ -29,4 +33,5 @@ public class Client {
     private User user;
 
     private int fidelityPoint;
+
 }
