@@ -1,6 +1,7 @@
 package master.master.domain;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDate;
 
@@ -28,7 +29,12 @@ import java.time.LocalDate;
  * </ul>
  * </p>
  */
+@Getter
+@Setter
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class UserReservation {
     @EmbeddedId
     private ReservationId id;
@@ -46,4 +52,16 @@ public class UserReservation {
     private LocalDate reservationDateStart;
     private LocalDate reservationDateEnd;
     private boolean isPayed;
+
+    // Helper methods
+    public int getReservationDurationDays() {
+        if (reservationDateStart != null && reservationDateEnd != null) {
+            return (int) (reservationDateEnd.toEpochDay() - reservationDateStart.toEpochDay()) + 1;
+        }
+        return 0;
+    }
+
+    public boolean isActive() {
+        return reservationDateEnd != null && reservationDateEnd.isAfter(LocalDate.now());
+    }
 }
