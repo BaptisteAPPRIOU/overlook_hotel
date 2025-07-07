@@ -83,15 +83,19 @@ public class Room {
     private String building;
 
     @Column(name = "has_projector")
+    @Builder.Default
     private Boolean hasProjector = false;
 
     @Column(name = "has_whiteboard")
+    @Builder.Default
     private Boolean hasWhiteboard = false;
 
     @Column(name = "has_video_conference")
+    @Builder.Default
     private Boolean hasVideoConference = false;
 
     @Column(name = "has_air_conditioning")
+    @Builder.Default
     private Boolean hasAirConditioning = false;
 
     @Column(name = "created_at", nullable = false)

@@ -49,15 +49,19 @@ public class Review {
     private LocalDateTime updatedAt;
 
     @Column(name = "is_verified", nullable = false)
+    @Builder.Default
     private Boolean isVerified = false;
 
     @Column(name = "helpful_count")
+    @Builder.Default
     private Integer helpfulCount = 0;
 
     @Column(name = "reported_count")
+    @Builder.Default
     private Integer reportedCount = 0;
 
     @Column(name = "is_anonymous", nullable = false)
+    @Builder.Default
     private Boolean isAnonymous = false;
 
     // Composite unique constraint to prevent duplicate reviews from same user for same room
