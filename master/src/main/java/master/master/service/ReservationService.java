@@ -38,11 +38,11 @@ public class ReservationService {
     public ReservationDto.Info create(Long userId, ReservationDto.Create dto) {
         Client client = clientRepo.findByUserIdAndUserRole(userId, RoleType.CLIENT)
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Client introuvable"));
+                        HttpStatus.NOT_FOUND, "Not found"));
 
         Room room = roomRepo.findById(dto.getRoomId())
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Chambre introuvable"));
+                        HttpStatus.NOT_FOUND, "Not found"));
 
         UserReservation ur = new UserReservation();
         ur.setId(new ReservationId(userId, dto.getRoomId()));

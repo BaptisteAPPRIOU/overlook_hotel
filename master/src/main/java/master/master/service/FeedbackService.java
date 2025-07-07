@@ -34,7 +34,7 @@ public class FeedbackService {
     public FeedbackDto.Info create(Long userId, FeedbackDto.Create dto) {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Utilisateur introuvable"));
+                        HttpStatus.NOT_FOUND, "Not found"));
         Feedback fb = mapper.toEntity(dto);
         fb.setUser(user);
         return mapper.toDto(repo.save(fb));

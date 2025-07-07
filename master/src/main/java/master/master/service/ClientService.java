@@ -48,14 +48,14 @@ public class ClientService {
 
     public ClientDto.Info findOneClient(Long userId) {
         Client c = repo.findByUserIdAndUserRole(userId, RoleType.CLIENT)
-                .orElseThrow(() -> new RuntimeException("Client introuvable"));
+                .orElseThrow(() -> new RuntimeException("Not found"));
         return mapper.toDto(c);
     }
 
     @Transactional
     public ClientDto.Info update(ClientDto.Update dto) {
         Client c = repo.findByUserIdAndUserRole(dto.getUserId(), RoleType.CLIENT)
-                .orElseThrow(() -> new RuntimeException("Client introuvable"));
+                .orElseThrow(() -> new RuntimeException("Not found"));
         mapper.updateFromDto(dto, c);
         return mapper.toDto(c);
     }
