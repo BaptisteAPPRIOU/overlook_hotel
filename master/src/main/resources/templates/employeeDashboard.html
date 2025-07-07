@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs"></script>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>Employee Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!--    <link rel="stylesheet" th:href="@{/css/employeeDashboard.css}">-->
+    <style>
+        body {
+            background-color: #f7faff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar {
+            background-color: #d0e2f2;
+            min-height: 100vh;
+            padding: 20px 0;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-logo {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 0 15px;
+        }
+
+        .sidebar-logo img {
+            max-width: 80px;
+            height: auto;
+        }
+
+        .nav-btn {
+            display: block;
+            width: 100%;
+            color: #000;
+            text-decoration: none;
+            padding: 12px 20px;
+            border: none;
+            background: none;
+            text-align: left;
+            font-weight: 500;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background-color: #c0d4e5;
+            color: #2c5aa0;
+            transform: translateX(5px);
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .main-card {
+            display: none;
+        }
+
+        .main-card:not(.hidden) {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            padding: 20px;
+            border: none;
+        }
+
+        .card h4 {
+            color: #2c5aa0;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .form-control, .form-select {
+            margin-bottom: 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 10px 15px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #2c5aa0;
+            box-shadow: 0 0 0 0.2rem rgba(44, 90, 160, 0.25);
+        }
+
+        .btn {
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 500;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background-color: #2c5aa0;
+            border-color: #2c5aa0;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .btn-purple {
+            background-color: #a59df4;
+            color: white;
+            border: none;
+        }
+
+        .btn-orange {
+            background-color: #ff6b57;
+            color: white;
+            border: none;
+        }
+
+        .table thead {
+            background-color: #eaf2fb;
+        }
+
+        .card-header {
+            background-color: #e0efff;
+            font-weight: bold;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .email-wrapper {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .email-suffix {
+            background-color: #f8f9fa;
+            border: 2px solid #e1e8ed;
+            border-left: none;
+            padding: 10px 15px;
+            border-radius: 0 8px 8px 0;
+            color: #6c757d;
+        }
+
+        #emailPrefix {
+            border-radius: 8px 0 0 8px;
+            margin-bottom: 0;
+        }
+
+        .calendar-placeholder {
+            background-color: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            padding: 40px;
+            text-align: center;
+            color: #6c757d;
+            border-radius: 8px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .user-header {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-2 sidebar">
+            <div class="sidebar-logo">
+                <img alt="Company Logo" th:src="@{/image/logo_noBg_no_name.png}">
+            </div>
+            <button class="nav-btn active" data-cat="booking">Room Booking</button>
+            <button class="nav-btn" data-cat="leave">Leave Request</button>
+            <button class="nav-btn" data-cat="schedule">Work Schedule</button>
+            <button class="nav-btn" data-cat="attendance">Time & Attendance</button>
+            <button class="nav-btn" data-cat="reviews">Room Reviews</button>
+            <button class="nav-btn" data-cat="employees">Employee Management</button>
+            <button class="nav-btn" data-cat="approval">Leave Approval</button>
+            <hr style="margin: 20px 15px; border-color: #c0d4e5;">
+            <button class="nav-btn" onclick="window.location.href='/settings'">Settings</button>
+            <button class="nav-btn" onclick="window.location.href='/logout'">Logout</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="col-md-10 content">
+            <!-- User Header -->
+            <div class="user-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Employee Dashboard</h4>
+                <div class="d-flex align-items-center gap-3">
+                    <input class="form-control form-control-sm" placeholder="Search..." style="width: 200px;"
+                           type="text">
+                    <span class="fw-bold"
+                          th:text="${currentUser != null ? currentUser.firstName + ' ' + currentUser.lastName : 'Admin User'}">Admin User</span>
+                    <img alt="Admin" class="user-avatar" th:src="@{/image/admin.png}">
+                </div>
+            </div>
+
+            <!-- 1) Room Booking -->
+            <section class="main-card" data-cat="booking">
+                <div class="card">
+                    <h4>Create Room</h4>
+                    <form method="post" th:action="@{/rooms}">
+                        <input class="form-control" name="number" placeholder="Room number" required type="text">
+                        <select class="form-select" name="type">
+                            <option value="">Select room type</option>
+                            <option value="Single">Single</option>
+                            <option value="Double">Double</option>
+                            <option value="Suite">Suite</option>
+                        </select>
+                        <button class="btn btn-primary" type="submit">Create Room</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h4>Modify Room</h4>
+                    <form method="post" th:action="@{/rooms/update}">
+                        <select class="form-select" name="id" required>
+                            <option value="">Select room to modify</option>
+                            <option th:each="r : ${rooms}" th:text="${r.number}" th:value="${r.id}"></option>
+                        </select>
+                        <select class="form-select" name="type">
+                            <option value="">Select new room type</option>
+                            <option value="Single">Single</option>
+                            <option value="Double">Double</option>
+                            <option value="Suite">Suite</option>
+                        </select>
+                        <button class="btn btn-success" type="submit">Modify Room</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h4>Delete Room</h4>
+                    <form method="post" th:action="@{/rooms/delete}">
+                        <select class="form-select" name="id" required>
+                            <option value="">Select room to delete</option>
+                            <option th:each="r : ${rooms}" th:text="${r.number}" th:value="${r.id}"></option>
+                        </select>
+                        <button class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this room?')"
+                                type="submit">Delete Room
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- 2) Leave Request -->
+            <section class="main-card hidden" data-cat="leave">
+                <div class="card">
+                    <h4>Request Leave</h4>
+                    <form method="post" th:action="@{/leave/request}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label" for="startDate">Start Date</label>
+                                <input class="form-control" id="startDate" name="startDate" required type="date">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="endDate">End Date</label>
+                                <input class="form-control" id="endDate" name="endDate" required type="date">
+                            </div>
+                        </div>
+                        <label class="form-label" for="reason">Reason</label>
+                        <textarea class="form-control" id="reason" name="reason" placeholder="Enter reason for leave"
+                                  required rows="3"></textarea>
+                        <button class="btn btn-primary" type="submit">Submit Leave Request</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h4>My Leave Requests</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="req : ${myLeaveRequests}">
+                                <td th:text="${req.startDate}">2023-12-01</td>
+                                <td th:text="${req.endDate}">2023-12-05</td>
+                                <td th:text="${req.reason}">Vacation</td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${req.status == 'APPROVED' ? 'bg-success' : (req.status == 'REJECTED' ? 'bg-danger' : 'bg-warning')}"
+                                          th:text="${req.status}">PENDING</span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3) Work Schedule -->
+            <section class="main-card hidden" data-cat="schedule">
+                <div class="card">
+                    <h4>My Work Schedule</h4>
+                    <div class="calendar-placeholder" id="work-calendar">
+                        <i class="fas fa-calendar-alt fa-3x mb-3"></i>
+                        <p>Work Schedule Calendar Coming Soon</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4) Time & Attendance -->
+            <section class="main-card hidden" data-cat="attendance">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Time and Attendance Management</span>
+                        <div>
+                            <button class="btn btn-primary btn-sm" data-bs-target="#addEmployeeModal" data-bs-toggle="modal"
+                                    type="button">
+                                Add New Employee
+                            </button>
+                            <a class="btn btn-orange btn-sm" th:href="@{/employees/remove}">Remove Employee</a>
+                            <a class="btn btn-purple btn-sm" th:href="@{/export/timesheet}">Export Data</a>
+                        </div>
+                    </div>
+
+                    <!-- Attendance Calendar with Alpine.js -->
+                    <div class="card-body"
+                         x-data="{
+                            view: 'monthly',
+                            weekly: [],
+                            monthly: [],
+                            range: [],
+                            dates: [],
+                            startDate: new Date().toISOString().substring(0, 10),
+                            endDate: new Date(Date.now() + 6 * 86400000).toISOString().substring(0, 10),
+                            async load() {
+                                try {
+                                    const [w, m, r] = await Promise.all([
+                                        fetch('/api/schedules/weekly').then(r => r.json()).catch(() => []),
+                                        fetch('/api/schedules/monthly').then(r => r.json()).catch(() => []),
+                                        fetch(`/api/schedules/range?start=${this.startDate}&end=${this.endDate}`).then(r => r.json()).catch(() => [])
+                                    ]);
+                                    this.weekly = w;
+                                    this.monthly = m;
+                                    this.range = r;
+                                    const start = new Date(this.startDate);
+                                    const end = new Date(this.endDate);
+                                    this.dates = [];
+                                    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                                        this.dates.push(new Date(d));
+                                    }
+                                } catch (error) {
+                                    console.error('Error loading schedule data:', error);
+                                }
+                            }
+                        }"
+                         x-init="load(); setInterval(load, 60000)">
+
+                        <!-- Schedule View Selector -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold" for="scheduleType">Select schedule view:</label>
+                            <select class="form-select w-auto" id="scheduleType" x-model="view">
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                                <option value="range">Date Range</option>
+                            </select>
+                        </div>
+
+                        <!-- Weekly Schedule -->
+                        <div class="schedule-table" x-show="view === 'weekly'">
+                            <div class="card">
+                                <div class="card-header">Weekly Schedule</div>
+                                <div class="card-body table-responsive">
+                                    <table class="table table-bordered text-center align-middle">
+                                        <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Mon</th>
+                                            <th>Tue</th>
+                                            <th>Wed</th>
+                                            <th>Thu</th>
+                                            <th>Fri</th>
+                                            <th>Sat</th>
+                                            <th>Sun</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template x-if="weekly.length === 0">
+                                            <tr>
+                                                <td class="text-center text-muted" colspan='8'>No weekly data
+                                                    available.
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template :key="w.employeeName" x-for="w in weekly">
+                                            <tr>
+                                                <td x-text="w.employeeName"></td>
+                                                <td x-text="w.schedule['MONDAY'] || '-'">-</td>
+                                                <td x-text="w.schedule['TUESDAY'] || '-'">-</td>
+                                                <td x-text="w.schedule['WEDNESDAY'] || '-'">-</td>
+                                                <td x-text="w.schedule['THURSDAY'] || '-'">-</td>
+                                                <td x-text="w.schedule['FRIDAY'] || '-'">-</td>
+                                                <td x-text="w.schedule['SATURDAY'] || '-'">-</td>
+                                                <td x-text="w.schedule['SUNDAY'] || '-'">-</td>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Monthly Schedule -->
+                        <div class="schedule-table" x-show="view === 'monthly'">
+                            <div class="card">
+                                <div class="card-header">Monthly Schedule</div>
+                                <div class="card-body table-responsive">
+                                    <table class="table table-bordered text-center align-middle">
+                                        <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <template x-for="i in 31">
+                                                <th x-text="i">1</th>
+                                            </template>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <template x-if="monthly.length === 0">
+                                            <tr>
+                                                <td class="text-center text-muted" colspan='32'>No monthly data
+                                                    available.
+                                                </td>
+                                            </tr>
+                                        </template>
+                                        <template :key="m.employeeName" x-for="m in monthly">
+                                            <tr>
+                                                <td x-text="m.employeeName">Jane Doe</td>
+                                                <template x-for="i in 31">
+                                                    <td x-text="m.scheduleByDay[i] || '-'">-</td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Date Range Schedule -->
+                        <div class="schedule-table" x-show="view === 'range'">
+                            <div class="card">
+                                <div class="card-header">Date Range Schedule</div>
+                                <div class="card-body">
+                                    <div class="mb-3 d-flex gap-2 align-items-center">
+                                        <label class="form-label mb-0" for="startDateRange">Start:</label>
+                                        <input class="form-control" id="startDateRange" type="date" x-model="startDate">
+                                        <label class="form-label mb-0 ms-2" for="endDateRange">End:</label>
+                                        <input class="form-control" id="endDateRange" type="date" x-model="endDate">
+                                        <button @click.prevent="load()" class="btn btn-primary ms-2">Apply</button>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered text-center align-middle">
+                                            <thead>
+                                            <tr>
+                                                <th>Employee</th>
+                                                <template x-for="d in dates">
+                                                    <th x-text="new Intl.DateTimeFormat('en-GB').format(d)"></th>
+                                                </template>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <template x-if="range.length === 0">
+                                                <tr>
+                                                    <td :colspan="dates.length + 1" class="text-center text-muted">No
+                                                        schedule data available for selected range.
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                            <template :key="r.employeeName" x-for="r in range">
+                                                <tr>
+                                                    <td x-text="r.employeeName">John</td>
+                                                    <template x-for="d in dates">
+                                                        <td x-text="r.schedule[d.toISOString().substring(0,10)] || '-'">
+                                                            -
+                                                        </td>
+                                                    </template>
+                                                </tr>
+                                            </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5) Room Reviews -->
+            <section class="main-card hidden" data-cat="reviews">
+                <div class="card">
+                    <h4>Room Reviews</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th>Room</th>
+                                <th>Author</th>
+                                <th>Rating</th>
+                                <th>Comment</th>
+                                <th>Date</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="rev : ${reviews}">
+                                <td th:text="${rev.roomNumber}">101</td>
+                                <td th:text="${rev.author}">John Doe</td>
+                                <td>
+                                    <span class="badge bg-warning" th:text="${rev.rating} + '/5'">4/5</span>
+                                </td>
+                                <td th:text="${rev.comment}">Great room!</td>
+                                <td th:text="${rev.reviewDate}">2023-12-01</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6) Employee Management -->
+            <section class="main-card hidden" data-cat="employees">
+                <div class="card">
+                    <h4>Add Employee</h4>
+                    <form id="registerForm" method="post" th:action="@{/employees}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label" for="firstName">First Name</label>
+                                <input class="form-control" id="firstName" name="firstName" placeholder="First Name"
+                                       required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="lastName">Last Name</label>
+                                <input class="form-control" id="lastName" name="lastName" placeholder="Last Name"
+                                       required>
+                            </div>
+                        </div>
+                        <label class="form-label" for="emailPrefix">Email</label>
+                        <div class="email-wrapper">
+                            <input class="form-control" id="emailPrefix" placeholder="Enter email prefix" required>
+                            <div class="email-suffix">@olh.fr</div>
+                        </div>
+                        <input id="email" name="email" type="hidden">
+                        <label class="form-label" for="password">Password</label>
+                        <input class="form-control" id="password" name="password" placeholder="Password" required
+                               type="password">
+                        <button class="btn btn-primary" type="submit">Register Employee</button>
+                    </form>
+                    <div class="form-message" id="message"></div>
+                </div>
+
+                <div class="card">
+                    <h4>Edit Employee</h4>
+                    <form method="post" th:action="@{/employees/update}">
+                        <label class="form-label" for="editEmployeeId">Select Employee</label>
+                        <select class="form-select" id="editEmployeeId" name="id" required>
+                            <option value="">Select employee to edit</option>
+                            <option th:each="e : ${employees}" th:text="${e.firstName + ' ' + e.lastName}"
+                                    th:value="${e.id}"></option>
+                        </select>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label" for="newFirstName">New First Name</label>
+                                <input class="form-control" id="newFirstName" name="firstName"
+                                       placeholder="New First Name">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="newLastName">New Last Name</label>
+                                <input class="form-control" id="newLastName" name="lastName"
+                                       placeholder="New Last Name">
+                            </div>
+                        </div>
+                        <button class="btn btn-success" type="submit">Update Employee</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h4>Delete Employee</h4>
+                    <form method="post" th:action="@{/employees/delete}">
+                        <label class="form-label" for="deleteEmployeeId">Select Employee</label>
+                        <select class="form-select" id="deleteEmployeeId" name="id" required>
+                            <option value="">Select employee to delete</option>
+                            <option th:each="e : ${employees}" th:text="${e.firstName + ' ' + e.lastName}"
+                                    th:value="${e.id}"></option>
+                        </select>
+                        <button class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this employee?')"
+                                type="submit">Delete
+                            Employee
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- 7) Leave Approval -->
+            <section class="main-card hidden" data-cat="approval">
+                <div class="card">
+                    <h4>Pending Leave Requests</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Reason</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="req : ${leaveRequests}">
+                                <td th:text="${req.employeeName}">John Doe</td>
+                                <td th:text="${req.startDate}">2023-12-01</td>
+                                <td th:text="${req.endDate}">2023-12-05</td>
+                                <td th:text="${req.reason}">Vacation</td>
+                                <td>
+                                    <form method="post" style="display: inline;"
+                                          th:action="@{'/leave/approve/' + ${req.id}}">
+                                        <button class="btn btn-success btn-sm" type="submit">Approve</button>
+                                    </form>
+                                    <form method="post" style="display: inline;"
+                                          th:action="@{'/leave/reject/' + ${req.id}}">
+                                        <button class="btn btn-danger btn-sm" type="submit">Reject</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<!-- Add Employee Modal -->
+<div aria-hidden="true" aria-labelledby="addEmployeeModalLabel" class="modal fade" id="addEmployeeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addEmployeeModalLabel">Add New Employee</h5>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addEmployeeForm">
+                    <div class="mb-3">
+                        <label class="form-label" for="modalFirstName">First Name</label>
+                        <input class="form-control" id="modalFirstName" name="firstName" required type="text">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="modalLastName">Last Name</label>
+                        <input class="form-control" id="modalLastName" name="lastName" required type="text">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="modalEmail">Email</label>
+                        <input class="form-control" id="modalEmail" name="email" required type="email">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="modalPassword">Password</label>
+                        <input class="form-control" id="modalPassword" name="password" required type="password">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+                <button class="btn btn-primary" form="addEmployeeForm" type="submit">Add Employee</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/employeeDashboard.js}"></script>
+<script>
+    // Navigation functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const navButtons = document.querySelectorAll('.nav-btn[data-cat]');
+        const sections = document.querySelectorAll('.main-card[data-cat]');
+
+        // Navigation handler
+        navButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const category = this.getAttribute('data-cat');
+
+                // Update active button
+                navButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+
+                // Show/hide sections
+                sections.forEach(section => {
+                    if (section.getAttribute('data-cat') === category) {
+                        section.classList.remove('hidden');
+                    } else {
+                        section.classList.add('hidden');
+                    }
+                });
+            });
+        });
+
+        // Email concatenation for employee registration
+        const emailPrefix = document.getElementById('emailPrefix');
+        const emailHidden = document.getElementById('email');
+
+        if (emailPrefix && emailHidden) {
+            emailPrefix.addEventListener('input', function() {
+                emailHidden.value = this.value + '@olh.fr';
+            });
+        }
+
+        // Add Employee Modal Form Handler
+        const addEmployeeForm = document.getElementById('addEmployeeForm');
+        if (addEmployeeForm) {
+            addEmployeeForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(this);
+                const body = {
+                    firstName: formData.get('firstName'),
+                    lastName: formData.get('lastName'),
+                    email: formData.get('email'),
+                    password: formData.get('password')
+                };
+
+                try {
+                    const response = await fetch('/api/v1/employees', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(body)
+                    });
+
+                    if (response.ok) {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('addEmployeeModal'));
+                        modal.hide();
+                        location.reload();
+                    } else {
+                        const errorText = await response.text();
+                        alert('Error creating employee: ' + errorText);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Network error occurred. Please try again.');
+                }
+            });
+        }
+
+        // Form validation
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const requiredFields = form.querySelectorAll('[required]');
+                let isValid = true;
+
+                requiredFields.forEach(field => {
+                    if (!field.value.trim()) {
+                        field.classList.add('is-invalid');
+                        isValid = false;
+                    } else {
+                        field.classList.remove('is-invalid');
+                    }
+                });
+
+                if (!isValid) {
+                    e.preventDefault();
+                    alert('Please fill in all required fields.');
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

@@ -7,11 +7,10 @@ import java.util.List;
 
 @Data
 @Builder
-public class RoomDto {
-    private Long id;
+public class UpdateRoomDto {
     private String number;
     private String type;
-    private String status; // AVAILABLE, OCCUPIED, MAINTENANCE
+    private String status;
     private Double price;
     private Integer capacity;
     private String description;

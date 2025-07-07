@@ -1,6 +1,7 @@
 package master.master.domain;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -19,7 +20,12 @@ import java.time.LocalDateTime;
  *   <li>date - The date and time when the feedback was submitted.</li>
  * </ul>
  */
+@Getter
+@Setter
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Feedback {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,4 +39,11 @@ public class Feedback {
     private String content;
 
     private LocalDateTime date;
+
+    @PrePersist
+    protected void onCreate() {
+        if (date == null) {
+            date = LocalDateTime.now();
+        }
+    }
 }
