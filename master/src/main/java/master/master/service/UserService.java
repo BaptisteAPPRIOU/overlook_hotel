@@ -2,6 +2,9 @@ package master.master.service;
 
 import master.master.domain.User;
 import master.master.repository.UserRepository;
+import master.master.web.rest.dto.LoginRequestDto;
+import master.master.web.rest.dto.RegisterRequestDto;
+
 import org.springframework.stereotype.Service;
 
 @Service  // ✅ This is missing and required
@@ -20,5 +23,4 @@ public class UserService {
         }
         return user;
     }
-
 }

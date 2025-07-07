@@ -1,21 +1,16 @@
 package master.master.web.rest.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
 
-/**
- * Data Transfer Object for login requests.
- * <p>
- * This class encapsulates the user's email and password
- * required for authentication.
- * </p>
- */
 
-@Getter
-@Setter
-
+@Data
 public class LoginRequestDto {
+    @NotBlank
+    @Email
     private String email;
-    private String password;
 
+    @NotBlank
+    private String password;
 }

@@ -60,8 +60,6 @@ public class User implements Serializable {
     @Column(nullable = false)
     private RoleType role;
 
-    // equals/hashCode basé sur id
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
