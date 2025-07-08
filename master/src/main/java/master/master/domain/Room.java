@@ -37,7 +37,7 @@ import lombok.Data;
  */
 
 @Entity
-@Table(name = "rooms")
+@Table(name = "room")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -48,22 +48,12 @@ public class Room {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "number", nullable = false, unique = true, length = 20)
+    @Column(name = "number", nullable = false, unique = true, length = 255)
     private String number;
 
-    @Column(name = "name", length = 100)
-    private String name;
-
-    @Column(name = "type", nullable = false, length = 50)
+    @Column(name = "type", nullable = false, length = 255)
     @Enumerated(EnumType.STRING)
     private RoomType type;
-
-    @Column(name = "status", nullable = false, length = 20)
-    @Enumerated(EnumType.STRING)
-    private RoomStatus status;
-
-    @Column(name = "price", precision = 10)
-    private Double price;
 
     @Column(name = "capacity", nullable = false)
     private Integer capacity;
@@ -71,16 +61,8 @@ public class Room {
     @Column(name = "description", length = 1000)
     private String description;
 
-    @ElementCollection
-    @CollectionTable(name = "room_amenities", joinColumns = @JoinColumn(name = "room_id"))
-    @Column(name = "amenity")
-    private List<String> amenities;
-
     @Column(name = "floor_number")
     private Integer floorNumber;
-
-    @Column(name = "building", length = 50)
-    private String building;
 
     @Column(name = "has_projector")
     @Builder.Default
@@ -98,20 +80,36 @@ public class Room {
     @Builder.Default
     private Boolean hasAirConditioning = false;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @Column(name = "created_by", length = 100)
-    private String createdBy;
-
     @Column(name = "last_maintenance_date")
     private LocalDateTime lastMaintenanceDate;
 
     @Column(name = "next_maintenance_date")
     private LocalDateTime nextMaintenanceDate;
+
+    @Column(name = "name", nullable = true, length = 100)
+    private String name;
+
+    @Column(name = "price", precision = 10)
+    private Double price;
+
+    @Column(name = "status", nullable = false, length = 100)
+    @Enumerated(EnumType.STRING)
+    private RoomStatus status;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "created_by", length = 100)
+    private String createdBy;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @ElementCollection
+    @CollectionTable(name = "room_amenities", joinColumns = @JoinColumn(name = "room_id"))
+    @Column(name = "amenity")
+    private List<String> amenities;
+
 
     // JPA lifecycle callbacks
     @PrePersist
