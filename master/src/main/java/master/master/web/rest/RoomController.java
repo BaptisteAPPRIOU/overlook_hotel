@@ -32,7 +32,7 @@ import java.util.List;
  */
 
 @RestController
-@RequestMapping("/api/v1/rooms")
+@RequestMapping("/api/v1/room")
 @PreAuthorize("hasAuthority('EMPLOYEE')")    // only employees (and admins) can call any of these
 public class RoomController {
 
