@@ -57,18 +57,16 @@ public class RoomController {
     @PostMapping
     public Room create(@RequestBody RoomDto dto) {
         Room room = new Room();
-//        room.setRoomNumber(dto.getRoomNumber());
-//        room.setRoomType(dto.getRoomType());
-//        room.setOccupied(dto.isOccupied());
+        room.setNumber(dto.getNumber());
+        room.setType(Room.RoomType.valueOf(dto.getType()));
         return roomRepository.save(room);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Room> update(@PathVariable Long id, @RequestBody RoomDto dto) {
         return roomRepository.findById(id).map(existing -> {
-//            existing.setRoomNumber(dto.getRoomNumber());
-//            existing.setRoomType(dto.getRoomType());
-//            existing.setOccupied(dto.isOccupied());
+           existing.setNumber(dto.getNumber());
+           existing.setType(Room.RoomType.valueOf(dto.getType()));
             return ResponseEntity.ok(roomRepository.save(existing));
         }).orElse(ResponseEntity.notFound().build());
     }
