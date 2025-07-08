@@ -1,26 +1,14 @@
 package master.master.service;
 
 import master.master.domain.User;
-import master.master.repository.UserRepository;
-// import master.master.web.rest.dto.LoginRequestDto;
-// import master.master.web.rest.dto.RegisterRequestDto;
+import master.master.web.rest.dto.LoginRequestDto;
+import master.master.web.rest.dto.RegisterRequestDto;
 
-import org.springframework.stereotype.Service;
+public interface UserService {
 
-@Service  // ✅ This is missing and required
-public class UserService {
+    User register(RegisterRequestDto dto);
 
-    private final UserRepository userRepository;
+    String authenticateAndGetToken(LoginRequestDto dto);
 
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
-    public User findByEmail(String email) {
-        User user = userRepository.findByEmail(email);
-        if (user == null) {
-            throw new RuntimeException("User not found with email: " + email);
-        }
-        return user;
-    }
+    User findByEmail(String email);
 }

@@ -223,7 +223,7 @@
             <section class="main-card" data-cat="booking">
                 <div class="card">
                     <h4>Create Room</h4>
-                    <form method="post" th:action="@{/rooms}">
+                    <form method="post" th:action="@{/room}">
                         <input class="form-control" name="number" placeholder="Room number" required type="text">
                         <select class="form-select" name="type">
                             <option value="">Select room type</option>
@@ -237,7 +237,7 @@
 
                 <div class="card">
                     <h4>Modify Room</h4>
-                    <form method="post" th:action="@{/rooms/update}">
+                    <form method="post" th:action="@{/room/update}">
                         <select class="form-select" name="id" required>
                             <option value="">Select room to modify</option>
                             <option th:each="r : ${rooms}" th:text="${r.number}" th:value="${r.id}"></option>
@@ -254,10 +254,10 @@
 
                 <div class="card">
                     <h4>Delete Room</h4>
-                    <form method="post" th:action="@{/rooms/delete}">
+                    <form method="post" th:action="@{/room/delete}">
                         <select class="form-select" name="id" required>
                             <option value="">Select room to delete</option>
-                            <option th:each="r : ${rooms}" th:text="${r.number}" th:value="${r.id}"></option>
+                            <option th:each="r : ${room}" th:text="${r.number}" th:value="${r.id}"></option>
                         </select>
                         <button class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this room?')"
                                 type="submit">Delete Room

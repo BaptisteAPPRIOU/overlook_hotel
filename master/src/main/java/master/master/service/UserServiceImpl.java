@@ -6,6 +6,7 @@ import master.master.repository.UserRepository;
 import master.master.security.JwtUtil;
 import master.master.web.rest.dto.LoginRequestDto;
 import master.master.web.rest.dto.RegisterRequestDto;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,7 +23,7 @@ public class UserServiceImpl implements UserService {
 
     public UserServiceImpl(UserRepository userRepo,
                            PasswordEncoder encoder,
-                           AuthenticationManager authManager,
+                           @Lazy AuthenticationManager authManager,
                            JwtUtil jwtUtil) {
         this.userRepo = userRepo;
         this.encoder = encoder;
@@ -48,5 +49,14 @@ public class UserServiceImpl implements UserService {
                 new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword())
         );
         return jwtUtil.generateToken(dto.getEmail());
+    }
+
+    @Override
+    public User findByEmail(String email) {
+        User user = userRepo.findByEmail(email);
+        if (user == null) {
+            throw new RuntimeException("User not found with email: " + email);
+        }
+        return user;
     }
 }

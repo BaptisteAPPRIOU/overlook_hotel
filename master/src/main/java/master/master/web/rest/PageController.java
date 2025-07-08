@@ -1,7 +1,5 @@
 package master.master.web.rest;
 
-import master.master.service.EmployeeService;
-import master.master.service.LeaveRequestService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,14 +27,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class PageController {
 
-    private final EmployeeService employeeService;
-    private final LeaveRequestService leaveRequestService;
-
-    public PageController(EmployeeService employeeService, LeaveRequestService leaveRequestService) {
-        this.employeeService = employeeService;
-        this.leaveRequestService = leaveRequestService;
-    }
-
     @GetMapping("/")
     public String homeLoginPage() {
         return "homeLoginPage";
@@ -62,38 +52,21 @@ public class PageController {
 
     @GetMapping("/employeeDashboard")
     public String employeeDashboardPage(Model model) {
-        try {
-            // Add title
-            model.addAttribute("title", "Employee Dashboard");
+        // Add title
+        model.addAttribute("title", "Employee Dashboard");
 
-            // Add data for template rendering
-            model.addAttribute("employees", employeeService.getAllEmployees());
-            model.addAttribute("leaveRequests", leaveRequestService.getPendingLeaveRequests());
-            model.addAttribute("myLeaveRequests", java.util.Collections.emptyList()); // Empty list for now
-            model.addAttribute("rooms", java.util.Collections.emptyList()); // Empty list for now
-            model.addAttribute("reviews", java.util.Collections.emptyList()); // Empty list for now
+        // Add empty collections to prevent template errors
+        model.addAttribute("employees", java.util.Collections.emptyList());
+        model.addAttribute("leaveRequests", java.util.Collections.emptyList());
+        model.addAttribute("myLeaveRequests", java.util.Collections.emptyList());
+        model.addAttribute("room", java.util.Collections.emptyList());
+        model.addAttribute("reviews", java.util.Collections.emptyList());
 
-            // Mock current user data to prevent template errors
-            java.util.Map<String, String> currentUser = new java.util.HashMap<>();
-            currentUser.put("firstName", "Admin");
-            currentUser.put("lastName", "User");
-            model.addAttribute("currentUser", currentUser);
-
-        } catch (Exception e) {
-            // If services fail, provide empty collections to prevent template errors
-            model.addAttribute("title", "Employee Dashboard");
-            model.addAttribute("employees", java.util.Collections.emptyList());
-            model.addAttribute("leaveRequests", java.util.Collections.emptyList());
-            model.addAttribute("myLeaveRequests", java.util.Collections.emptyList());
-            model.addAttribute("rooms", java.util.Collections.emptyList());
-            model.addAttribute("reviews", java.util.Collections.emptyList());
-
-            // Mock current user data
-            java.util.Map<String, String> currentUser = new java.util.HashMap<>();
-            currentUser.put("firstName", "Admin");
-            currentUser.put("lastName", "User");
-            model.addAttribute("currentUser", currentUser);
-        }
+        // Mock current user data to prevent template errors
+        java.util.Map<String, String> currentUser = new java.util.HashMap<>();
+        currentUser.put("firstName", "Admin");
+        currentUser.put("lastName", "User");
+        model.addAttribute("currentUser", currentUser);
         
         return "employeeDashboard";
     }
