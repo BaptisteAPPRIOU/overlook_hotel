@@ -203,7 +203,9 @@ public class Room {
         PHONE_BOOTH("Phone Booth"),
         LOUNGE("Lounge"),
         COLLABORATION("Collaboration Space"),
-        PRESENTATION("Presentation Room");
+        PRESENTATION("Presentation Room"),
+        ROOM("Room"),
+        EVENT("Event");
 
         private final String displayName;
 
