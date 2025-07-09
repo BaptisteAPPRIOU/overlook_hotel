@@ -1,21 +1,15 @@
 package master.master.web.rest;
 
-import java.util.List;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import master.master.domain.Employee;
 import master.master.service.EmployeeService;
 import master.master.service.EmployeeWorkdayService;
 import master.master.web.rest.dto.CreateEmployeeRequestDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * REST controller for managing employees and their workdays.
@@ -39,12 +33,12 @@ import master.master.web.rest.dto.CreateEmployeeRequestDto;
 
 /**
  * REST controller for managing employees in the hotel reservation system.
- * 
+ * <p>
  * This controller provides endpoints for CRUD operations on Employee entities
  * and manages employee workday schedules.
- * 
+ * <p>
  * Base URL: /api/v1/employees
- * 
+ *
  * @author Hotel Reservation System
  * @version 1.0
  */
@@ -52,6 +46,8 @@ import master.master.web.rest.dto.CreateEmployeeRequestDto;
 @RequestMapping("/api/v1/employees")
 public class EmployeeController {
 
+    private static final Logger log = LoggerFactory.getLogger(EmployeeController.class);
+    
     private final EmployeeService employeeService;
     private final EmployeeWorkdayService workdayService;
 
@@ -67,7 +63,15 @@ public class EmployeeController {
 
     @PostMapping
     public ResponseEntity<Employee> create(@RequestBody CreateEmployeeRequestDto request) {
-        return ResponseEntity.ok(employeeService.createEmployee(request));
+        log.info("Received employee creation request for: {} {}", request.getFirstName(), request.getLastName());
+        try {
+            Employee employee = employeeService.createEmployee(request);
+            log.info("Successfully created employee with ID: {}", employee.getUserId());
+            return ResponseEntity.ok(employee);
+        } catch (Exception e) {
+            log.error("Error creating employee: ", e);
+            throw e;
+        }
     }
 
     @GetMapping("/{id}")

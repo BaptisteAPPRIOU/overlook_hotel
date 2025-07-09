@@ -1,31 +1,1567 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Register</title>
-    <link rel="stylesheet" th:href="@{/css/authPage.css}"/>
-    <script defer th:src="@{/js/register.js}"></script>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control">
+    <meta content="no-cache" http-equiv="Pragma">
+    <meta content="0" http-equiv="Expires">
+    <title>Employee Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .sidebar { background-color: #e9ecef; min-height: 100vh; padding: 20px 0; }
+        .nav-btn { display: block; width: 100%; color: #000; text-decoration: none; padding: 12px 20px; border: none; background: none; text-align: left; margin-bottom: 5px; border-radius: 5px; }
+        .nav-btn:hover, .nav-btn.active { background-color: #dee2e6; color: #0d6efd; }
+        .main-card { display: none; }
+        .main-card:not(.hidden) { display: block; }
+        .hidden { display: none !important; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        
+        /* Hourly Planning Styles */
+        .hour-cell {
+            width: 100px;
+            height: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #dee2e6;
+            user-select: none;
+        }
+        
+        .hour-cell:hover {
+            background-color: #e9ecef;
+            transform: scale(1.05);
+        }
+        
+        .hour-cell.working {
+            background-color: #198754;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .hour-cell.working:hover {
+            background-color: #157347;
+        }
+        
+        .hour-cell.free {
+            background-color: #f8f9fa;
+            color: #6c757d;
+        }
+        
+        .hour-label {
+            font-weight: bold;
+            text-align: center;
+            width: 80px;
+            background-color: #e9ecef;
+        }
+        
+        #hourlyPlanningTable th {
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .weekly-hours-exceeded {
+            color: #dc3545 !important;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-2 sidebar">
+            <div class="text-center p-3">
+                <img alt="Company Logo" class="mb-3" style="max-width: 80px;" th:src="@{/image/logo_noBg_no_name.png}">
+            </div>
+            <button class="nav-btn active" data-cat="booking">Room Booking</button>
+            <button class="nav-btn" data-cat="leave">Leave Request</button>
+            <button class="nav-btn" data-cat="schedule">Work Schedule</button>
+            <button class="nav-btn" data-cat="attendance">Time & Attendance</button>
+            <button class="nav-btn" data-cat="reviews">Room Reviews</button>
+            <button class="nav-btn" data-cat="employees" th:if="${currentUser?.role == 'ADMIN'}">Employee Management
+            </button>
+            <button class="nav-btn" data-cat="approval">Leave Approval</button>
+            <hr class="mx-3">
+            <button class="nav-btn" onclick="window.location.href='/settings'">Settings</button>
+            <button class="nav-btn" onclick="window.location.href='/logout'">Logout</button>
+        </nav>
 
-<div class="main-card">
-    <img alt="Logo" class="logo" th:src="@{/image/logo_noBg_no_name.png}"/>
-    <h1>Create Account</h1>
+        <!-- Main Content -->
+        <main class="col-md-10 p-4">
+            <!-- User Header -->
+            <div class="bg-white p-3 rounded mb-4 d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Employee Dashboard</h4>
+                <div class="d-flex align-items-center gap-3">
+                    <input class="form-control form-control-sm" placeholder="Search..." style="width: 200px;"
+                           type="text">
+                    <span class="fw-bold"
+                          th:text="${currentUser != null ? currentUser.firstName + ' ' + currentUser.lastName : 'Admin User'}">Admin User</span>
+                    <img alt="Admin" class="user-avatar" th:src="@{/image/logo_noBg_no_name.png}">
+                </div>
+            </div>
 
-    <form id="registerForm">
-        <input id="firstName" name="firstName" placeholder="First Name" required type="text"/>
-        <input id="lastName" name="lastName" placeholder="Last Name" required type="text"/>
+            <!-- Success/Error Messages -->
+            <div class="alert alert-success alert-dismissible fade show" role="alert" th:if="${message}">
+                <span th:text="${message}"></span>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"></button>
+            </div>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert" th:if="${error}">
+                <span th:text="${error}"></span>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"></button>
+            </div>
 
-        <div class="email-wrapper">
-            <input id="emailPrefix" placeholder="Email" required type="text"/>
-            <div class="email-suffix">@olh.fr</div>
-        </div>
-        <input id="email" name="email" type="hidden"/>
-        <input id="password" name="password" placeholder="Password" required type="password"/>
-        <button type="submit">Register</button>
-    </form>
+            <!-- 1) Room Booking -->
+            <section class="main-card" data-cat="booking">
+                <div class="card">
+                    <h4>Create Room</h4>
+                    <form method="post" th:action="@{/room}">
+                        <input class="form-control" name="number" placeholder="Room number" required type="text">
+                        <select class="form-select" name="type">
+                            <option value="">Select room type</option>
+                            <option value="Single">Single</option>
+                            <option value="Double">Double</option>
+                            <option value="Suite">Suite</option>
+                        </select>
+                        <button class="btn btn-primary" type="submit">Create Room</button>
+                    </form>
+                </div>
 
-    <div id="message" style="color: red; margin-top: 10px;"></div>
+                <div class="card">
+                    <h4>Modify Room</h4>
+                    <form method="post" th:action="@{/room/update}">
+                        <select class="form-select" name="id" required>
+                            <option value="">Select room to modify</option>
+                            <option th:each="r : ${room}" th:text="${r.number}" th:value="${r.id}"></option>
+                        </select>
+                        <select class="form-select" name="type">
+                            <option value="">Select new room type</option>
+                            <option value="Single">Single</option>
+                            <option value="Double">Double</option>
+                            <option value="Suite">Suite</option>
+                        </select>
+                        <button class="btn btn-success" type="submit">Modify Room</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h4>Delete Room</h4>
+                    <form method="post" th:action="@{/room/delete}">
+                        <select class="form-select" name="id" required>
+                            <option value="">Select room to delete</option>
+                            <option th:each="r : ${room}" th:text="${r.number}" th:value="${r.id}"></option>
+                        </select>
+                        <button class="btn btn-danger"
+                                onclick="return confirm('Are you sure you want to delete this room?')"
+                                type="submit">Delete Room
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- 2) Leave Request -->
+            <section class="main-card hidden" data-cat="leave">
+                <div class="card">
+                    <h4>Request Leave</h4>
+                    <form method="post" th:action="@{/leave/request}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label" for="startDate">Start Date</label>
+                                <input class="form-control" id="startDate" name="startDate" required type="date">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="endDate">End Date</label>
+                                <input class="form-control" id="endDate" name="endDate" required type="date">
+                            </div>
+                        </div>
+                        <label class="form-label" for="reason">Reason</label>
+                        <textarea class="form-control" id="reason" name="reason" placeholder="Enter reason for leave"
+                                  required rows="3"></textarea>
+                        <button class="btn btn-primary" type="submit">Submit Leave Request</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h4>My Leave Requests</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="req : ${myLeaveRequests}">
+                                <td th:text="${req.startDate}">2023-12-01</td>
+                                <td th:text="${req.endDate}">2023-12-05</td>
+                                <td th:text="${req.reason}">Vacation</td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${req.status == 'APPROVED' ? 'bg-success' : (req.status == 'REJECTED' ? 'bg-danger' : 'bg-warning')}"
+                                          th:text="${req.status}">PENDING</span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3) Work Schedule -->
+            <section class="main-card hidden" data-cat="schedule">
+                <div class="card">
+                    <h4>My Work Schedule</h4>
+                    <div id="work-schedule-content">
+                        <!-- This will be populated by JavaScript -->
+                        <div class="text-center" id="schedule-loading">
+                            <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                            <p>Loading your schedule...</p>
+                        </div>
+                        <div id="schedule-display" style="display: none;">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead class="table-dark">
+                                    <tr>
+                                        <th>Day</th>
+                                        <th>Start Time</th>
+                                        <th>End Time</th>
+                                        <th>Break Duration</th>
+                                        <th>Daily Hours</th>
+                                        <th>Status</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="schedule-table-body">
+                                    <!-- Schedule data will be inserted here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <div class="card bg-primary text-white">
+                                        <div class="card-body text-center">
+                                            <h5>Weekly Hours</h5>
+                                            <h2 id="weekly-hours">-</h2>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card bg-info text-white">
+                                        <div class="card-body text-center">
+                                            <h5>Contract Type</h5>
+                                            <h2 id="contract-type">-</h2>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center text-muted" id="schedule-error" style="display: none;">
+                            <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                            <p>No schedule found. Please contact your manager to set up your work planning.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4) Time & Attendance -->
+            <section class="main-card hidden" data-cat="attendance">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Employee Planning Management</span>
+                        <div th:if="${currentUser?.role == 'ADMIN'}">
+                            <button class="btn btn-success btn-sm" onclick="refreshPlanningData()">
+                                <i class="fas fa-sync"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card-body" th:if="${currentUser?.role == 'ADMIN'}">
+                        <!-- Employee Selection and Hourly Planning -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h6><i class="fas fa-calendar-alt"></i> Hourly Planning (35h/week max)</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="employeeSelectHourly">Select Employee:</label>
+                                        <select class="form-select" id="employeeSelectHourly"
+                                                onchange="loadEmployeeHourlyPlanning()">
+                                            <option value="">Choose an employee...</option>
+                                            <option th:each="employee : ${employees}"
+                                                    th:text="${employee.firstName + ' ' + employee.lastName}"
+                                                    th:value="${employee.userId}">
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="weekStartDate">Week Starting:</label>
+                                        <input class="form-control" id="weekStartDate" onchange="loadEmployeeHourlyPlanning()"
+                                               type="date">
+                                    </div>
+                                    <div class="col-md-4 d-flex align-items-end">
+                                        <div>
+                                            <div class="badge bg-primary" id="currentWeeklyHours">0h / 35h</div>
+                                            <div class="small text-muted">Weekly hours</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Hourly Planning Grid -->
+                                <div id="hourlyPlanningContainer" style="display: none;">
+                                    <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                                        <table class="table table-bordered table-sm" id="hourlyPlanningTable">
+                                            <thead class="table-dark sticky-top">
+                                            <tr>
+                                                <th class="hour-label">Hour</th>
+                                                <th>Monday</th>
+                                                <th>Tuesday</th>
+                                                <th>Wednesday</th>
+                                                <th>Thursday</th>
+                                                <th>Friday</th>
+                                                <th>Saturday</th>
+                                                <th>Sunday</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody id="hourlyPlanningBody">
+                                            <!-- This will be populated by JavaScript -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="row mt-3">
+                                        <div class="col-md-12 d-flex justify-content-between">
+                                            <div>
+                                                <button class="btn btn-success" onclick="saveHourlyPlanning()">
+                                                    <i class="fas fa-save"></i> Save Planning
+                                                </button>
+                                                <button class="btn btn-secondary ms-2" onclick="clearAllHours()">
+                                                    <i class="fas fa-eraser"></i> Clear All
+                                                </button>
+                                            </div>
+                                            <div class="text-muted">
+                                                <small>Click cells to toggle work hours. Green = Working, Gray =
+                                                    Free</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Current Plannings Display -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h6><i class="fas fa-list"></i> Current Employee Plannings</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center" id="planning-loading">
+                                    <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                                    <p>Loading planning data...</p>
+                                </div>
+
+                                <div id="planning-display" style="display: none;">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover">
+                                            <thead class="table-dark">
+                                            <tr>
+                                                <th>Employee</th>
+                                                <th>Weekly Hours</th>
+                                                <th>Contract Type</th>
+                                                <th>Status</th>
+                                                <th>Working Days</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody id="planning-table-body">
+                                            <!-- Planning data will be inserted here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="text-center text-muted py-4" id="planning-empty" style="display: none;">
+                                    <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                                    <p>No employee plannings found. Create default plannings to get started!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- For non-admin users -->
+                    <div class="card-body" th:unless="${currentUser?.role == 'ADMIN'}">
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-lock fa-3x mb-3"></i>
+                            <p>Access Restricted</p>
+                            <p>Only managers can access planning management features.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5) Room Reviews -->
+            <section class="main-card hidden" data-cat="reviews">
+                <div class="card">
+                    <h4>Room Reviews</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th>Room</th>
+                                <th>Author</th>
+                                <th>Rating</th>
+                                <th>Comment</th>
+                                <th>Date</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="rev : ${reviews}">
+                                <td th:text="${rev.roomNumber}">101</td>
+                                <td th:text="${rev.author}">John Doe</td>
+                                <td>
+                                    <span class="badge bg-warning" th:text="${rev.rating} + '/5'">4/5</span>
+                                </td>
+                                <td th:text="${rev.comment}">Great room!</td>
+                                <td th:text="${rev.reviewDate}">2023-12-01</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6) Employee Management (Admin Only) -->
+            <section class="main-card hidden" data-cat="employees" th:if="${currentUser?.role == 'ADMIN'}">
+                <div class="card">
+                    <h4>Add Employee</h4>
+                    <form id="registerForm" method="post" th:action="@{/employees}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label" for="firstName">First Name</label>
+                                <input class="form-control" id="firstName" name="firstName" placeholder="First Name"
+                                       required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="lastName">Last Name</label>
+                                <input class="form-control" id="lastName" name="lastName" placeholder="Last Name"
+                                       required>
+                            </div>
+                        </div>
+                        <label class="form-label" for="emailPrefix">Email</label>
+                        <div class="email-wrapper">
+                            <input class="form-control" id="emailPrefix" placeholder="Enter email prefix" required>
+                            <div class="email-suffix">@olh.fr</div>
+                        </div>
+                        <input id="email" name="email" type="hidden">
+                        <label class="form-label" for="password">Password</label>
+                        <input class="form-control" id="password" name="password" placeholder="Password" required
+                               type="password">
+                        <button class="btn btn-primary" type="submit">Register Employee</button>
+                    </form>
+                    <div class="form-message" id="message"></div>
+                </div>
+
+                <div class="card">
+                    <h4>Edit Employee</h4>
+                    <form method="post" th:action="@{/employees/update}">
+                        <label class="form-label" for="editEmployeeId">Select Employee</label>
+                        <select class="form-select" id="editEmployeeId" name="id" required>
+                            <option value="">Select employee to edit</option>
+                            <option th:each="e : ${employees}" th:text="${e.firstName + ' ' + e.lastName}"
+                                    th:value="${e.userId}"></option>
+                        </select>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label" for="newFirstName">New First Name</label>
+                                <input class="form-control" id="newFirstName" name="firstName"
+                                       placeholder="New First Name">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="newLastName">New Last Name</label>
+                                <input class="form-control" id="newLastName" name="lastName"
+                                       placeholder="New Last Name">
+                            </div>
+                        </div>
+                        <button class="btn btn-success" type="submit">Update Employee</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h4>Delete Employee</h4>
+                    <form method="post" th:action="@{/employees/delete}">
+                        <label class="form-label" for="deleteEmployeeId">Select Employee</label>
+                        <select class="form-select" id="deleteEmployeeId" name="id" required>
+                            <option value="">Select employee to delete</option>
+                            <option th:each="e : ${employees}" th:text="${e.firstName + ' ' + e.lastName}"
+                                    th:value="${e.userId}"></option>
+                        </select>
+                        <button class="btn btn-danger"
+                                onclick="return confirm('Are you sure you want to delete this employee?')"
+                                type="submit">Delete
+                            Employee
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- 7) Leave Approval -->
+            <section class="main-card hidden" data-cat="approval">
+                <div class="card">
+                    <h4>Pending Leave Requests</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Reason</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="req : ${leaveRequests}">
+                                <td th:text="${req.employeeName}">John Doe</td>
+                                <td th:text="${req.startDate}">2023-12-01</td>
+                                <td th:text="${req.endDate}">2023-12-05</td>
+                                <td th:text="${req.reason}">Vacation</td>
+                                <td>
+                                    <form method="post" style="display: inline;"
+                                          th:action="@{'/leave/approve/' + ${req.id}}">
+                                        <button class="btn btn-success btn-sm" type="submit">Approve</button>
+                                    </form>
+                                    <form method="post" style="display: inline;"
+                                          th:action="@{'/leave/reject/' + ${req.id}}">
+                                        <button class="btn btn-danger btn-sm" type="submit">Reject</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
 </div>
 
+<!-- Add Employee Modal -->
+<div aria-hidden="true" aria-labelledby="addEmployeeModalLabel" class="modal fade" id="addEmployeeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addEmployeeModalLabel">Add New Employee</h5>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addEmployeeForm">
+                    <div class="mb-3">
+                        <label class="form-label" for="modalFirstName">First Name</label>
+                        <input class="form-control" id="modalFirstName" name="firstName" required type="text">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="modalLastName">Last Name</label>
+                        <input class="form-control" id="modalLastName" name="lastName" required type="text">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="modalEmail">Email</label>
+                        <input class="form-control" id="modalEmail" name="email" required type="email">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="modalPassword">Password</label>
+                        <input class="form-control" id="modalPassword" name="password" required type="password">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+                <button class="btn btn-primary" form="addEmployeeForm" type="submit">Add Employee</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hourly Planning Modal -->
+<div aria-hidden="true" aria-labelledby="hourlyPlanningModalLabel" class="modal fade" id="hourlyPlanningModal"
+     tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="hourlyPlanningModalLabel">Hour-by-Hour Planning</h5>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Employee:</strong> <span id="selectedEmployeeName">-</span>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <strong>Weekly Hours:</strong> <span class="badge bg-info" id="currentWeeklyHours">0h</span>
+                            <span class="text-danger ms-2" id="weeklyHoursWarning" style="display: none;">⚠️ Exceeds 35h limit!</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm" id="hourlyPlanningTable">
+                        <thead class="table-dark">
+                        <tr>
+                            <th style="width: 80px;">Hour</th>
+                            <th>Monday</th>
+                            <th>Tuesday</th>
+                            <th>Wednesday</th>
+                            <th>Thursday</th>
+                            <th>Friday</th>
+                            <th>Saturday</th>
+                            <th>Sunday</th>
+                        </tr>
+                        </thead>
+                        <tbody id="hourlyPlanningBody">
+                        <!-- Will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-3">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <button class="btn btn-outline-secondary btn-sm" onclick="clearAllHours()" type="button">
+                                <i class="fas fa-eraser"></i> Clear All
+                            </button>
+                            <button class="btn btn-outline-info btn-sm" onclick="fillStandardWeek()" type="button">
+                                <i class="fas fa-business-time"></i> Standard Week (9-17)
+                            </button>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <small class="text-muted">Click on cells to toggle work hours. Green = Working, Gray =
+                                Free</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+                <button class="btn btn-primary" onclick="saveHourlyPlanning()" type="button">Save Planning</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Navigation functionality
+        const navButtons = document.querySelectorAll('.nav-btn[data-cat]');
+        const sections = document.querySelectorAll('.main-card[data-cat]');
+
+        navButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const category = this.getAttribute('data-cat');
+
+                // Update active button
+                navButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+
+                // Show/hide sections
+                sections.forEach(section => {
+                    if (section.getAttribute('data-cat') === category) {
+                        section.classList.remove('hidden');
+                    } else {
+                        section.classList.add('hidden');
+                    }
+                });
+
+                // Load data when sections are shown
+                if (category === 'schedule') {
+                    loadEmployeeSchedule();
+                } else if (category === 'attendance') {
+                    loadPlanningData();
+                }
+            });
+        });
+
+        // Email concatenation for employee registration
+        const emailPrefix = document.getElementById('emailPrefix');
+        const emailHidden = document.getElementById('email');
+        if (emailPrefix && emailHidden) {
+            emailPrefix.addEventListener('input', function() {
+                emailHidden.value = this.value + '@olh.fr';
+            });
+        }
+    });
+
+    // JWT Token management
+    function getJwtToken() {
+        return localStorage.getItem('jwtToken');
+    }
+
+    function setJwtToken(token) {
+        localStorage.setItem('jwtToken', token);
+    }
+
+    // Planning Management Functions (for managers)
+    function createDefaultPlanning() {
+        const employeeId = document.getElementById('employeeSelectDefault').value;
+        if (!employeeId) {
+            alert('Please select an employee');
+            return;
+        }
+
+        const token = getJwtToken();
+        if (!token) {
+            showMessage('Authentication required. Please login again.', 'error');
+            return;
+        }
+
+        fetch(`/api/planning/employees/${employeeId}/default`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Failed to create planning');
+        })
+        .then(data => {
+            showMessage('Default 35h/week planning created successfully!', 'success');
+            document.getElementById('employeeSelectDefault').value = '';
+            loadPlanningData();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessage('Failed to create planning: ' + error.message, 'error');
+        });
+    }
+
+    function loadPlanningData() {
+        const loadingDiv = document.getElementById('planning-loading');
+        const displayDiv = document.getElementById('planning-display');
+        const emptyDiv = document.getElementById('planning-empty');
+
+        if (!loadingDiv) return; // Not on planning page
+
+        loadingDiv.style.display = 'block';
+        displayDiv.style.display = 'none';
+        emptyDiv.style.display = 'none';
+
+        const token = getJwtToken();
+        if (!token) {
+            showMessage('Authentication required. Please login again.', 'error');
+            loadingDiv.style.display = 'none';
+            emptyDiv.style.display = 'block';
+            return;
+        }
+
+        fetch('/api/planning/employees', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            loadingDiv.style.display = 'none';
+
+            if (data && data.length > 0) {
+                displayDiv.style.display = 'block';
+                populatePlanningTable(data);
+            } else {
+                emptyDiv.style.display = 'block';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading planning data:', error);
+            loadingDiv.style.display = 'none';
+            emptyDiv.style.display = 'block';
+        });
+    }
+
+    function populatePlanningTable(plannings) {
+        const tbody = document.getElementById('planning-table-body');
+        tbody.innerHTML = '';
+
+        plannings.forEach(planning => {
+            const row = document.createElement('tr');
+
+            const contractBadgeClass = planning.contractType === 'FULL_TIME' ? 'bg-success' :
+                                      planning.contractType === 'PART_TIME' ? 'bg-warning' : 'bg-secondary';
+            const statusBadgeClass = planning.status === 'ACTIVE' ? 'bg-success' : 'bg-danger';
+
+            row.innerHTML = `
+                <td>${planning.employeeName}</td>
+                <td><span class="badge bg-info">${planning.weeklyHours}h</span></td>
+                <td><span class="badge ${contractBadgeClass}">${planning.contractType}</span></td>
+                <td><span class="badge ${statusBadgeClass}">${planning.status}</span></td>
+                <td><small>${planning.workDays ? planning.workDays.length : 0} days configured</small></td>
+                <td>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-sm btn-outline-info" onclick="viewPlanningDetails(${planning.employeeId})" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="deletePlanning(${planning.employeeId})" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function refreshPlanningData() {
+        loadPlanningData();
+    }
+
+    function deletePlanning(employeeId) {
+        if (!confirm('Are you sure you want to delete this employee\'s planning?')) {
+            return;
+        }
+
+        const token = getJwtToken();
+        if (!token) {
+            showMessage('Authentication required. Please login again.', 'error');
+            return;
+        }
+
+        fetch(`/api/planning/employees/${employeeId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                showMessage('Planning deleted successfully!', 'success');
+                loadPlanningData();
+            } else {
+                throw new Error('Failed to delete planning');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessage('Failed to delete planning: ' + error.message, 'error');
+        });
+    }
+
+    function viewPlanningDetails(employeeId) {
+        const token = getJwtToken();
+        if (!token) {
+            showMessage('Authentication required. Please login again.', 'error');
+            return;
+        }
+
+        fetch(`/api/planning/employees/${employeeId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            let details = `Employee: ${data.employeeName}\n`;
+            details += `Weekly Hours: ${data.weeklyHours}h\n`;
+            details += `Contract: ${data.contractType}\n\n`;
+            details += 'Work Days:\n';
+
+            if (data.workDays) {
+                data.workDays.forEach(day => {
+                    if (day.isWorking) {
+                        details += `${day.dayName}: ${day.startTime} - ${day.endTime} (${day.dailyHours}h)\n`;
+                    }
+                });
+            }
+
+            alert(details);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessage('Failed to load planning details', 'error');
+        });
+    }
+
+    // Employee Schedule Functions (for employees)
+    function loadEmployeeSchedule() {
+        const loadingDiv = document.getElementById('schedule-loading');
+        const displayDiv = document.getElementById('schedule-display');
+        const errorDiv = document.getElementById('schedule-error');
+
+        if (!loadingDiv) return; // Not on schedule page
+
+        loadingDiv.style.display = 'block';
+        displayDiv.style.display = 'none';
+        errorDiv.style.display = 'none';
+
+        // For demo purposes, using employee ID 1. In a real app, this would come from the session
+        const employeeId = 1;
+
+        const token = getJwtToken();
+        if (!token) {
+            showMessage('Authentication required. Please login again.', 'error');
+            loadingDiv.style.display = 'none';
+            errorDiv.style.display = 'block';
+            return;
+        }
+
+        fetch(`/api/planning/employees/${employeeId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('No schedule found');
+        })
+        .then(data => {
+            loadingDiv.style.display = 'none';
+            displayDiv.style.display = 'block';
+            populateScheduleTable(data);
+        })
+        .catch(error => {
+            console.error('Error loading schedule:', error);
+            loadingDiv.style.display = 'none';
+            errorDiv.style.display = 'block';
+        });
+    }
+
+    function populateScheduleTable(schedule) {
+        const tbody = document.getElementById('schedule-table-body');
+        const weeklyHoursElement = document.getElementById('weekly-hours');
+        const contractTypeElement = document.getElementById('contract-type');
+
+        tbody.innerHTML = '';
+
+        if (schedule.workDays) {
+            schedule.workDays.forEach(day => {
+                const row = document.createElement('tr');
+                const statusClass = day.isWorking ? 'text-success' : 'text-muted';
+
+                row.innerHTML = `
+                    <td class="${statusClass}">${day.dayName}</td>
+                    <td class="${statusClass}">${day.isWorking ? day.startTime : '-'}</td>
+                    <td class="${statusClass}">${day.isWorking ? day.endTime : '-'}</td>
+                    <td class="${statusClass}">${day.isWorking ? (day.breakDurationMinutes || 60) + ' min' : '-'}</td>
+                    <td class="${statusClass}">${day.isWorking ? day.dailyHours + 'h' : '-'}</td>
+                    <td>
+                        <span class="badge ${day.isWorking ? 'bg-success' : 'bg-secondary'}">
+                            ${day.isWorking ? 'Working' : 'Rest Day'}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        weeklyHoursElement.textContent = schedule.weeklyHours + 'h';
+        contractTypeElement.textContent = schedule.contractType;
+    }
+
+    // Utility function to show messages
+    function showMessage(message, type) {
+        // Remove existing alerts
+        const existingAlerts = document.querySelectorAll('.alert');
+        existingAlerts.forEach(alert => alert.remove());
+
+        // Create new alert
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+            <strong>${type === 'success' ? 'Success!' : 'Error!'}</strong> ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+
+        // Insert at the top of main content
+        const mainContent = document.querySelector('main');
+        mainContent.insertBefore(alertDiv, mainContent.children[1]);
+
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    }
+
+    // Hourly Planning Variables
+    let currentSelectedEmployeeId = null;
+    let currentSelectedEmployeeName = '';
+    let weeklySchedule = {}; // Structure: { day: { hour: isWorking } }
+
+    // Initialize weekly schedule structure
+    function initializeWeeklySchedule() {
+        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        weeklySchedule = {};
+
+        days.forEach(day => {
+            weeklySchedule[day] = {};
+            for (let hour = 0; hour < 24; hour++) {
+                weeklySchedule[day][hour] = false;
+            }
+        });
+    }
+
+    // Open hourly planning modal
+    function openHourlyPlanningModal() {
+        const employeeSelect = document.getElementById('employeeSelectHourly');
+        const employeeId = employeeSelect.value;
+        const employeeName = employeeSelect.options[employeeSelect.selectedIndex].text;
+
+        if (!employeeId) {
+            alert('Please select an employee first');
+            return;
+        }
+
+        currentSelectedEmployeeId = employeeId;
+        currentSelectedEmployeeName = employeeName;
+
+        document.getElementById('selectedEmployeeName').textContent = employeeName;
+
+        // Initialize or load existing schedule
+        initializeWeeklySchedule();
+        loadExistingSchedule(employeeId);
+
+        // Generate the hourly table
+        generateHourlyPlanningTable();
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('hourlyPlanningModal'));
+        modal.show();
+    }
+
+    // Generate the 24x7 hourly planning table
+    function generateHourlyPlanningTable() {
+        const tbody = document.getElementById('hourlyPlanningBody');
+        tbody.innerHTML = '';
+
+        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+        for (let hour = 0; hour < 24; hour++) {
+            const row = document.createElement('tr');
+
+            // Hour label
+            const hourCell = document.createElement('td');
+            hourCell.className = 'hour-label';
+            hourCell.textContent = `${hour.toString().padStart(2, '0')}:00`;
+            row.appendChild(hourCell);
+
+            // Day cells
+            days.forEach(day => {
+                const dayCell = document.createElement('td');
+                dayCell.className = 'hour-cell';
+                dayCell.dataset.day = day;
+                dayCell.dataset.hour = hour;
+
+                const isWorking = weeklySchedule[day][hour];
+                dayCell.classList.add(isWorking ? 'working' : 'free');
+                dayCell.textContent = isWorking ? '✓' : '';
+
+                dayCell.addEventListener('click', function() {
+                    toggleHourCell(day, hour, this);
+                });
+
+                row.appendChild(dayCell);
+            });
+
+            tbody.appendChild(row);
+        }
+
+        updateWeeklyHoursDisplay();
+    }
+
+    // Toggle a specific hour cell
+    function toggleHourCell(day, hour, cellElement) {
+        const currentState = weeklySchedule[day][hour];
+        const newState = !currentState;
+
+        // Check if toggling to working would exceed 35 hours
+        if (newState) {
+            const currentTotal = calculateTotalWeeklyHours();
+            if (currentTotal >= 35) {
+                showMessage('Cannot exceed 35 hours per week limit!', 'error');
+                return;
+            }
+        }
+
+        weeklySchedule[day][hour] = newState;
+
+        // Update cell appearance
+        cellElement.classList.remove('working', 'free');
+        cellElement.classList.add(newState ? 'working' : 'free');
+        cellElement.textContent = newState ? '✓' : '';
+
+        updateWeeklyHoursDisplay();
+    }
+
+    // Calculate total weekly hours
+    function calculateTotalWeeklyHours() {
+        let total = 0;
+        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+        days.forEach(day => {
+            for (let hour = 0; hour < 24; hour++) {
+                if (weeklySchedule[day][hour]) {
+                    total++;
+                }
+            }
+        });
+
+        return total;
+    }
+
+    // Update weekly hours display
+    function updateWeeklyHoursDisplay() {
+        const totalHours = calculateTotalWeeklyHours();
+        const hoursElement = document.getElementById('currentWeeklyHours');
+        const warningElement = document.getElementById('weeklyHoursWarning');
+
+        hoursElement.textContent = `${totalHours}h`;
+
+        if (totalHours > 35) {
+            hoursElement.classList.remove('bg-info');
+            hoursElement.classList.add('bg-danger');
+            warningElement.style.display = 'inline';
+        } else if (totalHours === 35) {
+            hoursElement.classList.remove('bg-danger');
+            hoursElement.classList.add('bg-success');
+            warningElement.style.display = 'none';
+        } else {
+            hoursElement.classList.remove('bg-danger', 'bg-success');
+            hoursElement.classList.add('bg-info');
+            warningElement.style.display = 'none';
+        }
+    }
+
+    // Clear all hours
+    function clearAllHours() {
+        if (confirm('Are you sure you want to clear all scheduled hours?')) {
+            initializeWeeklySchedule();
+            generateHourlyPlanningTable();
+        }
+    }
+
+    // Fill standard work week (Monday-Friday, 9-17)
+    function fillStandardWeek() {
+        if (confirm('This will set a standard work week (Mon-Fri, 9:00-17:00). Continue?')) {
+            initializeWeeklySchedule();
+
+            const workDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+            workDays.forEach(day => {
+                for (let hour = 9; hour < 17; hour++) {
+                    weeklySchedule[day][hour] = true;
+                }
+            });
+
+            generateHourlyPlanningTable();
+        }
+    }
+
+    // Load existing schedule for employee
+    function loadExistingSchedule(employeeId) {
+        const token = getJwtToken();
+        if (!token) {
+            return;
+        }
+
+        // Try to load existing planning
+        fetch(`/api/planning/employees/${employeeId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            // If no existing planning, that's ok - we'll start fresh
+            return null;
+        })
+        .then(data => {
+            if (data && data.workDays) {
+                // Convert existing schedule to hourly format
+                convertExistingScheduleToHourly(data.workDays);
+                generateHourlyPlanningTable();
+            }
+        })
+        .catch(error => {
+            console.log('No existing schedule found, starting fresh');
+        });
+    }
+
+    // Convert existing schedule format to hourly
+    function convertExistingScheduleToHourly(workDays) {
+        // This is a simplified conversion - you might need to adjust based on your backend format
+        workDays.forEach(workDay => {
+            if (workDay.isWorking && workDay.startTime && workDay.endTime) {
+                const dayName = workDay.dayName.toLowerCase();
+                const startHour = parseInt(workDay.startTime.split(':')[0]);
+                const endHour = parseInt(workDay.endTime.split(':')[0]);
+
+                if (weeklySchedule[dayName]) {
+                    for (let hour = startHour; hour < endHour; hour++) {
+                        weeklySchedule[dayName][hour] = true;
+                    }
+                }
+            }
+        });
+    }
+
+    // Save hourly planning
+    function saveHourlyPlanning() {
+        if (calculateTotalWeeklyHours() > 35) {
+            showMessage('Cannot save: Weekly hours exceed 35 hour limit!', 'error');
+            return;
+        }
+
+        const token = getJwtToken();
+        if (!token) {
+            showMessage('Authentication required. Please login again.', 'error');
+            return;
+        }
+
+        // Convert hourly schedule to backend format
+        const planningData = convertHourlyScheduleToBackendFormat();
+
+        // Save the planning
+        fetch(`/api/planning/employees/${currentSelectedEmployeeId}/hourly`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(planningData)
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Failed to save hourly planning');
+        })
+        .then(data => {
+            showMessage(`Hourly planning saved successfully for ${currentSelectedEmployeeName}!`, 'success');
+
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('hourlyPlanningModal'));
+            modal.hide();
+
+            // Reset selection
+            document.getElementById('employeeSelectHourly').value = '';
+
+            // Refresh planning data
+            loadPlanningData();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessage('Failed to save hourly planning: ' + error.message, 'error');
+        });
+    }
+
+    // Convert hourly schedule to backend format
+    function convertHourlyScheduleToBackendFormat() {
+        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        const workDays = [];
+
+        days.forEach(day => {
+            const workingHours = [];
+            for (let hour = 0; hour < 24; hour++) {
+                if (weeklySchedule[day][hour]) {
+                    workingHours.push(hour);
+                }
+            }
+
+            if (workingHours.length > 0) {
+                // Group consecutive hours
+                const timeBlocks = groupConsecutiveHours(workingHours);
+
+                timeBlocks.forEach(block => {
+                    workDays.push({
+                        dayName: day.charAt(0).toUpperCase() + day.slice(1),
+                        isWorking: true,
+                        startTime: `${block.start.toString().padStart(2, '0')}:00`,
+                        endTime: `${(block.end + 1).toString().padStart(2, '0')}:00`,
+                        dailyHours: block.end - block.start + 1
+                    });
+                });
+            } else {
+                // Rest day
+                workDays.push({
+                    dayName: day.charAt(0).toUpperCase() + day.slice(1),
+                    isWorking: false,
+                    startTime: null,
+                    endTime: null,
+                    dailyHours: 0
+                });
+            }
+        });
+
+        return {
+            employeeId: parseInt(currentSelectedEmployeeId),
+            weeklyHours: calculateTotalWeeklyHours(),
+            contractType: calculateTotalWeeklyHours() >= 35 ? 'FULL_TIME' : 'PART_TIME',
+            status: 'ACTIVE',
+            workDays: workDays
+        };
+    }
+
+    // Group consecutive hours into time blocks
+    function groupConsecutiveHours(hours) {
+        if (hours.length === 0) return [];
+
+        const blocks = [];
+        let blockStart = hours[0];
+        let blockEnd = hours[0];
+
+        for (let i = 1; i < hours.length; i++) {
+            if (hours[i] === blockEnd + 1) {
+                blockEnd = hours[i];
+            } else {
+                blocks.push({ start: blockStart, end: blockEnd });
+                blockStart = hours[i];
+                blockEnd = hours[i];
+            }
+        }
+
+        blocks.push({ start: blockStart, end: blockEnd });
+        return blocks;
+    }
+
+    // Hourly Planning Functions
+    let currentHourlySchedule = {};
+    let currentSelectedEmployee = null;
+    let currentWeekStart = null;
+
+    function initializeWeekDate() {
+        const today = new Date();
+        const monday = new Date(today);
+        const dayOfWeek = today.getDay() || 7; // Convert Sunday (0) to 7
+        monday.setDate(today.getDate() - dayOfWeek + 1);
+
+        const weekStartInput = document.getElementById('weekStartDate');
+        if (weekStartInput) {
+            weekStartInput.value = monday.toISOString().split('T')[0];
+            currentWeekStart = weekStartInput.value;
+        }
+    }
+
+    function loadEmployeeHourlyPlanning() {
+        const employeeId = document.getElementById('employeeSelectHourly').value;
+        const weekStart = document.getElementById('weekStartDate').value;
+
+        if (!employeeId || !weekStart) {
+            document.getElementById('hourlyPlanningContainer').style.display = 'none';
+            return;
+        }
+
+        currentSelectedEmployee = employeeId;
+        currentWeekStart = weekStart;
+
+        // Show the planning container
+        document.getElementById('hourlyPlanningContainer').style.display = 'block';
+
+        // Initialize empty schedule
+        currentHourlySchedule = {};
+
+        // Load existing schedule for this employee and week
+        const token = getJwtToken();
+        if (token) {
+            fetch(`/api/planning/employees/${employeeId}/hourly?weekStart=${weekStart}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                return {}; // Empty schedule if not found
+            })
+            .then(data => {
+                currentHourlySchedule = data.schedule || {};
+                buildHourlyPlanningGrid();
+                updateWeeklyHoursCounter();
+            })
+            .catch(error => {
+                console.error('Error loading hourly planning:', error);
+                currentHourlySchedule = {};
+                buildHourlyPlanningGrid();
+                updateWeeklyHoursCounter();
+            });
+        } else {
+            buildHourlyPlanningGrid();
+            updateWeeklyHoursCounter();
+        }
+    }
+
+    function buildHourlyPlanningGrid() {
+        const tbody = document.getElementById('hourlyPlanningBody');
+        tbody.innerHTML = '';
+
+        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+        // Create 24 rows for hours 0-23
+        for (let hour = 0; hour < 24; hour++) {
+            const row = document.createElement('tr');
+
+            // Hour label
+            const hourCell = document.createElement('td');
+            hourCell.className = 'hour-label';
+            hourCell.textContent = `${hour.toString().padStart(2, '0')}:00`;
+            row.appendChild(hourCell);
+
+            // Day cells
+            days.forEach(day => {
+                const dayCell = document.createElement('td');
+                dayCell.className = 'hour-cell';
+                dayCell.dataset.day = day;
+                dayCell.dataset.hour = hour;
+
+                // Check if this hour is marked as working
+                const isWorking = currentHourlySchedule[day] && currentHourlySchedule[day].includes(hour);
+                dayCell.className += isWorking ? ' working' : ' free';
+                dayCell.textContent = isWorking ? '✓' : '';
+
+                dayCell.addEventListener('click', () => toggleHourCell(dayCell, day, hour));
+
+                row.appendChild(dayCell);
+            });
+
+            tbody.appendChild(row);
+        }
+    }
+
+    function toggleHourCell(cell, day, hour) {
+        const isCurrentlyWorking = cell.classList.contains('working');
+
+        if (isCurrentlyWorking) {
+            // Remove this hour
+            cell.classList.remove('working');
+            cell.classList.add('free');
+            cell.textContent = '';
+
+            if (currentHourlySchedule[day]) {
+                const index = currentHourlySchedule[day].indexOf(hour);
+                if (index > -1) {
+                    currentHourlySchedule[day].splice(index, 1);
+                }
+                if (currentHourlySchedule[day].length === 0) {
+                    delete currentHourlySchedule[day];
+                }
+            }
+        } else {
+            // Check if adding this hour would exceed 35 hours
+            const currentTotalHours = getTotalWeeklyHours();
+            if (currentTotalHours >= 35) {
+                showMessage('Cannot exceed 35 hours per week!', 'error');
+                return;
+            }
+
+            // Add this hour
+            cell.classList.remove('free');
+            cell.classList.add('working');
+            cell.textContent = '✓';
+
+            if (!currentHourlySchedule[day]) {
+                currentHourlySchedule[day] = [];
+            }
+            currentHourlySchedule[day].push(hour);
+            currentHourlySchedule[day].sort((a, b) => a - b);
+        }
+
+        updateWeeklyHoursCounter();
+    }
+
+    function getTotalWeeklyHours() {
+        let total = 0;
+        Object.values(currentHourlySchedule).forEach(hours => {
+            total += hours.length;
+        });
+        return total;
+    }
+
+    function updateWeeklyHoursCounter() {
+        const totalHours = getTotalWeeklyHours();
+        const counter = document.getElementById('currentWeeklyHours');
+        counter.textContent = `${totalHours}h / 35h`;
+
+        if (totalHours > 35) {
+            counter.classList.remove('bg-primary');
+            counter.classList.add('bg-danger');
+        } else if (totalHours === 35) {
+            counter.classList.remove('bg-primary', 'bg-danger');
+            counter.classList.add('bg-success');
+        } else {
+            counter.classList.remove('bg-danger', 'bg-success');
+            counter.classList.add('bg-primary');
+        }
+    }
+
+    function saveHourlyPlanning() {
+        if (!currentSelectedEmployee || !currentWeekStart) {
+            showMessage('Please select an employee and week', 'error');
+            return;
+        }
+
+        const totalHours = getTotalWeeklyHours();
+        if (totalHours > 35) {
+            showMessage('Cannot save planning that exceeds 35 hours per week!', 'error');
+            return;
+        }
+
+        const token = getJwtToken();
+        if (!token) {
+            showMessage('Authentication required. Please login again.', 'error');
+            return;
+        }
+
+        const planningData = {
+            employeeId: parseInt(currentSelectedEmployee),
+            weekStart: currentWeekStart,
+            schedule: currentHourlySchedule
+        };
+
+        fetch('/api/planning/hourly', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(planningData)
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Failed to save hourly planning');
+        })
+        .then(data => {
+            showMessage(`Hourly planning saved successfully! Total: ${totalHours} hours`, 'success');
+            loadPlanningData(); // Refresh the planning list
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showMessage('Failed to save hourly planning: ' + error.message, 'error');
+        });
+    }
+
+    function clearAllHours() {
+        if (confirm('Are you sure you want to clear all hours for this week?')) {
+            currentHourlySchedule = {};
+            buildHourlyPlanningGrid();
+            updateWeeklyHoursCounter();
+        }
+    }
+
+    // Initialize week date when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // ...existing DOMContentLoaded code...
+        initializeWeekDate();
+    });
+</script>
 </body>
 </html>

@@ -22,25 +22,40 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(CustomUserDetailsService userDetailsService,
+                          JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.userDetailsService = userDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
+        http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        // Public endpoints
                         .requestMatchers("/api/v1/login", "/api/v1/register", "/error").permitAll()
-                        .requestMatchers("/", "/clientLogin", "/employeeLogin", "/register", "/employeeDashboard").permitAll()
+                        .requestMatchers("/", "/clientLogin", "/employeeLogin", "/register", "/employeeDashboard", "/roomManagement").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/image/**").permitAll()
+
+                        // Employee endpoints - Temporarily allow all for debugging
+                        .requestMatchers("/api/v1/employees/**").permitAll()
+                        .requestMatchers("/employees/**").permitAll()
+
+                        .requestMatchers("/api/v1/clients/**")
+                        .hasAnyAuthority("CLIENT", "ADMIN")
+                        .requestMatchers("/api/v1/clients/*/reservations/**")
+                        .hasAnyAuthority("CLIENT", "ADMIN")
+                        .requestMatchers("/api/v1/clients/*/feedbacks/**")
+                        .hasAnyAuthority("CLIENT", "ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form.disable())
-                .httpBasic(httpBasic -> httpBasic.disable())
-                .build();
+                .httpBasic(basic -> basic.disable());
+
+        return http.build();
     }
 
     @Bean
@@ -49,10 +64,14 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http, PasswordEncoder passwordEncoder)
-            throws Exception {
-        AuthenticationManagerBuilder builder = http.getSharedObject(AuthenticationManagerBuilder.class);
-        builder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
+    public AuthenticationManager authenticationManager(
+            HttpSecurity http,
+            PasswordEncoder passwordEncoder
+    ) throws Exception {
+        AuthenticationManagerBuilder builder =
+                http.getSharedObject(AuthenticationManagerBuilder.class);
+        builder.userDetailsService(userDetailsService)
+                .passwordEncoder(passwordEncoder);
         return builder.build();
     }
 }
