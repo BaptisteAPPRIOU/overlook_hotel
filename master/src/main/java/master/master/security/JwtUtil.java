@@ -1,77 +1,73 @@
 package master.master.security;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
-
-/**
- * Utility class for handling JSON Web Tokens (JWT) operations such as generation, extraction, and validation.
- * <p>
- * This class provides methods to generate JWT tokens for a given email, extract the email from a token,
- * and validate the authenticity and integrity of a token using a secret key.
- * </p>
- *
- * <ul>
- *   <li>{@link #generateToken(String)}: Generates a JWT token for the specified email.</li>
- *   <li>{@link #extractEmail(String)}: Extracts the email (subject) from the provided JWT token.</li>
- *   <li>{@link #isTokenValid(String)}: Validates the provided JWT token.</li>
- * </ul>
- *
- * <p>
- * The secret key used for signing and verifying tokens should be kept secure and at least 256 bits long.
- * The expiration time for tokens is set to 1 day (86400000 milliseconds).
- * </p>
- *
- * <p>
- * Example usage:
- * <pre>
- *     JwtUtil jwtUtil = new JwtUtil();
- *     String token = jwtUtil.generateToken("user@example.com");
- *     String email = jwtUtil.extractEmail(token);
- *     boolean isValid = jwtUtil.isTokenValid(token);
- * </pre>
- * </p>
- *
- * @author Your Name
- */
+import java.util.function.Function;
 
 @Component
 public class JwtUtil {
 
-    private final String SECRET_KEY = "mon_super_secret_jwt_key_123456789123456789"; // >= 256 bits
-    private final long EXPIRATION_TIME = 86400000; // 1 day
+    private final String SECRET_KEY = "mon_super_secret_jwt_key_123456789123456789";
+    private final long EXPIRATION_TIME = 86_400_000;
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
 
     public String generateToken(String email) {
+        Date now = new Date();
         return Jwts.builder()
                 .setSubject(email)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + EXPIRATION_TIME))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String extractEmail(String token) {
+
+    public String extractUsername(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    public Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
+    }
+
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+
+    private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+                .getBody();
+    }
+
+    private boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());
+    }
+
+    public boolean validateToken(String token, UserDetails userDetails) {
+        final String username = extractUsername(token);
+        return username.equals(userDetails.getUsername())
+                && !isTokenExpired(token);
     }
 
     public boolean isTokenValid(String token) {
         try {
-            extractEmail(token);
-            return true;
+            extractAllClaims(token);
+            return !isTokenExpired(token);
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }

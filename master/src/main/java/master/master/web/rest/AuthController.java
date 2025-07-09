@@ -1,15 +1,19 @@
 package master.master.web.rest;
 
+import jakarta.servlet.http.HttpServletRequest;
 import master.master.domain.RoleType;
 import master.master.domain.User;
 import master.master.repository.UserRepository;
 import master.master.security.JwtUtil;
+import master.master.security.TokenBlacklistService;
+import master.master.web.rest.dto.AuthResponseDto;
 import master.master.web.rest.dto.LoginRequestDto;
 import master.master.web.rest.dto.RegisterRequestDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -49,13 +53,15 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+    private final TokenBlacklistService tokenBlacklistService;
 
     public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder,
-                          AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
+                          AuthenticationManager authenticationManager, JwtUtil jwtUtil, TokenBlacklistService tokenBlacklistService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
     // Handle user registration requests
@@ -102,5 +108,23 @@ public class AuthController {
             // Return 401 Unauthorized if authentication fails
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
         }
+
+
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<AuthResponseDto> logout(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            String jwt = header.substring(7);
+            tokenBlacklistService.blacklist(jwt);
+        }
+        SecurityContextHolder.clearContext();
+        return ResponseEntity.ok(
+                AuthResponseDto.builder()
+                        .token(null)
+                        .message("Disconnected")
+                        .build()
+        );
     }
 }
