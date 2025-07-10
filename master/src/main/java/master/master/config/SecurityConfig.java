@@ -66,6 +66,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/admin/**")
                         .hasAuthority("ADMIN")
 
+                        .requestMatchers("/api/v1/rooms/**")
+                        .hasAnyAuthority("EMPLOYEE", "ADMIN")
+
                         // toute autre requête doit être authentifiée
                         .anyRequest().authenticated()
                 )
