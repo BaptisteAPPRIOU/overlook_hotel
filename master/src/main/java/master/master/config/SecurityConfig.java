@@ -4,6 +4,7 @@ import master.master.filter.JwtAuthenticationFilter;
 import master.master.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -33,18 +34,39 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints
-                        .requestMatchers("/api/v1/login", "/api/v1/register", "/error").permitAll()
-                        .requestMatchers("/", "/clientLogin", "/employeeLogin", "/register", "/employeeDashboard", "/roomManagement").permitAll()
-                        .requestMatchers("/css/**", "/js/**", "/image/**").permitAll()
+
+                        .requestMatchers(
+                                "/", "/clientLogin", "/employeeLogin", "/register"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/css/**", "/js/**", "/image/**", "/favicon.ico"
+                        ).permitAll()
+
+
+                        .requestMatchers(
+                                "/api/v1/login", "/api/v1/register", "/error"
+                        ).permitAll()
+
+
+                        .requestMatchers("/api/v1/logout").authenticated()
+
+
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/clients/**")
+                        .hasAuthority("ADMIN")
 
                         .requestMatchers("/api/v1/clients/**")
                         .hasAnyAuthority("CLIENT", "ADMIN")
-                        .requestMatchers("/api/v1/clients/*/reservations/**")
-                        .hasAnyAuthority("CLIENT", "ADMIN")
-                        .requestMatchers("/api/v1/clients/*/feedbacks/**")
-                        .hasAnyAuthority("CLIENT", "ADMIN")
 
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/employees/**")
+                        .hasAuthority("ADMIN")
+
+                        .requestMatchers("/api/v1/employees/**")
+                        .hasAnyAuthority("EMPLOYEE", "ADMIN")
+
+                        .requestMatchers("/api/v1/admin/**")
+                        .hasAuthority("ADMIN")
+
+                        // toute autre requête doit être authentifiée
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
