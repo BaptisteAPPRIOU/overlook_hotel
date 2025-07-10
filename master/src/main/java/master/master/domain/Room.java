@@ -13,9 +13,9 @@ import java.util.List;
 /**
  * JPA Entity for Room.
  * Represents rooms/meeting spaces in the database.
- * import lombok.Data;
- * <p>
- * /**
+import lombok.Data;
+
+/**
  * Represents a hotel room entity with a unique room number, type, and occupancy status.
  * <p>
  * Fields:
@@ -25,7 +25,7 @@ import java.util.List;
  *   <li><b>roomType</b>: The type/category of the room (e.g., SINGLE, DOUBLE, SUITE).</li>
  *   <li><b>isOccupied</b>: Indicates whether the room is currently occupied.</li>
  * </ul>
- * <p>
+ * 
  * Annotations:
  * <ul>
  *   <li><b>@Entity</b>: Marks this class as a JPA entity.</li>

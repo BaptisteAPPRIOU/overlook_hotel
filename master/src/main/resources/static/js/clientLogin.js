@@ -1,3 +1,13 @@
+/**
+ * Sends a POST request to the "/api/v1/login" endpoint with the provided email and password.
+ * 
+ * @constant
+ * @type {Response}
+ * @async
+ * @summary Fetches the login response from the server.
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Response|Response}
+ */
+
 document.getElementById("clientLoginForm").addEventListener("submit", async function (e) {
   e.preventDefault();
 

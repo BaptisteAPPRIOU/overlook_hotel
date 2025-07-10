@@ -38,10 +38,6 @@ public class SecurityConfig {
                         .requestMatchers("/", "/clientLogin", "/employeeLogin", "/register", "/employeeDashboard", "/roomManagement").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/image/**").permitAll()
 
-                        // Employee endpoints - Temporarily allow all for debugging
-                        .requestMatchers("/api/v1/employees/**").permitAll()
-                        .requestMatchers("/employees/**").permitAll()
-
                         .requestMatchers("/api/v1/clients/**")
                         .hasAnyAuthority("CLIENT", "ADMIN")
                         .requestMatchers("/api/v1/clients/*/reservations/**")

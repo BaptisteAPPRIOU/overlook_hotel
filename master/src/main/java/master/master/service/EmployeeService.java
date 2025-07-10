@@ -1,8 +1,8 @@
 package master.master.service;
 
+import master.master.domain.Employee;
 import master.master.domain.RoleType;
 import master.master.domain.User;
-import master.master.domain.Employee;
 import master.master.repository.EmployeeRepository;
 import master.master.repository.UserRepository;
 import master.master.web.rest.dto.CreateEmployeeRequestDto;
@@ -17,7 +17,7 @@ import java.util.List;
  * Service class for managing Employee entities and their associated User accounts.
  * This service provides CRUD operations for employees and handles the relationship
  * between Employee and User entities.
- * 
+ * <p>
  * The service automatically creates and manages User accounts with EMPLOYEE role
  * when creating new employees, and ensures proper password encoding for security.
  */

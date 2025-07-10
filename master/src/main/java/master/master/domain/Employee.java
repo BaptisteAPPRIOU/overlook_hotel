@@ -93,13 +93,6 @@ public class Employee implements Serializable {
     }
 
     /**
-     * Get role from associated user.
-     */
-    public RoleType getRole() {
-        return user != null ? user.getRole() : null;
-    }
-
-    /**
      * Check if employee has a valid user association.
      */
     public boolean hasValidUser() {

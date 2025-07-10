@@ -42,7 +42,7 @@ public class ReservationService {
 
         Room room = roomRepo.findById(dto.getRoomId())
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Room Not found"));
+                        HttpStatus.NOT_FOUND, "Not found"));
 
         UserReservation ur = new UserReservation();
         ur.setId(new ReservationId(userId, dto.getRoomId()));
