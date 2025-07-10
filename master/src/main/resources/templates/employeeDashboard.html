@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.3/dist/cdn.min.js"></script>
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1" name="viewport">
     <title>Employee Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!--    <link rel="stylesheet" th:href="@{/css/employeeDashboard.css}">-->
     <style>
         body {
@@ -183,6 +184,190 @@
             border-radius: 50%;
             object-fit: cover;
         }
+
+        /* Schedule Planning Styles */
+        .schedule-container {
+            background: #f0f8ff; /* Light blue background */
+            border-radius: 8px;
+            overflow: hidden;
+            padding: 8px;
+            border: 2px solid #2c5aa0;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .schedule-header {
+            background: #e0efff;
+            border-bottom: 2px solid #c0d4e5;
+            margin-bottom: 10px !important;
+        }
+
+        .employee-sidebar {
+            background: #f8f9fa !important;
+            border-right: 1px solid #dee2e6;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .employee-item {
+            transition: all 0.2s ease;
+            border: 1px solid #dee2e6 !important;
+        }
+
+        .employee-item:hover {
+            border-color: #007bff !important;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .employee-avatar {
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .position-color {
+            display: inline-block;
+            border-radius: 2px;
+        }
+
+        .schedule-calendar {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .calendar-header {
+            border-bottom: 2px solid #dee2e6;
+            background-color: #e9efff;
+        }
+
+        .day-header {
+            font-weight: 600;
+            color: #2c5aa0;
+        }
+
+        .employee-row {
+            background-color: #ffffff;
+            border-bottom: 2px solid #dee2e6 !important;
+        }
+        
+        .employee-row:hover {
+            background-color: #e6f2ff;
+        }
+
+        .day-cell {
+            transition: background-color 0.2s ease;
+            min-height: 80px;
+            background-color: #ffffff !important;
+            border: 2px solid #c0d4e5 !important;
+            margin: 2px;
+            border-radius: 4px;
+        }
+
+        .day-cell:hover {
+            background-color: #e6f2ff !important;
+        }
+
+        .shift-block {
+            font-size: 11px;
+            line-height: 1.2;
+            min-height: 32px;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(0,0,0,0.2);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .shift-block:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+
+        .shift-time {
+            font-size: 10px;
+            font-weight: bold;
+            opacity: 1;
+        }
+
+        .shift-type {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .btn-orange {
+            background-color: #ff6b35;
+            border-color: #ff6b35;
+        }
+
+        .btn-orange:hover {
+            background-color: #e55a2b;
+            border-color: #e55a2b;
+        }
+
+        .position-filters .form-check-input:checked {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        /* Drag and drop styles */
+        .day-cell.drag-over {
+            background-color: #e3f2fd;
+            border: 2px dashed #2196f3;
+        }
+
+        .shift-block[draggable="true"] {
+            cursor: move;
+        }
+
+        .shift-block.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+        
+        /* Table-based schedule styles */
+        .schedule-table {
+            table-layout: fixed;
+            border-collapse: separate;
+            border-spacing: 2px;
+            width: 100%;
+        }
+        
+        .schedule-table th {
+            text-align: center;
+            padding: 10px;
+            background-color: #2c5aa0;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .employee-cell {
+            background-color: #f0f5ff;
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            border-right: 2px solid #2c5aa0;
+        }
+        
+        .schedule-table td {
+            height: 80px;
+            vertical-align: top;
+            padding: 6px;
+        }
+        
+        .schedule-table-container {
+            overflow-x: auto;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .employee-cell {
+                min-width: 150px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -196,7 +381,7 @@
             <button class="nav-btn active" data-cat="booking">Room Booking</button>
             <button class="nav-btn" data-cat="leave">Leave Request</button>
             <button class="nav-btn" data-cat="schedule">Work Schedule</button>
-            <button class="nav-btn" data-cat="attendance">Time & Attendance</button>
+            <button class="nav-btn" data-cat="attendance">Planning Management</button>
             <button class="nav-btn" data-cat="reviews">Room Reviews</button>
             <button class="nav-btn" data-cat="employees">Employee Management</button>
             <button class="nav-btn" data-cat="approval">Leave Approval</button>
@@ -215,7 +400,7 @@
                            type="text">
                     <span class="fw-bold"
                           th:text="${currentUser != null ? currentUser.firstName + ' ' + currentUser.lastName : 'Admin User'}">Admin User</span>
-                    <img alt="Admin" class="user-avatar" th:src="@{/image/admin.png}">
+                    <img alt="Admin" class="user-avatar" th:src="@{/image/Employee_logo.png}">
                 </div>
             </div>
 
@@ -328,188 +513,127 @@
                 </div>
             </section>
 
-            <!-- 4) Time & Attendance -->
+            <!-- 4) Employee Planning Management -->
             <section class="main-card hidden" data-cat="attendance">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <span>Time and Attendance Management</span>
+                        <span>Employee Planning Management</span>
                         <div>
-                            <button class="btn btn-primary btn-sm" data-bs-target="#addEmployeeModal" data-bs-toggle="modal"
-                                    type="button">
-                                Add New Employee
+                            <!-- <button class="btn btn-success btn-sm" id="publishScheduleBtn">
+                                <i class="fas fa-bullhorn"></i> PUBLISH & NOTIFY ENTIRE SCHEDULE
+                            </button> -->
+                            <button class="btn btn-primary btn-sm" data-bs-target="#addShiftModal" data-bs-toggle="modal">
+                                <i class="fas fa-plus"></i> Add Shift
                             </button>
-                            <a class="btn btn-orange btn-sm" th:href="@{/employees/remove}">Remove Employee</a>
-                            <a class="btn btn-purple btn-sm" th:href="@{/export/timesheet}">Export Data</a>
+                            <!-- <button class="btn btn-orange btn-sm">
+                                <i class="fas fa-download"></i> Export Schedule
+                            </button> -->
                         </div>
                     </div>
 
-                    <!-- Attendance Calendar with Alpine.js -->
-                    <div class="card-body"
-                         x-data="{
-                            view: 'monthly',
-                            weekly: [],
-                            monthly: [],
-                            range: [],
-                            dates: [],
-                            startDate: new Date().toISOString().substring(0, 10),
-                            endDate: new Date(Date.now() + 6 * 86400000).toISOString().substring(0, 10),
-                            async load() {
-                                try {
-                                    const [w, m, r] = await Promise.all([
-                                        fetch('/api/schedules/weekly').then(r => r.json()).catch(() => []),
-                                        fetch('/api/schedules/monthly').then(r => r.json()).catch(() => []),
-                                        fetch(`/api/schedules/range?start=${this.startDate}&end=${this.endDate}`).then(r => r.json()).catch(() => [])
-                                    ]);
-                                    this.weekly = w;
-                                    this.monthly = m;
-                                    this.range = r;
-                                    const start = new Date(this.startDate);
-                                    const end = new Date(this.endDate);
-                                    this.dates = [];
-                                    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-                                        this.dates.push(new Date(d));
-                                    }
-                                } catch (error) {
-                                    console.error('Error loading schedule data:', error);
-                                }
-                            }
-                        }"
-                         x-init="load(); setInterval(load, 60000)">
+                    <!-- Schedule Planning Interface -->
+                    <div class="schedule-container" id="planningInterface"
+                         x-data="planningData()"
+                         x-init="loadEmployees(); loadSchedule()">
 
-                        <!-- Schedule View Selector -->
-                        <div class="mb-3">
-                            <label class="form-label fw-bold" for="scheduleType">Select schedule view:</label>
-                            <select class="form-select w-auto" id="scheduleType" x-model="view">
-                                <option value="weekly">Weekly</option>
-                                <option value="monthly">Monthly</option>
-                                <option value="range">Date Range</option>
-                            </select>
-                        </div>
-
-                        <!-- Weekly Schedule -->
-                        <div class="schedule-table" x-show="view === 'weekly'">
-                            <div class="card">
-                                <div class="card-header">Weekly Schedule</div>
-                                <div class="card-body table-responsive">
-                                    <table class="table table-bordered text-center align-middle">
-                                        <thead>
-                                        <tr>
-                                            <th>Employee</th>
-                                            <th>Mon</th>
-                                            <th>Tue</th>
-                                            <th>Wed</th>
-                                            <th>Thu</th>
-                                            <th>Fri</th>
-                                            <th>Sat</th>
-                                            <th>Sun</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <template x-if="weekly.length === 0">
-                                            <tr>
-                                                <td class="text-center text-muted" colspan='8'>No weekly data
-                                                    available.
-                                                </td>
-                                            </tr>
-                                        </template>
-                                        <template :key="w.employeeName" x-for="w in weekly">
-                                            <tr>
-                                                <td x-text="w.employeeName"></td>
-                                                <td x-text="w.schedule['MONDAY'] || '-'">-</td>
-                                                <td x-text="w.schedule['TUESDAY'] || '-'">-</td>
-                                                <td x-text="w.schedule['WEDNESDAY'] || '-'">-</td>
-                                                <td x-text="w.schedule['THURSDAY'] || '-'">-</td>
-                                                <td x-text="w.schedule['FRIDAY'] || '-'">-</td>
-                                                <td x-text="w.schedule['SATURDAY'] || '-'">-</td>
-                                                <td x-text="w.schedule['SUNDAY'] || '-'">-</td>
-                                            </tr>
-                                        </template>
-                                        </tbody>
-                                    </table>
-                                </div>
+                        <!-- Schedule Header -->
+                        <div class="schedule-header d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded">
+                            <div class="d-flex align-items-center gap-3">
+                                <h5 class="mb-0">Schedule</h5>
+                            </div>
+                            
+                            <div class="d-flex align-items-center gap-2">
+                                <button class="btn btn-outline-secondary btn-sm" @click="previousWeek()">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <span class="fw-bold" x-text="formatWeekRange()"></span>
+                                <button class="btn btn-outline-secondary btn-sm" @click="nextWeek()">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                                <button class="btn btn-primary btn-sm" @click="goToToday()">TODAY</button>
+                                <!-- <select class="form-select form-select-sm" style="width: auto;">
+                                    <option>Week</option>
+                                </select> -->
                             </div>
                         </div>
 
-                        <!-- Monthly Schedule -->
-                        <div class="schedule-table" x-show="view === 'monthly'">
-                            <div class="card">
-                                <div class="card-header">Monthly Schedule</div>
-                                <div class="card-body table-responsive">
-                                    <table class="table table-bordered text-center align-middle">
-                                        <thead>
+                        <!-- Position Filters -->
+                        <div class="position-filters mb-3 mt-3">
+                            <div class="mb-2">
+                                <strong>SHIFT COLORS</strong>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <template x-for="(shift, key) in shifts" :key="key">
+                                    <div class="position-legend d-flex align-items-center me-3 mb-1">
+                                        <span class="position-color me-2" :style="'background-color: ' + shift.color + '; width: 12px; height: 12px; border-radius: 2px;'"></span>
+                                        <span x-text="shift.name" class="small"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                        
+                        <!-- Schedule Grid - Integrated Table Style -->
+                        <div class="schedule-grid">
+                            <div class="schedule-table-container">
+                                <table class="schedule-table" style="width: 100%; border-collapse: separate; border-spacing: 1px;">
+                                    <thead>
                                         <tr>
-                                            <th>Employee</th>
-                                            <template x-for="i in 31">
-                                                <th x-text="i">1</th>
+                                            <!-- Employee Column Header -->
+                                            <th style="width: 160px; background-color: #2c5aa0; color: white; padding: 10px; border-radius: 4px 0 0 0;">
+                                                <div class="text-center">EMPLOYEES</div>
+                                            </th>
+                                            
+                                            <!-- Days Headers -->
+                                            <template x-for="day in getWeekDays()" :key="day.getTime()">
+                                                <th style="background-color: #2c5aa0; color: white; padding: 10px; text-align: center;">
+                                                    <div class="fw-bold" x-text="formatDate(day)"></div>
+                                                </th>
                                             </template>
                                         </tr>
-                                        </thead>
-                                        <tbody>
-                                        <template x-if="monthly.length === 0">
-                                            <tr>
-                                                <td class="text-center text-muted" colspan='32'>No monthly data
-                                                    available.
+                                    </thead>
+                                    <tbody>
+                                        <template x-for="employee in employees.filter(e => selectedEmployees.length === 0 || selectedEmployees.includes(e.userId || e.employeeId))" :key="employee.userId || employee.employeeId">
+                                            <tr :class="isEmployeeSelected(employee.employeeId || employee.userId) ? 'bg-light' : ''" style="border-bottom: 2px solid #dee2e6;">
+                                                <!-- Employee Column -->
+                                                <td class="employee-cell" style="background-color: #f8f9fa; padding: 10px; border-right: 2px solid #dee2e6;">
+                                                    <div class="d-flex align-items-center" 
+                                                         @click="toggleEmployee(employee.employeeId || employee.userId)"
+                                                         style="cursor: pointer;">
+                                                        <div class="employee-avatar me-2 bg-secondary rounded-circle d-flex align-items-center justify-content-center" 
+                                                             style="min-width: 28px; height: 28px; font-size: 12px; color: white;">
+                                                            <span x-text="getEmployeeInitials(employee)"></span>
+                                                        </div>
+                                                        <div class="employee-details">
+                                                            <div class="employee-name fw-bold" x-text="getEmployeeName(employee)" style="font-size: 14px;"></div>
+                                                            <div class="employee-hours text-muted" style="font-size: 12px;" x-text="getEmployeeHours(employee)"></div>
+                                                        </div>
+                                                    </div>
                                                 </td>
-                                            </tr>
-                                        </template>
-                                        <template :key="m.employeeName" x-for="m in monthly">
-                                            <tr>
-                                                <td x-text="m.employeeName">Jane Doe</td>
-                                                <template x-for="i in 31">
-                                                    <td x-text="m.scheduleByDay[i] || '-'">-</td>
-                                                </template>
-                                            </tr>
-                                        </template>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Date Range Schedule -->
-                        <div class="schedule-table" x-show="view === 'range'">
-                            <div class="card">
-                                <div class="card-header">Date Range Schedule</div>
-                                <div class="card-body">
-                                    <div class="mb-3 d-flex gap-2 align-items-center">
-                                        <label class="form-label mb-0" for="startDateRange">Start:</label>
-                                        <input class="form-control" id="startDateRange" type="date" x-model="startDate">
-                                        <label class="form-label mb-0 ms-2" for="endDateRange">End:</label>
-                                        <input class="form-control" id="endDateRange" type="date" x-model="endDate">
-                                        <button @click.prevent="load()" class="btn btn-primary ms-2">Apply</button>
-                                    </div>
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered text-center align-middle">
-                                            <thead>
-                                            <tr>
-                                                <th>Employee</th>
-                                                <template x-for="d in dates">
-                                                    <th x-text="new Intl.DateTimeFormat('en-GB').format(d)"></th>
-                                                </template>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            <template x-if="range.length === 0">
-                                                <tr>
-                                                    <td :colspan="dates.length + 1" class="text-center text-muted">No
-                                                        schedule data available for selected range.
+                                                
+                                                <!-- Schedule Cells -->
+                                                <template x-for="day in getWeekDays()" :key="day.getTime()">
+                                                    <td class="day-cell position-relative" 
+                                                        style="background-color: #ffffff; padding: 8px; border: 1px solid #dee2e6; min-height: 80px; vertical-align: top;"
+                                                        @dragover.prevent 
+                                                        @drop="addShift((employee.userId || employee.employeeId), day, 'EMPLOYEE', '09:00', '17:00')"
+                                                    >
+                                                            
+                                                            <!-- Shifts for this day -->
+                                                            <template x-for="shift in getEmployeeSchedule((employee.userId || employee.employeeId), day)" :key="shift.id">
+                                                                <div class="shift-block position-relative mb-1 px-2 py-1 rounded text-white small"
+                                                                     :style="'background-color: ' + (shifts[shift.type]?.color || shifts.default.color) + '; cursor: pointer; box-shadow: 0 3px 6px rgba(0,0,0,0.4); border: 1px solid rgba(0,0,0,0.2);'"
+                                                                     @click="openEditShiftModal(shift, employee, day)"
+                                                                     draggable="true">
+                                                                    <div class="shift-time fw-bold" x-text="shift.startTime + ' - ' + shift.endTime"></div>
+                                                                    <div class="shift-type fw-bold" x-text="shift.type === 'MANAGER' ? 'Manager' : 'Employee'"></div>
+                                                                </div>
+                                                            </template>
                                                     </td>
-                                                </tr>
-                                            </template>
-                                            <template :key="r.employeeName" x-for="r in range">
-                                                <tr>
-                                                    <td x-text="r.employeeName">John</td>
-                                                    <template x-for="d in dates">
-                                                        <td x-text="r.schedule[d.toISOString().substring(0,10)] || '-'">
-                                                            -
-                                                        </td>
-                                                    </template>
-                                                </tr>
-                                            </template>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -585,7 +709,7 @@
                         <select class="form-select" id="editEmployeeId" name="id" required>
                             <option value="">Select employee to edit</option>
                             <option th:each="e : ${employees}" th:text="${e.firstName + ' ' + e.lastName}"
-                                    th:value="${e.id}"></option>
+                                    th:value="${e.userId}"></option>
                         </select>
                         <div class="row">
                             <div class="col-md-6">
@@ -610,7 +734,7 @@
                         <select class="form-select" id="deleteEmployeeId" name="id" required>
                             <option value="">Select employee to delete</option>
                             <option th:each="e : ${employees}" th:text="${e.firstName + ' ' + e.lastName}"
-                                    th:value="${e.id}"></option>
+                                    th:value="${e.userId}"></option>
                         </select>
                         <button class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this employee?')"
                                 type="submit">Delete
@@ -661,6 +785,114 @@
     </div>
 </div>
 
+<!-- Add Shift Modal -->
+<div aria-hidden="true" aria-labelledby="addShiftModalLabel" class="modal fade" id="addShiftModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addShiftModalLabel">Add New Shift</h5>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addShiftForm">
+                    <div class="mb-3">
+                        <label class="form-label" for="shiftEmployee">Employee</label>
+                        <select class="form-select" id="shiftEmployee" name="employeeId" required>
+                            <option value="">Select Employee</option>
+                            <option th:each="e : ${employees}" th:text="${e.firstName + ' ' + e.lastName}"
+                                    th:value="${e.userId}"></option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="shiftDate">Date</label>
+                        <input class="form-control" id="shiftDate" name="date" required type="date">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="shiftPosition">Position</label>
+                        <select class="form-select" id="shiftPosition" name="position" required>
+                            <option value="">Select Position</option>
+                            <option value="EMPLOYEE">Employee</option>
+                            <option value="MANAGER">Manager</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <label class="form-label" for="shiftStartTime">Start Time</label>
+                            <input class="form-control" id="shiftStartTime" name="startTime" required type="time" onchange="validateShiftTimes()">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label" for="shiftEndTime">End Time</label>
+                            <input class="form-control" id="shiftEndTime" name="endTime" required type="time" onchange="validateShiftTimes()">
+                        </div>
+                    </div>
+                    <div class="invalid-feedback" id="timeValidationMessage" style="display: none; color: red; margin-top: -10px; margin-bottom: 10px;">
+                        Start time cannot be later than end time.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+                <button class="btn btn-primary" form="addShiftForm" type="submit">Add Shift</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit/Delete Shift Modal -->
+<div aria-hidden="true" aria-labelledby="editShiftModalLabel" class="modal fade" id="editShiftModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editShiftModalLabel">Edit Shift</h5>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editShiftForm">
+                    <input type="hidden" id="editShiftId" name="id">
+                    <input type="hidden" id="editEmployeeId" name="employeeId">
+                    
+                    <div class="mb-3">
+                        <label class="form-label" for="editShiftEmployee">Employee</label>
+                        <input class="form-control" id="editShiftEmployee" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="editShiftDate">Date</label>
+                        <input class="form-control" id="editShiftDate" name="date" required type="date">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="editShiftPosition">Position</label>
+                        <select class="form-select" id="editShiftPosition" name="position" required>
+                            <option value="">Select Position</option>
+                            <option value="EMPLOYEE">Employee</option>
+                            <option value="MANAGER">Manager</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <label class="form-label" for="editShiftStartTime">Start Time</label>
+                            <input class="form-control" id="editShiftStartTime" name="startTime" required type="time" onchange="validateEditShiftTimes()">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label" for="editShiftEndTime">End Time</label>
+                            <input class="form-control" id="editShiftEndTime" name="endTime" required type="time" onchange="validateEditShiftTimes()">
+                        </div>
+                    </div>
+                    <div class="invalid-feedback" id="editTimeValidationMessage" style="display: none; color: red; margin-top: -10px; margin-bottom: 10px;">
+                        Start time cannot be later than end time.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <button class="btn btn-danger" id="deleteShiftBtn" type="button">Delete Shift</button>
+                <div>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+                    <button class="btn btn-primary" id="saveShiftChangesBtn" type="button">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Add Employee Modal -->
 <div aria-hidden="true" aria-labelledby="addEmployeeModalLabel" class="modal fade" id="addEmployeeModal" tabindex="-1">
     <div class="modal-dialog">
@@ -700,11 +932,558 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:src="@{/js/employeeDashboard.js}"></script>
 <script>
+    // Planning data for Alpine.js
+    function planningData() {
+        return {
+            employees: [],
+            currentWeek: new Date(),
+            selectedEmployees: [],
+            shifts: {
+                'EMPLOYEE': { color: '#0d6efd', name: 'Employee' },
+                'MANAGER': { color: '#198754', name: 'Manager' },
+                // Default color for any unrecognized shift type
+                'default': { color: '#6c757d', name: 'Employee' } // Default to Employee for any unknown type
+            },
+            schedule: {},
+            
+            // Helper methods to handle employee data structure
+            getEmployeeName(employee) {
+                if (employee.employeeName) {
+                    return employee.employeeName;
+                } else if (employee.firstName && employee.lastName) {
+                    return employee.firstName + ' ' + employee.lastName;
+                } else if (employee.user && employee.user.firstName && employee.user.lastName) {
+                    return employee.user.firstName + ' ' + employee.user.lastName;
+                } else {
+                    return 'Employee #' + (employee.employeeId || employee.userId || 'Unknown');
+                }
+            },
+            
+            getEmployeeInitials(employee) {
+                if (employee.firstName && employee.lastName) {
+                    return employee.firstName.charAt(0) + employee.lastName.charAt(0);
+                } else if (employee.employeeName) {
+                    const nameParts = employee.employeeName.split(' ');
+                    if (nameParts.length >= 2) {
+                        return nameParts[0].charAt(0) + nameParts[1].charAt(0);
+                    } else if (nameParts.length === 1) {
+                        return nameParts[0].charAt(0);
+                    }
+                } else if (employee.user && employee.user.firstName && employee.user.lastName) {
+                    return employee.user.firstName.charAt(0) + employee.user.lastName.charAt(0);
+                }
+                return '??';
+            },
+            
+            getEmployeeRole(employee) {
+                // Check if the employee has a user object with a role
+                if (employee.user && employee.user.role) {
+                    return employee.user.role === 'ADMIN' ? 'MANAGER' : 'EMPLOYEE';
+                }
+                
+                // If there's a role property directly on the employee
+                if (employee.role) {
+                    return employee.role === 'ADMIN' ? 'MANAGER' : 'EMPLOYEE';
+                }
+                
+                // Default to EMPLOYEE if no role information is available
+                return 'EMPLOYEE';
+            },
+            
+            getEmployeeHours(employee) {
+                // Calculate actual hours from schedule if available
+                let totalHours = 0;
+                const employeeId = employee.userId || employee.employeeId;
+                
+                if (this.schedule[employeeId]) {
+                    // Create an array of all shifts to be able to analyze them in sequence
+                    const allShifts = [];
+                    Object.entries(this.schedule[employeeId]).forEach(([date, shifts]) => {
+                        shifts.forEach(shift => {
+                            allShifts.push({...shift, date});
+                        });
+                    });
+                    
+                    // Sort shifts by date and start time
+                    allShifts.sort((a, b) => {
+                        if (a.date !== b.date) return a.date.localeCompare(b.date);
+                        return a.startTime.localeCompare(b.startTime);
+                    });
+                    
+                    // Process shifts in order
+                    for (let i = 0; i < allShifts.length; i++) {
+                        const shift = allShifts[i];
+                        const nextShift = i < allShifts.length - 1 ? allShifts[i + 1] : null;
+                        
+                        if (shift.startTime && shift.endTime) {
+                            try {
+                                // Handle special case for 24:00
+                                let endHour, endMin;
+                                if (shift.endTime === '24:00') {
+                                    endHour = 24;
+                                    endMin = 0;
+                                } else {
+                                    const endParts = shift.endTime.split(':');
+                                    endHour = parseInt(endParts[0]);
+                                    endMin = parseInt(endParts[1]);
+                                }
+                                
+                                const startParts = shift.startTime.split(':');
+                                const startHour = parseInt(startParts[0]);
+                                const startMin = parseInt(startParts[1]);
+                                
+                                // Calculate duration in hours
+                                let hours = endHour - startHour;
+                                let mins = endMin - startMin;
+                                
+                                if (mins < 0) {
+                                    hours--;
+                                    mins += 60;
+                                }
+                                
+                                // Check for consecutive overnight shifts (ending at 24:00/00:00)
+                                if (nextShift && shift.endTime === '24:00' && nextShift.startTime === '00:00') {
+                                    // Don't double count the midnight minute
+                                    totalHours += hours + (mins / 60) - (1/60);
+                                } else {
+                                    // Normal calculation
+                                    totalHours += hours + (mins / 60);
+                                }
+                            } catch (e) {
+                                console.error('Error calculating hours for shift:', e);
+                            }
+                        }
+                    }
+                }
+                
+                // If no hours calculated or weeklyHours property exists, use that
+                if (totalHours === 0 && employee.weeklyHours) {
+                    totalHours = employee.weeklyHours;
+                }
+                
+                // Round to 1 decimal place
+                totalHours = Math.round(totalHours * 10) / 10;
+                
+                return totalHours + ' h/35 h';
+            },
+            
+            async loadEmployees() {
+                try {
+                    const response = await fetch('/api/planning/employees', {
+                        headers: {
+                            'Authorization': 'Bearer ' + localStorage.getItem('jwtToken')
+                        }
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log('Employee data from API:', data);
+                        
+                        // Process employee data to ensure consistent structure
+                        this.employees = data.map(employee => {
+                            // Add logic to identify manager roles correctly
+                            if (employee.user && employee.user.role) {
+                                // Keep the original role but make sure it's properly normalized for display
+                                if (employee.user.role === 'ADMIN' || employee.user.role === 'MANAGER') {
+                                    employee.displayRole = 'MANAGER';
+                                } else {
+                                    employee.displayRole = 'EMPLOYEE';
+                                }
+                            } else {
+                                employee.displayRole = 'EMPLOYEE';
+                            }
+                            return employee;
+                        });
+                        
+                        // Update modal dropdowns after loading employees
+                        this.populateShiftModalEmployees();
+                    }
+                } catch (error) {
+                    console.error('Error loading employees:', error);
+                }
+            },
+            populateShiftModalEmployees() {
+                const shiftEmployeeSelect = document.getElementById('shiftEmployee');
+                if (shiftEmployeeSelect && this.employees) {
+                    // Clear existing options except the first "Select Employee"
+                    shiftEmployeeSelect.innerHTML = '<option value="">Select Employee</option>';
+                    
+                    // Add employees to dropdown
+                    this.employees.forEach(employee => {
+                        const option = document.createElement('option');
+                        option.value = employee.employeeId;
+                        option.textContent = employee.employeeName;
+                        shiftEmployeeSelect.appendChild(option);
+                    });
+                }
+            },
+            async loadSchedule() {
+                try {
+                    const weekStart = this.getWeekStart(this.currentWeek);
+                    const startDateStr = weekStart.toISOString().split('T')[0];
+                    
+                    const response = await fetch('/api/planning/week?start=' + startDateStr, {
+                        headers: {
+                            'Authorization': 'Bearer ' + localStorage.getItem('jwtToken')
+                        }
+                    });
+                    if (response.ok) {
+                        // Clear the schedule before loading new data
+                        this.schedule = {};
+                        
+                        // Get the raw schedule data from the backend
+                        const rawSchedule = await response.json();
+                        
+                        // Process the schedule data for our frontend structure
+                        // The backend returns: Map<Long, Map<String, List<Map<String, Object>>>>
+                        // Where Long is the employee ID, String is the date, and List contains the shifts
+                        Object.entries(rawSchedule).forEach(([employeeId, employeeDates]) => {
+                            this.schedule[employeeId] = {};
+                            Object.entries(employeeDates).forEach(([dateStr, shifts]) => {
+                                // Normalize shift types to only EMPLOYEE or MANAGER
+                                const normalizedShifts = shifts.map(shift => {
+                                    // Create a copy of the shift
+                                    const normalizedShift = {...shift};
+                                    
+                                    // Normalize the shift type - strictly enforce only EMPLOYEE or MANAGER
+                                    normalizedShift.type = normalizedShift.type === 'MANAGER' ? 'MANAGER' : 'EMPLOYEE';
+                                    
+                                    return normalizedShift;
+                                });
+                                
+                                this.schedule[employeeId][dateStr] = normalizedShifts;
+                            });
+                        });
+                    } else {
+                        console.error('Failed to load schedule:', response.status, response.statusText);
+                    }
+                } catch (error) {
+                    console.error('Error loading schedule:', error);
+                }
+            },
+            getWeekStart(date) {
+                const d = new Date(date);
+                const day = d.getDay();
+                const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+                return new Date(d.setDate(diff));
+            },
+            getWeekDays() {
+                const weekStart = this.getWeekStart(this.currentWeek);
+                const days = [];
+                for (let i = 0; i < 7; i++) {
+                    const day = new Date(weekStart);
+                    day.setDate(weekStart.getDate() + i);
+                    days.push(day);
+                }
+                return days;
+            },
+            formatDate(date) {
+                return date.toLocaleDateString('en-US', { 
+                    weekday: 'short', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+            },
+            formatWeekRange() {
+                const days = this.getWeekDays();
+                const start = days[0];
+                const end = days[6];
+                return start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' – ' + end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            },
+            previousWeek() {
+                // Create a new Date object to ensure reactivity in Alpine.js
+                const newDate = new Date(this.currentWeek);
+                newDate.setDate(newDate.getDate() - 7);
+                this.currentWeek = newDate;
+                this.loadSchedule();
+            },
+            nextWeek() {
+                // Create a new Date object to ensure reactivity in Alpine.js
+                const newDate = new Date(this.currentWeek);
+                newDate.setDate(newDate.getDate() + 7);
+                this.currentWeek = newDate;
+                this.loadSchedule();
+            },
+            goToToday() {
+                // Set currentWeek to today to ensure proper week calculation
+                this.currentWeek = new Date();
+                this.loadSchedule();
+            },
+            toggleEmployee(employeeId) {
+                const index = this.selectedEmployees.indexOf(employeeId);
+                if (index > -1) {
+                    this.selectedEmployees.splice(index, 1);
+                } else {
+                    this.selectedEmployees.push(employeeId);
+                }
+            },
+            isEmployeeSelected(employeeId) {
+                return this.selectedEmployees.includes(employeeId);
+            },
+            getEmployeeSchedule(employeeId, date) {
+                const dateStr = date.toISOString().split('T')[0];
+                if (this.schedule[employeeId] && this.schedule[employeeId][dateStr]) {
+                    return this.schedule[employeeId][dateStr];
+                }
+                return [];
+            },
+            addShift(employeeId, date, shiftType, startTime, endTime) {
+                // Normalize shift type to ensure we only have EMPLOYEE or MANAGER
+                let normalizedShiftType = 'EMPLOYEE'; // Default to EMPLOYEE
+                
+                if (shiftType === 'MANAGER') {
+                    normalizedShiftType = 'MANAGER';
+                }
+                
+                // Check if the employee has a user role and set shift type accordingly
+                const employee = this.employees.find(e => (e.userId == employeeId || e.employeeId == employeeId));
+                if (employee) {
+                    // If the employee has a user role of ADMIN or MANAGER, set them as MANAGER type
+                    if (employee.user && (employee.user.role === 'ADMIN' || employee.user.role === 'MANAGER')) {
+                        normalizedShiftType = 'MANAGER';
+                    } else {
+                        normalizedShiftType = 'EMPLOYEE';
+                    }
+                }
+                
+                const dateStr = date.toISOString().split('T')[0];
+                if (!this.schedule[employeeId]) {
+                    this.schedule[employeeId] = {};
+                }
+                if (!this.schedule[employeeId][dateStr]) {
+                    this.schedule[employeeId][dateStr] = [];
+                }
+                this.schedule[employeeId][dateStr].push({
+                    type: normalizedShiftType,
+                    startTime: startTime,
+                    endTime: endTime,
+                    id: Date.now()
+                });
+            },
+            
+            // Method to open the edit shift modal
+            openEditShiftModal(shift, employee, date) {
+                // Get the modal elements
+                const modal = document.getElementById('editShiftModal');
+                const editShiftId = document.getElementById('editShiftId');
+                const editEmployeeId = document.getElementById('editEmployeeId');
+                const editShiftEmployee = document.getElementById('editShiftEmployee');
+                const editShiftDate = document.getElementById('editShiftDate');
+                const editShiftPosition = document.getElementById('editShiftPosition');
+                const editShiftStartTime = document.getElementById('editShiftStartTime');
+                const editShiftEndTime = document.getElementById('editShiftEndTime');
+                
+                // Set the values in the form
+                editShiftId.value = shift.id;
+                editEmployeeId.value = employee.userId || employee.employeeId;
+                editShiftEmployee.value = this.getEmployeeName(employee);
+                editShiftDate.value = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+                editShiftPosition.value = shift.type || 'EMPLOYEE';
+                editShiftStartTime.value = shift.startTime;
+                editShiftEndTime.value = shift.endTime;
+                
+                // Setup event handlers for the buttons
+                const deleteShiftBtn = document.getElementById('deleteShiftBtn');
+                const saveShiftChangesBtn = document.getElementById('saveShiftChangesBtn');
+                
+                deleteShiftBtn.onclick = () => this.deleteShift(shift.id, employee.userId || employee.employeeId, date);
+                saveShiftChangesBtn.onclick = () => this.updateShift();
+                
+                // Show the modal
+                const bsModal = new bootstrap.Modal(modal);
+                bsModal.show();
+            },
+            
+            // Method to delete a shift
+            async deleteShift(shiftId, employeeId, date) {
+                if (confirm('Are you sure you want to delete this shift?')) {
+                    try {
+                        const dateStr = date instanceof Date ? date.toISOString().split('T')[0] : date;
+                        const response = await fetch(`/api/planning/shifts/${employeeId}/${dateStr}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': 'Bearer ' + localStorage.getItem('jwtToken')
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            // Close the modal
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('editShiftModal'));
+                            modal.hide();
+                            
+                            // Clear the local schedule data
+                            if (this.schedule[employeeId]) {
+                                const dateStr = date instanceof Date ? date.toISOString().split('T')[0] : date;
+                                if (this.schedule[employeeId][dateStr]) {
+                                    delete this.schedule[employeeId][dateStr];
+                                }
+                            }
+                            
+                            // Reload the schedule to ensure everything is in sync
+                            await this.loadSchedule();
+                            
+                            alert('Shift deleted successfully!');
+                        } else {
+                            alert('Error deleting shift. Please try again.');
+                        }
+                    } catch (error) {
+                        console.error('Error deleting shift:', error);
+                        alert('Error deleting shift. Please try again.');
+                    }
+                }
+            },
+            
+            // Method to update a shift
+            async updateShift() {
+                const form = document.getElementById('editShiftForm');
+                const formData = new FormData(form);
+                
+                // Validate times
+                if (!validateEditShiftTimes()) {
+                    return; // Stop if validation fails
+                }
+                
+                const shiftId = formData.get('id');
+                let employeeId = formData.get('employeeId');
+                const date = formData.get('date');
+                const position = formData.get('position');
+                const startTime = formData.get('startTime');
+                const endTime = formData.get('endTime');
+                
+                // Ensure employeeId is a valid value and not empty
+                if (!employeeId || employeeId === '') {
+                    // Try to get from hidden field in the edit modal
+                    const employeeIdHidden = document.querySelector('#editShiftModal input[name="employeeId"]');
+                    if (employeeIdHidden && employeeIdHidden.value) {
+                        employeeId = employeeIdHidden.value;
+                        console.log('Retrieved employeeId from hidden field:', employeeId);
+                    } else {
+                        alert('Error: Employee ID is missing');
+                        console.error('Employee ID is missing in the form data');
+                        return;
+                    }
+                }
+                
+                // Calculate weekday (1-7, where 1=Monday, 7=Sunday)
+                // Parse date as local date to avoid timezone issues
+                const dateParts = date.split('-');
+                const dateObj = new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
+                let weekday = dateObj.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+                weekday = weekday === 0 ? 7 : weekday; // Convert to 1-7 format (1=Monday, 7=Sunday)
+                
+                const shiftData = {
+                    id: shiftId,
+                    employeeId: parseInt(employeeId),
+                    date: date,
+                    weekday: weekday,
+                    position: position,
+                    startTime: startTime,
+                    endTime: endTime
+                };
+                
+                try {
+                    // Final check to ensure we have a valid employeeId
+                    if (!employeeId) {
+                        alert('Error: Employee ID is missing. Cannot update shift.');
+                        return;
+                    }
+                    
+                    const apiUrl = `/api/planning/shifts/${employeeId}/${date}`;
+                    console.log('Updating shift with URL:', apiUrl, 'and data:', shiftData);
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + localStorage.getItem('jwtToken')
+                        },
+                        body: JSON.stringify(shiftData)
+                    });
+                    
+                    if (response.ok) {
+                        // Close the modal
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('editShiftModal'));
+                        modal.hide();
+                        
+                        // Reload the schedule to ensure everything is in sync
+                        this.loadSchedule();
+                        
+                        alert('Shift updated successfully!');
+                    } else {
+                        alert('Error updating shift. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Error updating shift:', error);
+                    alert('Error updating shift. Please try again.');
+                }
+            }
+        };
+    }
+
     // Navigation functionality
     document.addEventListener('DOMContentLoaded', function() {
         const navButtons = document.querySelectorAll('.nav-btn[data-cat]');
         const sections = document.querySelectorAll('.main-card[data-cat]');
 
+        // Time validation function for shift creation
+        window.validateShiftTimes = function() {
+            const startTimeInput = document.getElementById('shiftStartTime');
+            const endTimeInput = document.getElementById('shiftEndTime');
+            const validationMessage = document.getElementById('timeValidationMessage');
+            const submitButton = document.querySelector('#addShiftForm + .modal-footer .btn-primary');
+            
+            // Only validate if both fields have values
+            if (startTimeInput.value && endTimeInput.value) {
+                if (startTimeInput.value >= endTimeInput.value) {
+                    validationMessage.style.display = 'block';
+                    startTimeInput.setCustomValidity('Start time must be earlier than end time');
+                    endTimeInput.setCustomValidity('End time must be later than start time');
+                    if (submitButton) {
+                        submitButton.disabled = true;
+                    }
+                    return false;
+                } else {
+                    validationMessage.style.display = 'none';
+                    startTimeInput.setCustomValidity('');
+                    endTimeInput.setCustomValidity('');
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                    }
+                    return true;
+                }
+            }
+            return true;
+        };
+        
+        // Time validation function for edit shift modal
+        window.validateEditShiftTimes = function() {
+            const startTimeInput = document.getElementById('editShiftStartTime');
+            const endTimeInput = document.getElementById('editShiftEndTime');
+            const validationMessage = document.getElementById('editTimeValidationMessage');
+            const saveButton = document.getElementById('saveShiftChangesBtn');
+            
+            // Only validate if both fields have values
+            if (startTimeInput.value && endTimeInput.value) {
+                if (startTimeInput.value >= endTimeInput.value) {
+                    validationMessage.style.display = 'block';
+                    startTimeInput.setCustomValidity('Start time must be earlier than end time');
+                    endTimeInput.setCustomValidity('End time must be later than start time');
+                    if (saveButton) {
+                        saveButton.disabled = true;
+                    }
+                    return false;
+                } else {
+                    validationMessage.style.display = 'none';
+                    startTimeInput.setCustomValidity('');
+                    endTimeInput.setCustomValidity('');
+                    if (saveButton) {
+                        saveButton.disabled = false;
+                    }
+                    return true;
+                }
+            }
+            return true;
+        };
+        
         // Navigation handler
         navButtons.forEach(button => {
             button.addEventListener('click', function() {
@@ -731,71 +1510,96 @@
 
         if (emailPrefix && emailHidden) {
             emailPrefix.addEventListener('input', function() {
-                emailHidden.value = this.value + '@olh.fr';
+                emailHidden.value = emailPrefix.value + '@olh.fr';
             });
         }
 
-        // Add Employee Modal Form Handler
-        const addEmployeeForm = document.getElementById('addEmployeeForm');
-        if (addEmployeeForm) {
-            addEmployeeForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-
-                const formData = new FormData(this);
-                const body = {
-                    firstName: formData.get('firstName'),
-                    lastName: formData.get('lastName'),
-                    email: formData.get('email'),
-                    password: formData.get('password')
-                };
-
-                try {
-                    const response = await fetch('/api/v1/employees', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(body)
-                    });
-
-                    if (response.ok) {
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('addEmployeeModal'));
-                        modal.hide();
-                        location.reload();
-                    } else {
-                        const errorText = await response.text();
-                        alert('Error creating employee: ' + errorText);
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Network error occurred. Please try again.');
-                }
+        // Validate edit shift times when the modal is shown
+        const editShiftModal = document.getElementById('editShiftModal');
+        if (editShiftModal) {
+            editShiftModal.addEventListener('shown.bs.modal', function() {
+                validateEditShiftTimes();
             });
         }
-
-        // Form validation
-        const forms = document.querySelectorAll('form');
-        forms.forEach(form => {
-            form.addEventListener('submit', function(e) {
-                const requiredFields = form.querySelectorAll('[required]');
-                let isValid = true;
-
-                requiredFields.forEach(field => {
-                    if (!field.value.trim()) {
-                        field.classList.add('is-invalid');
-                        isValid = false;
-                    } else {
-                        field.classList.remove('is-invalid');
-                    }
-                });
-
-                if (!isValid) {
-                    e.preventDefault();
-                    alert('Please fill in all required fields.');
-                }
-            });
-        });
     });
+
+    function validateShiftTimes() {
+        const startTimeInput = document.getElementById('shiftStartTime');
+        const endTimeInput = document.getElementById('shiftEndTime');
+        const messageDiv = document.getElementById('timeValidationMessage');
+
+        const startTime = startTimeInput.value;
+        const endTime = endTimeInput.value;
+
+        if (startTime && endTime) {
+            // Special case for 24:00 which is valid as an end time
+            if (endTime === '24:00') {
+                // Valid time range (24:00 is valid as end time)
+                messageDiv.style.display = 'none';
+                endTimeInput.classList.remove('is-invalid');
+                return;
+            }
+
+            const [startHours, startMinutes] = startTime.split(':').map(Number);
+            const [endHours, endMinutes] = endTime.split(':').map(Number);
+
+            // Convert times to minutes since start of day
+            const startTotalMinutes = startHours * 60 + startMinutes;
+            const endTotalMinutes = endHours * 60 + endMinutes;
+
+            if (startTotalMinutes >= endTotalMinutes) {
+                // Invalid time range
+                messageDiv.style.display = 'block';
+                endTimeInput.classList.add('is-invalid');
+            } else {
+                // Valid time range
+                messageDiv.style.display = 'none';
+                endTimeInput.classList.remove('is-invalid');
+            }
+        } else {
+            // If either field is empty, hide the message
+            messageDiv.style.display = 'none';
+        }
+    }
+
+    function validateEditShiftTimes() {
+        const startTimeInput = document.getElementById('editShiftStartTime');
+        const endTimeInput = document.getElementById('editShiftEndTime');
+        const messageDiv = document.getElementById('editTimeValidationMessage');
+
+        const startTime = startTimeInput.value;
+        const endTime = endTimeInput.value;
+
+        if (startTime && endTime) {
+            // Special case for 24:00 which is valid as an end time
+            if (endTime === '24:00') {
+                // Valid time range (24:00 is valid as end time)
+                messageDiv.style.display = 'none';
+                endTimeInput.classList.remove('is-invalid');
+                return;
+            }
+
+            const [startHours, startMinutes] = startTime.split(':').map(Number);
+            const [endHours, endMinutes] = endTime.split(':').map(Number);
+
+            // Convert times to minutes since start of day
+            const startTotalMinutes = startHours * 60 + startMinutes;
+            const endTotalMinutes = endHours * 60 + endMinutes;
+
+            if (startTotalMinutes >= endTotalMinutes) {
+                // Invalid time range
+                messageDiv.style.display = 'block';
+                endTimeInput.classList.add('is-invalid');
+            } else {
+                // Valid time range
+                messageDiv.style.display = 'none';
+                endTimeInput.classList.remove('is-invalid');
+            }
+        } else {
+            // If either field is empty, hide the message
+            messageDiv.style.display = 'none';
+        }
+    }
 </script>
 </body>
 </html>

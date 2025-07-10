@@ -6,14 +6,17 @@ server:
     include-binding-errors: always
 
 spring:
+#   datasource:
+#     url: ${DB_URL}
+#     username: ${DB_USERNAME}
+#     password: ${DB_PASSWORD}
+#     driver-class-name: org.postgresql.Driver
   datasource:
-    url: jdbc:postgresql://100.127.131.70:5432/overlookhoteldb
-    username: dev
-    password: _GB7rG-@*d649Pab
-    #     url: jdbc:postgresql://localhost:5432/postgres
-    #     username: postgres
-    #     password: Admin123
-    driver-class-name: org.postgresql.Driver
+     url: jdbc:postgresql://localhost:5432/postgres
+     username: postgres
+     password: Admin123
+     driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
       ddl-auto: update

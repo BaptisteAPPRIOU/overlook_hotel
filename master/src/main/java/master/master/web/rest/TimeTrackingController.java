@@ -1,13 +1,21 @@
 package master.master.web.rest;
 
-import master.master.service.TimeTrackingService;
-import master.master.web.rest.dto.TimeTrackingDto;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import master.master.service.TimeTrackingService;
+import master.master.web.rest.dto.TimeTrackingDto;
 
 /**
  * REST controller for time tracking functionality.
@@ -30,7 +38,7 @@ public class TimeTrackingController {
      */
     @PostMapping("/employees/{employeeId}/clock-in")
     public ResponseEntity<TimeTrackingDto> clockIn(@PathVariable Long employeeId,
-                                                   @RequestParam(required = false) LocalDate date) {
+                                                  @RequestParam(required = false) LocalDate date) {
         try {
             LocalDate workDate = date != null ? date : LocalDate.now();
             TimeTrackingDto tracking = timeTrackingService.clockIn(employeeId, workDate, LocalTime.now());
@@ -46,7 +54,7 @@ public class TimeTrackingController {
      */
     @PostMapping("/employees/{employeeId}/clock-out")
     public ResponseEntity<TimeTrackingDto> clockOut(@PathVariable Long employeeId,
-                                                    @RequestParam(required = false) LocalDate date) {
+                                                   @RequestParam(required = false) LocalDate date) {
         try {
             LocalDate workDate = date != null ? date : LocalDate.now();
             TimeTrackingDto tracking = timeTrackingService.clockOut(employeeId, workDate, LocalTime.now());
@@ -62,7 +70,7 @@ public class TimeTrackingController {
      */
     @GetMapping("/employees/{employeeId}")
     public ResponseEntity<TimeTrackingDto> getEmployeeTimeTracking(@PathVariable Long employeeId,
-                                                                   @RequestParam(required = false) LocalDate date) {
+                                                                  @RequestParam(required = false) LocalDate date) {
         try {
             LocalDate workDate = date != null ? date : LocalDate.now();
             TimeTrackingDto tracking = timeTrackingService.getTimeTracking(employeeId, workDate);
@@ -93,8 +101,8 @@ public class TimeTrackingController {
      */
     @GetMapping("/employees/{employeeId}/range")
     public ResponseEntity<List<TimeTrackingDto>> getEmployeeTimeTrackingRange(@PathVariable Long employeeId,
-                                                                              @RequestParam LocalDate startDate,
-                                                                              @RequestParam LocalDate endDate) {
+                                                                             @RequestParam LocalDate startDate,
+                                                                             @RequestParam LocalDate endDate) {
         try {
             List<TimeTrackingDto> trackings = timeTrackingService.getTimeTrackingRange(employeeId, startDate, endDate);
             return ResponseEntity.ok(trackings);
@@ -109,8 +117,8 @@ public class TimeTrackingController {
      */
     @PutMapping("/employees/{employeeId}/break")
     public ResponseEntity<TimeTrackingDto> updateBreakDuration(@PathVariable Long employeeId,
-                                                               @RequestParam LocalDate date,
-                                                               @RequestParam Integer breakMinutes) {
+                                                              @RequestParam LocalDate date,
+                                                              @RequestParam Integer breakMinutes) {
         try {
             TimeTrackingDto tracking = timeTrackingService.updateBreakDuration(employeeId, date, breakMinutes);
             return ResponseEntity.ok(tracking);

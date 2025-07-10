@@ -1,7 +1,5 @@
 package master.master.config;
 
-import master.master.filter.JwtAuthenticationFilter;
-import master.master.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,6 +11,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import master.master.filter.JwtAuthenticationFilter;
+import master.master.service.CustomUserDetailsService;
 
 @Configuration
 @EnableWebSecurity
@@ -37,6 +38,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/login", "/api/v1/register", "/error").permitAll()
                         .requestMatchers("/", "/clientLogin", "/employeeLogin", "/register", "/employeeDashboard", "/roomManagement").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/image/**").permitAll()
+
+                        // Employee endpoints - Temporarily allow all for debugging
+                        .requestMatchers("/api/v1/employees/**").permitAll()
+                        .requestMatchers("/employees/**").permitAll()
 
                         .requestMatchers("/api/v1/clients/**")
                         .hasAnyAuthority("CLIENT", "ADMIN")

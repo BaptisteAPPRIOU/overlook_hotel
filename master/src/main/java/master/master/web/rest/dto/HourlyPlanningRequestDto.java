@@ -1,8 +1,8 @@
 package master.master.web.rest.dto;
 
-import lombok.Data;
-
 import java.util.List;
+
+import lombok.Data;
 
 /**
  * DTO for creating or updating hourly planning for an employee.
@@ -15,7 +15,7 @@ public class HourlyPlanningRequestDto {
     private String contractType; // FULL_TIME, PART_TIME
     private String status; // ACTIVE, INACTIVE
     private List<WorkDayDto> workDays;
-
+    
     @Data
     public static class WorkDayDto {
         private String dayName; // Monday, Tuesday, etc.

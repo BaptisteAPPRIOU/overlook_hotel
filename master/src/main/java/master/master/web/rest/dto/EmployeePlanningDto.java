@@ -1,10 +1,10 @@
 package master.master.web.rest.dto;
 
-import lombok.Builder;
-import lombok.Data;
-
 import java.time.LocalTime;
 import java.util.List;
+
+import lombok.Builder;
+import lombok.Data;
 
 /**
  * DTO for managing employee planning/schedule configuration.
@@ -19,7 +19,7 @@ public class EmployeePlanningDto {
     private Double weeklyHours; // Total weekly hours (default: 35)
     private String contractType; // FULL_TIME, PART_TIME, FLEXIBLE
     private String status; // ACTIVE, INACTIVE, SUSPENDED
-
+    
     @Data
     @Builder
     public static class WorkDayPlanningDto {

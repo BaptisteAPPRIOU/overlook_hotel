@@ -1,14 +1,6 @@
 package master.master.service;
 
-import master.master.domain.Employee;
-import master.master.domain.EmployeeWorkday;
-import master.master.domain.WorkdayId;
-import master.master.repository.EmployeeRepository;
-import master.master.repository.EmployeeWorkdayRepository;
-import master.master.web.rest.dto.TimeTrackingDto;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
+import static org.springframework.http.HttpStatus.*;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -17,7 +9,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.springframework.http.HttpStatus.NOT_FOUND;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+import master.master.domain.Employee;
+import master.master.domain.EmployeeWorkday;
+import master.master.domain.WorkdayId;
+import master.master.repository.EmployeeRepository;
+import master.master.repository.EmployeeWorkdayRepository;
+import master.master.web.rest.dto.TimeTrackingDto;
 
 /**
  * Service for managing employee time tracking (clock-in/clock-out).
@@ -41,12 +42,12 @@ public class TimeTrackingService {
      */
     public TimeTrackingDto clockIn(Long employeeId, LocalDate workDate, LocalTime clockInTime) {
         Employee employee = getEmployeeById(employeeId);
-
+        
         // Find or create workday record
         EmployeeWorkday workday = findOrCreateWorkday(employeeId, workDate);
         workday.setClockIn(clockInTime);
         workdayRepository.save(workday);
-
+        
         return buildTimeTrackingDto(employee, workday, workDate);
     }
 
@@ -55,12 +56,12 @@ public class TimeTrackingService {
      */
     public TimeTrackingDto clockOut(Long employeeId, LocalDate workDate, LocalTime clockOutTime) {
         Employee employee = getEmployeeById(employeeId);
-
+        
         // Find or create workday record
         EmployeeWorkday workday = findOrCreateWorkday(employeeId, workDate);
         workday.setClockOut(clockOutTime);
         workdayRepository.save(workday);
-
+        
         return buildTimeTrackingDto(employee, workday, workDate);
     }
 
@@ -70,7 +71,7 @@ public class TimeTrackingService {
     public TimeTrackingDto getTimeTracking(Long employeeId, LocalDate workDate) {
         Employee employee = getEmployeeById(employeeId);
         EmployeeWorkday workday = findOrCreateWorkday(employeeId, workDate);
-
+        
         return buildTimeTrackingDto(employee, workday, workDate);
     }
 
@@ -93,14 +94,14 @@ public class TimeTrackingService {
     public List<TimeTrackingDto> getTimeTrackingRange(Long employeeId, LocalDate startDate, LocalDate endDate) {
         Employee employee = getEmployeeById(employeeId);
         List<TimeTrackingDto> trackings = new ArrayList<>();
-
+        
         LocalDate currentDate = startDate;
         while (!currentDate.isAfter(endDate)) {
             EmployeeWorkday workday = findOrCreateWorkday(employeeId, currentDate);
             trackings.add(buildTimeTrackingDto(employee, workday, currentDate));
             currentDate = currentDate.plusDays(1);
         }
-
+        
         return trackings;
     }
 
@@ -110,12 +111,12 @@ public class TimeTrackingService {
     public TimeTrackingDto updateBreakDuration(Long employeeId, LocalDate workDate, Integer breakMinutes) {
         Employee employee = getEmployeeById(employeeId);
         EmployeeWorkday workday = findOrCreateWorkday(employeeId, workDate);
-
+        
         if (breakMinutes != null && breakMinutes >= 0) {
             workday.setIdleTime(Duration.ofMinutes(breakMinutes));
             workdayRepository.save(workday);
         }
-
+        
         return buildTimeTrackingDto(employee, workday, workDate);
     }
 
@@ -138,7 +139,7 @@ public class TimeTrackingService {
     private EmployeeWorkday findOrCreateWorkday(Long employeeId, LocalDate workDate) {
         int weekday = workDate.getDayOfWeek().getValue(); // 1=Monday, 7=Sunday
         WorkdayId workdayId = new WorkdayId(employeeId, weekday, workDate);
-
+        
         return workdayRepository.findById(workdayId)
                 .orElseGet(() -> {
                     EmployeeWorkday newWorkday = new EmployeeWorkday();
@@ -150,7 +151,7 @@ public class TimeTrackingService {
 
     private TimeTrackingDto buildTimeTrackingDto(Employee employee, EmployeeWorkday workday, LocalDate workDate) {
         String status = determineStatus(workday);
-
+        
         return TimeTrackingDto.builder()
                 .employeeId(employee.getUserId())
                 .employeeName(employee.getFullName())
@@ -162,8 +163,8 @@ public class TimeTrackingService {
                 .actualClockIn(workday.getClockIn())
                 .actualClockOut(workday.getClockOut())
                 .actualHours(workday.getActualHours())
-                .breakDurationMinutes(workday.getIdleTime() != null ?
-                        (int) workday.getIdleTime().toMinutes() : null)
+                .breakDurationMinutes(workday.getIdleTime() != null ? 
+                    (int) workday.getIdleTime().toMinutes() : null)
                 .status(status)
                 .isLate(workday.isLate())
                 .isEarlyLeave(workday.isEarlyLeave())

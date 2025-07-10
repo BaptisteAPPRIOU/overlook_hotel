@@ -1,9 +1,9 @@
 package master.master.web.rest.dto;
 
+import java.time.LocalTime;
+
 import lombok.Builder;
 import lombok.Data;
-
-import java.time.LocalTime;
 
 /**
  * DTO for creating or updating an employee's planning.
@@ -20,12 +20,12 @@ public class CreatePlanningRequestDto {
     private Boolean friday;
     private Boolean saturday;
     private Boolean sunday;
-
+    
     // Work hours configuration
     private LocalTime startTime; // Default start time for all working days
     private LocalTime endTime;   // Default end time for all working days
     private Integer breakDurationMinutes; // Break duration in minutes (default: 60)
-
+    
     // Optional: Custom times for specific days
     private LocalTime mondayStart;
     private LocalTime mondayEnd;
@@ -41,6 +41,6 @@ public class CreatePlanningRequestDto {
     private LocalTime saturdayEnd;
     private LocalTime sundayStart;
     private LocalTime sundayEnd;
-
+    
     private String contractType; // FULL_TIME, PART_TIME, FLEXIBLE
 }

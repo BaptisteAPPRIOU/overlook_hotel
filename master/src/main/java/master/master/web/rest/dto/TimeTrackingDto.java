@@ -1,10 +1,10 @@
 package master.master.web.rest.dto;
 
-import lombok.Builder;
-import lombok.Data;
-
 import java.time.LocalDate;
 import java.time.LocalTime;
+
+import lombok.Builder;
+import lombok.Data;
 
 /**
  * DTO for displaying time tracking information.
@@ -17,18 +17,18 @@ public class TimeTrackingDto {
     private String employeeName;
     private LocalDate workDate;
     private String dayOfWeek;
-
+    
     // Planned schedule
     private LocalTime plannedStartTime;
     private LocalTime plannedEndTime;
     private Double plannedHours;
-
+    
     // Actual time tracking
     private LocalTime actualClockIn;
     private LocalTime actualClockOut;
     private Double actualHours;
     private Integer breakDurationMinutes;
-
+    
     // Status and calculations
     private String status; // SCHEDULED, CHECKED_IN, CHECKED_OUT, ABSENT, LATE, EARLY_LEAVE
     private Boolean isLate;

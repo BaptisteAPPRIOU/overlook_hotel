@@ -1,12 +1,16 @@
 package master.master.domain;
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Entity representing the association between an Employee and a specific workday.
@@ -39,6 +43,12 @@ public class EmployeeWorkday {
     @JoinColumn(name = "employee_id")
     private Employee employee;
 
+    // Planned schedule (set by manager)
+    private LocalTime plannedStartTime;
+    private LocalTime plannedEndTime;
+    private Integer plannedBreakMinutes; // Planned break duration in minutes
+    
+    // Time tracking fields
     private LocalTime clockIn;
     private LocalTime clockOut;
     private Duration idleTime; // Optional: represents total breaks during the day
@@ -49,6 +59,76 @@ public class EmployeeWorkday {
             return idleTime != null ? totalWorked.minus(idleTime) : totalWorked;
         }
         return Duration.ZERO;
+    }
+    
+    /**
+     * Calculate planned work duration based on planned times.
+     */
+    public Duration getPlannedWorkDuration() {
+        if (plannedStartTime != null && plannedEndTime != null) {
+            Duration totalPlanned = Duration.between(plannedStartTime, plannedEndTime);
+            if (plannedBreakMinutes != null) {
+                totalPlanned = totalPlanned.minusMinutes(plannedBreakMinutes);
+            }
+            return totalPlanned;
+        }
+        return Duration.ZERO;
+    }
+    
+    /**
+     * Calculate actual work duration based on clock in/out times.
+     */
+    public Duration getActualWorkDuration() {
+        if (clockIn != null && clockOut != null) {
+            Duration totalActual = Duration.between(clockIn, clockOut);
+            return idleTime != null ? totalActual.minus(idleTime) : totalActual;
+        }
+        return Duration.ZERO;
+    }
+    
+    /**
+     * Get planned work hours as decimal.
+     */
+    public Double getPlannedHours() {
+        Duration planned = getPlannedWorkDuration();
+        return planned.toMinutes() / 60.0;
+    }
+    
+    /**
+     * Get actual work hours as decimal.
+     */
+    public Double getActualHours() {
+        Duration actual = getActualWorkDuration();
+        return actual.toMinutes() / 60.0;
+    }
+    
+    /**
+     * Check if employee is late (clocked in after planned start time).
+     */
+    public Boolean isLate() {
+        if (clockIn != null && plannedStartTime != null) {
+            return clockIn.isAfter(plannedStartTime);
+        }
+        return false;
+    }
+    
+    /**
+     * Check if employee left early (clocked out before planned end time).
+     */
+    public Boolean isEarlyLeave() {
+        if (clockOut != null && plannedEndTime != null) {
+            return clockOut.isBefore(plannedEndTime);
+        }
+        return false;
+    }
+    
+    /**
+     * Calculate overtime hours (actual hours beyond planned hours).
+     */
+    public Double getOvertimeHours() {
+        Double actual = getActualHours();
+        Double planned = getPlannedHours();
+        return Math.max(0, actual - planned);
     }
 
     public String getFormattedWorkTime() {

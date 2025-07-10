@@ -1,17 +1,29 @@
 package master.master.web.rest;
 
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import master.master.service.EmployeePlanningService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import master.master.web.rest.dto.CreatePlanningRequestDto;
 import master.master.web.rest.dto.EmployeePlanningDto;
 import master.master.web.rest.dto.HourlyPlanningRequestDto;
 import master.master.web.rest.dto.WeeklyHourlyPlanningDto;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * REST controller for managing employee planning and work schedules.
@@ -22,6 +34,7 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class EmployeePlanningController {
 
+    private static final Logger logger = LoggerFactory.getLogger(EmployeePlanningController.class);
     private final EmployeePlanningService planningService;
 
     public EmployeePlanningController(EmployeePlanningService planningService) {
@@ -104,7 +117,7 @@ public class EmployeePlanningController {
      */
     @PostMapping("/employees/{employeeId}/hourly")
     public ResponseEntity<EmployeePlanningDto> createOrUpdateHourlyPlanning(
-            @PathVariable Long employeeId,
+            @PathVariable Long employeeId, 
             @RequestBody HourlyPlanningRequestDto request) {
         try {
             // Ensure the employee ID matches
@@ -169,6 +182,113 @@ public class EmployeePlanningController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
+     * Get weekly schedule for all employees.
+     * GET /api/planning/week?start=yyyy-MM-dd
+     */
+    @GetMapping("/week")
+    public ResponseEntity<Map<Long, Map<String, List<Map<String, Object>>>>> getWeeklySchedule(@RequestParam String start) {
+        try {
+            Map<Long, Map<String, List<Map<String, Object>>>> schedule = planningService.getWeeklyScheduleForPlanning(start);
+            return ResponseEntity.ok(schedule);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * Create a new shift.
+     * POST /api/planning/shifts
+     */
+    @PostMapping("/shifts")
+    public ResponseEntity<Map<String, Object>> createShift(@RequestBody Map<String, Object> shiftData) {
+        try {
+            Map<String, Object> result = planningService.createShiftFromMap(shiftData);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Failed to create shift: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    /**
+     * Update an existing shift.
+     * POST /api/planning/shifts/{employeeId}/{date}
+     */
+    @PostMapping("/shifts/{employeeId}/{date}")
+    public ResponseEntity<Map<String, Object>> updateShift(
+            @PathVariable Long employeeId,
+            @PathVariable String date,
+            @RequestBody Map<String, Object> shiftData) {
+        try {
+            // Validate inputs
+            if (employeeId == null || employeeId <= 0) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("message", "Invalid employee ID provided");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            if (date == null || date.isEmpty()) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("message", "Invalid date provided");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            // Add the path variables to the shiftData map for service layer processing
+            shiftData.put("employeeId", employeeId);
+            shiftData.put("date", date);
+            
+            Map<String, Object> result = planningService.updateShiftFromMap(employeeId, date, shiftData);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Failed to update shift: " + e.getMessage());
+            logger.error("Error updating shift: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    /**
+     * Delete a shift.
+     * DELETE /api/planning/shifts/{employeeId}/{date}
+     */
+    @DeleteMapping("/shifts/{employeeId}/{date}")
+    public ResponseEntity<Void> deleteShift(
+            @PathVariable Long employeeId,
+            @PathVariable String date) {
+        try {
+            planningService.deleteEmployeeWorkday(employeeId, LocalDate.parse(date));
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * Publish schedule and notify employees.
+     * POST /api/planning/publish
+     */
+    @PostMapping("/publish")
+    public ResponseEntity<Map<String, Object>> publishSchedule() {
+        try {
+            boolean success = planningService.publishScheduleToEmployees();
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", success);
+            response.put("message", "Schedule published and employees notified successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Failed to publish schedule: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
         }
     }
 }
