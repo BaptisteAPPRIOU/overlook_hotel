@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -18,8 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import master.master.service.EmployeePlanningService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import master.master.web.rest.dto.CreatePlanningRequestDto;
 import master.master.web.rest.dto.EmployeePlanningDto;
 import master.master.web.rest.dto.HourlyPlanningRequestDto;
@@ -269,6 +269,29 @@ public class EmployeePlanningController {
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * Delete a specific shift by ID.
+     * DELETE /api/planning/shifts/{employeeId}/{date}/{weekday}
+     */
+    @DeleteMapping("/shifts/{employeeId}/{date}/{weekday}")
+    public ResponseEntity<Map<String, Object>> deleteSpecificShift(
+            @PathVariable Long employeeId,
+            @PathVariable String date,
+            @PathVariable Integer weekday) {
+        try {
+            planningService.deleteSpecificShift(employeeId, LocalDate.parse(date), weekday);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Shift deleted successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Failed to delete shift: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
         }
     }
 

@@ -396,8 +396,8 @@
             <div class="user-header d-flex justify-content-between align-items-center">
                 <h4 class="mb-0">Employee Dashboard</h4>
                 <div class="d-flex align-items-center gap-3">
-                    <input class="form-control form-control-sm" placeholder="Search..." style="width: 200px;"
-                           type="text">
+                    <!-- <input class="form-control form-control-sm" placeholder="Search..." style="width: 200px;"
+                           type="text"> -->
                     <span class="fw-bold"
                           th:text="${currentUser != null ? currentUser.firstName + ' ' + currentUser.lastName : 'Admin User'}">Admin User</span>
                     <img alt="Admin" class="user-avatar" th:src="@{/image/Employee_logo.png}">
@@ -534,7 +534,7 @@
                     <!-- Schedule Planning Interface -->
                     <div class="schedule-container" id="planningInterface"
                          x-data="planningData()"
-                         x-init="loadEmployees(); loadSchedule()">
+                         x-init="loadEmployees(); loadSchedule(); setupShiftModalHandlers()">
 
                         <!-- Schedule Header -->
                         <div class="schedule-header d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded">
@@ -822,7 +822,7 @@
                         </div>
                         <div class="col-6">
                             <label class="form-label" for="shiftEndTime">End Time</label>
-                            <input class="form-control" id="shiftEndTime" name="endTime" required type="time" onchange="validateShiftTimes()">
+                            <input class="form-control" id="shiftEndTime" name="endTime" required type="time" onchange="validateShiftTimes()" step="60" max="24:00">
                         </div>
                     </div>
                     <div class="invalid-feedback" id="timeValidationMessage" style="display: none; color: red; margin-top: -10px; margin-bottom: 10px;">
@@ -832,7 +832,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
-                <button class="btn btn-primary" form="addShiftForm" type="submit">Add Shift</button>
+                <button class="btn btn-primary" id="addShiftBtn" type="button">Add Shift</button>
             </div>
         </div>
     </div>
@@ -870,11 +870,14 @@
                     <div class="row">
                         <div class="col-6">
                             <label class="form-label" for="editShiftStartTime">Start Time</label>
-                            <input class="form-control" id="editShiftStartTime" name="startTime" required type="time" onchange="validateEditShiftTimes()">
+                            <input class="form-control" id="editShiftStartTime" name="startTime" required type="time" 
+                                  onchange="validateEditShiftTimes()" oninput="validateEditShiftTimes()">
                         </div>
                         <div class="col-6">
                             <label class="form-label" for="editShiftEndTime">End Time</label>
-                            <input class="form-control" id="editShiftEndTime" name="endTime" required type="time" onchange="validateEditShiftTimes()">
+                            <input class="form-control" id="editShiftEndTime" name="endTime" required type="time" 
+                                  onchange="validateEditShiftTimes()" oninput="validateEditShiftTimes()" 
+                                  step="60" max="24:00">
                         </div>
                     </div>
                     <div class="invalid-feedback" id="editTimeValidationMessage" style="display: none; color: red; margin-top: -10px; margin-bottom: 10px;">
@@ -946,6 +949,49 @@
             },
             schedule: {},
             
+            // Setup shift modal handlers
+            setupShiftModalHandlers() {
+                // Add event listener for the Add Shift button
+                const addShiftBtn = document.getElementById('addShiftBtn');
+                const addShiftForm = document.getElementById('addShiftForm');
+                
+                if (addShiftBtn && addShiftForm) {
+                    addShiftBtn.addEventListener('click', async () => {
+                        // Get form data
+                        const formData = new FormData(addShiftForm);
+                        const selectedDate = formData.get('date');
+                        const employeeId = formData.get('employeeId');
+                        const position = formData.get('position');
+                        const startTime = formData.get('startTime');
+                        const endTime = formData.get('endTime');
+                        
+                        // Basic validation
+                        if (!employeeId || !selectedDate || !position || !startTime || !endTime) {
+                            alert('Please fill in all required fields');
+                            return;
+                        }
+                        
+                        if (startTime >= endTime) {
+                            alert('Start time must be before end time');
+                            return;
+                        }
+                        
+                        // Parse date to get day of week
+                        const date = new Date(selectedDate);
+                        
+                        // Call the Alpine.js addShift method
+                        await this.addShift(employeeId, date, position, startTime, endTime);
+                        
+                        // Close the modal
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('addShiftModal'));
+                        modal.hide();
+                        addShiftForm.reset();
+                    });
+                    
+                    console.log('Shift modal handlers set up');
+                }
+            },
+            
             // Helper methods to handle employee data structure
             getEmployeeName(employee) {
                 if (employee.employeeName) {
@@ -1014,6 +1060,7 @@
                     for (let i = 0; i < allShifts.length; i++) {
                         const shift = allShifts[i];
                         const nextShift = i < allShifts.length - 1 ? allShifts[i + 1] : null;
+                        const nextDay = nextShift && this.isConsecutiveDay(shift.date, nextShift.date);
                         
                         if (shift.startTime && shift.endTime) {
                             try {
@@ -1041,16 +1088,17 @@
                                     mins += 60;
                                 }
                                 
-                                // Check for consecutive overnight shifts (ending at 24:00/00:00)
-                                if (nextShift && shift.endTime === '24:00' && nextShift.startTime === '00:00') {
-                                    // Don't double count the midnight minute
+                                // Check for consecutive overnight shifts across days
+                                if (nextShift && nextDay && shift.endTime === '24:00' && nextShift.startTime === '00:00') {
+                                    // Don't double count the midnight minute when shifts are consecutive across days
                                     totalHours += hours + (mins / 60) - (1/60);
+                                    console.log(`Consecutive overnight shifts detected: ${shift.date} ${shift.startTime}-${shift.endTime} and ${nextShift.date} ${nextShift.startTime}-${nextShift.endTime}`);
                                 } else {
                                     // Normal calculation
                                     totalHours += hours + (mins / 60);
                                 }
                             } catch (e) {
-                                console.error('Error calculating hours for shift:', e);
+                                console.error('Error calculating hours for shift:', e, shift);
                             }
                         }
                     }
@@ -1145,12 +1193,29 @@
                                     const normalizedShift = {...shift};
                                     
                                     // Normalize the shift type - strictly enforce only EMPLOYEE or MANAGER
+                                    normalizedShift.type = normalizedShift.position || normalizedShift.type || 'EMPLOYEE';
                                     normalizedShift.type = normalizedShift.type === 'MANAGER' ? 'MANAGER' : 'EMPLOYEE';
+                                    
+                                    // Ensure each shift has a unique ID - use the ID from backend if available
+                                    if (!normalizedShift.id) {
+                                        normalizedShift.id = Date.now() + Math.random().toString(36).substring(2, 9);
+                                    }
+                                    
+                                    // Log each shift's ID for debugging purposes
+                                    console.log(`Processing shift for employee ${employeeId} on ${dateStr}: ID=${normalizedShift.id}, Type=${normalizedShift.type}`);
                                     
                                     return normalizedShift;
                                 });
                                 
+                                // Always use an array for shifts to support multiple shifts per day
                                 this.schedule[employeeId][dateStr] = normalizedShifts;
+                                
+                                console.log(`Loaded ${normalizedShifts.length} shifts for employee ${employeeId} on ${dateStr}:`, normalizedShifts);
+                                
+                                // Log each shift individually
+                                normalizedShifts.forEach((shift, index) => {
+                                    console.log(`Shift ${index + 1}:`, shift.startTime, '-', shift.endTime, '(', shift.id, ')');
+                                });
                             });
                         });
                     } else {
@@ -1226,7 +1291,7 @@
                 }
                 return [];
             },
-            addShift(employeeId, date, shiftType, startTime, endTime) {
+            async addShift(employeeId, date, shiftType, startTime, endTime) {
                 // Normalize shift type to ensure we only have EMPLOYEE or MANAGER
                 let normalizedShiftType = 'EMPLOYEE'; // Default to EMPLOYEE
                 
@@ -1252,12 +1317,49 @@
                 if (!this.schedule[employeeId][dateStr]) {
                     this.schedule[employeeId][dateStr] = [];
                 }
-                this.schedule[employeeId][dateStr].push({
-                    type: normalizedShiftType,
-                    startTime: startTime,
-                    endTime: endTime,
-                    id: Date.now()
-                });
+                
+                // Calculate weekday (1-7, where 1=Monday, 7=Sunday)
+                let weekday = date.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+                weekday = weekday === 0 ? 7 : weekday; // Convert to 1-7 format (1=Monday, 7=Sunday)
+                
+                // Create a new shift directly through the API
+                try {
+                    const shiftData = {
+                        employeeId: parseInt(employeeId),
+                        date: dateStr,
+                        weekday: weekday,
+                        position: normalizedShiftType,
+                        startTime: startTime,
+                        endTime: endTime
+                    };
+                    
+                    // Use the endpoint for adding a new shift
+                    const response = await fetch('/api/planning/shifts', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + localStorage.getItem('jwtToken')
+                        },
+                        body: JSON.stringify(shiftData)
+                    });
+                    
+                    if (response.ok) {
+                        // Store the returned ID which contains the weekday information
+                        if (response.ok) {
+                            const result = await response.json();
+                            if (result.id) {
+                                console.log('Shift created with ID:', result.id);
+                            }
+                        }
+                        
+                        // Reload the schedule to get the updated data from the server
+                        await this.loadSchedule();
+                    } else {
+                        console.error('Failed to add shift:', await response.text());
+                    }
+                } catch (error) {
+                    console.error('Error adding shift:', error);
+                }
             },
             
             // Method to open the edit shift modal
@@ -1272,20 +1374,56 @@
                 const editShiftStartTime = document.getElementById('editShiftStartTime');
                 const editShiftEndTime = document.getElementById('editShiftEndTime');
                 
-                // Set the values in the form
-                editShiftId.value = shift.id;
-                editEmployeeId.value = employee.userId || employee.employeeId;
+                console.log('Opening edit modal for shift:', shift);
+                
+                // Make sure we have the weekday in the shift ID
+                let shiftId = shift.id;
+                if (!shiftId || typeof shiftId !== 'string' || !shiftId.includes(',')) {
+                    // If the ID doesn't contain the weekday, construct a proper ID
+                    if (shift.weekday) {
+                        shiftId = employee.userId + ',' + shift.weekday;
+                        console.log('Constructed shift ID with weekday:', shiftId);
+                    }
+                }
+                
+                // Set the values in the form - with additional logging for debugging
+                editShiftId.value = shiftId;
+                
+                // Ensure we have a valid employee ID
+                const employeeIdValue = employee.userId || employee.employeeId;
+                console.log('Setting employee ID in form:', employeeIdValue, 'from employee:', employee);
+                editEmployeeId.value = employeeIdValue;
+                
                 editShiftEmployee.value = this.getEmployeeName(employee);
                 editShiftDate.value = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
                 editShiftPosition.value = shift.type || 'EMPLOYEE';
-                editShiftStartTime.value = shift.startTime;
-                editShiftEndTime.value = shift.endTime;
+                
+                // Make sure start and end times are set
+                if (editShiftStartTime && shift.startTime) {
+                    editShiftStartTime.value = shift.startTime;
+                }
+                
+                if (editShiftEndTime && shift.endTime) {
+                    editShiftEndTime.value = shift.endTime;
+                }
+                
+                // Double check the form values were set properly
+                console.log('Edit form values set:', {
+                    id: editShiftId.value,
+                    employeeId: editEmployeeId.value,
+                    employee: editShiftEmployee.value,
+                    date: editShiftDate.value,
+                    position: editShiftPosition.value,
+                    startTime: editShiftStartTime ? editShiftStartTime.value : 'not set',
+                    endTime: editShiftEndTime ? editShiftEndTime.value : 'not set'
+                });
                 
                 // Setup event handlers for the buttons
                 const deleteShiftBtn = document.getElementById('deleteShiftBtn');
                 const saveShiftChangesBtn = document.getElementById('saveShiftChangesBtn');
                 
-                deleteShiftBtn.onclick = () => this.deleteShift(shift.id, employee.userId || employee.employeeId, date);
+                // Always use the shiftId we've constructed to ensure it has the weekday
+                deleteShiftBtn.onclick = () => this.deleteShift(shiftId, employee.userId || employee.employeeId, date);
                 saveShiftChangesBtn.onclick = () => this.updateShift();
                 
                 // Show the modal
@@ -1298,7 +1436,46 @@
                 if (confirm('Are you sure you want to delete this shift?')) {
                     try {
                         const dateStr = date instanceof Date ? date.toISOString().split('T')[0] : date;
-                        const response = await fetch(`/api/planning/shifts/${employeeId}/${dateStr}`, {
+                        
+                        // Extract the weekday from the shift ID if possible
+                        let weekdayValue = null;
+                        
+                        console.log('Raw shift ID:', shiftId);
+                        
+                        // Parse the ID to extract the weekday value
+                        if (shiftId && typeof shiftId === 'string') {
+                            const idParts = shiftId.split(',');
+                            if (idParts.length > 1) {
+                                weekdayValue = idParts[1].trim();
+                                console.log('Found weekday value in ID:', weekdayValue);
+                            }
+                        } else if (shiftId && typeof shiftId === 'object') {
+                            // If the shift object itself is passed
+                            if (shiftId.weekday) {
+                                weekdayValue = shiftId.weekday;
+                                console.log('Found weekday directly in shift object:', weekdayValue);
+                            } else if (shiftId.id && typeof shiftId.id === 'string' && shiftId.id.includes(',')) {
+                                // Try to extract from the shift.id property
+                                const idParts = shiftId.id.split(',');
+                                if (idParts.length > 1) {
+                                    weekdayValue = idParts[1].trim();
+                                    console.log('Found weekday in shift.id property:', weekdayValue);
+                                }
+                            }
+                        }
+                        
+                        if (!weekdayValue) {
+                            console.error('Could not extract weekday from shift ID:', shiftId);
+                            alert('Error: Could not identify the specific shift to delete.');
+                            return;
+                        }
+                        
+                        // Delete the specific shift using the explicit weekday
+                        const deleteUrl = `/api/planning/shifts/${employeeId}/${dateStr}/${weekdayValue}`;
+                        
+                        console.log('Deleting shift with URL:', deleteUrl);
+                        
+                        const response = await fetch(deleteUrl, {
                             method: 'DELETE',
                             headers: {
                                 'Authorization': 'Bearer ' + localStorage.getItem('jwtToken')
@@ -1307,15 +1484,10 @@
                         
                         if (response.ok) {
                             // Close the modal
-                            const modal = bootstrap.Modal.getInstance(document.getElementById('editShiftModal'));
-                            modal.hide();
-                            
-                            // Clear the local schedule data
-                            if (this.schedule[employeeId]) {
-                                const dateStr = date instanceof Date ? date.toISOString().split('T')[0] : date;
-                                if (this.schedule[employeeId][dateStr]) {
-                                    delete this.schedule[employeeId][dateStr];
-                                }
+                            const modalEl = document.getElementById('editShiftModal');
+                            if (modalEl) {
+                                const modal = bootstrap.Modal.getInstance(modalEl);
+                                if (modal) modal.hide();
                             }
                             
                             // Reload the schedule to ensure everything is in sync
@@ -1342,6 +1514,7 @@
                     return; // Stop if validation fails
                 }
                 
+                // Get the form fields
                 const shiftId = formData.get('id');
                 let employeeId = formData.get('employeeId');
                 const date = formData.get('date');
@@ -1349,16 +1522,46 @@
                 const startTime = formData.get('startTime');
                 const endTime = formData.get('endTime');
                 
-                // Ensure employeeId is a valid value and not empty
+                console.log('Form data retrieved:', {
+                    shiftId,
+                    employeeId,
+                    date,
+                    position,
+                    startTime,
+                    endTime
+                });
+                
+                // More robust employee ID extraction - try multiple approaches
                 if (!employeeId || employeeId === '') {
-                    // Try to get from hidden field in the edit modal
-                    const employeeIdHidden = document.querySelector('#editShiftModal input[name="employeeId"]');
-                    if (employeeIdHidden && employeeIdHidden.value) {
-                        employeeId = employeeIdHidden.value;
-                        console.log('Retrieved employeeId from hidden field:', employeeId);
+                    console.log('Employee ID not found in form data, trying alternative sources');
+                    
+                    // Try to get from hidden field using direct ID
+                    const employeeIdElem = document.getElementById('editEmployeeId');
+                    if (employeeIdElem && employeeIdElem.value) {
+                        employeeId = employeeIdElem.value;
+                        console.log('Found employeeId in hidden field by ID:', employeeId);
                     } else {
-                        alert('Error: Employee ID is missing');
-                        console.error('Employee ID is missing in the form data');
+                        // Try with querySelector as fallback
+                        const employeeIdHidden = document.querySelector('#editShiftModal input[name="employeeId"]');
+                        if (employeeIdHidden && employeeIdHidden.value) {
+                            employeeId = employeeIdHidden.value;
+                            console.log('Found employeeId with querySelector:', employeeId);
+                        }
+                    }
+                    
+                    // If still not found, try to extract from the shift ID
+                    if (!employeeId && shiftId && typeof shiftId === 'string' && shiftId.includes(',')) {
+                        const idParts = shiftId.split(',');
+                        if (idParts.length > 0 && idParts[0]) {
+                            employeeId = idParts[0].trim();
+                            console.log('Extracted employeeId from shiftId:', employeeId);
+                        }
+                    }
+                    
+                    // If still not found, display error
+                    if (!employeeId) {
+                        console.error('Could not find employee ID from any source');
+                        alert('Error: Employee ID is missing. Cannot update shift.');
                         return;
                     }
                 }
@@ -1380,42 +1583,116 @@
                     endTime: endTime
                 };
                 
+                console.log('Prepared shift data:', shiftData);
+                
                 try {
-                    // Final check to ensure we have a valid employeeId
+                    // Final check to ensure we have a valid employeeId and required fields
                     if (!employeeId) {
                         alert('Error: Employee ID is missing. Cannot update shift.');
                         return;
                     }
                     
-                    const apiUrl = `/api/planning/shifts/${employeeId}/${date}`;
-                    console.log('Updating shift with URL:', apiUrl, 'and data:', shiftData);
+                    if (!date || !startTime || !endTime || !position) {
+                        alert('Error: Missing required shift information');
+                        return;
+                    }
                     
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ' + localStorage.getItem('jwtToken')
-                        },
-                        body: JSON.stringify(shiftData)
-                    });
+                    // First, delete the existing shift if it exists
+                    if (shiftId) {
+                        // Extract weekday from shiftId if it's in format "employeeId,weekday"
+                        let weekdayValue = null;
+                        
+                        if (typeof shiftId === 'string' && shiftId.includes(',')) {
+                            const idParts = shiftId.split(',');
+                            if (idParts.length > 1) {
+                                weekdayValue = idParts[1].trim();
+                                console.log('Found weekday value in ID:', weekdayValue);
+                            }
+                        }
+                        
+                        // If we couldn't extract a weekday, use the calculated one
+                        if (!weekdayValue) {
+                            weekdayValue = weekday.toString();
+                            console.log('Using calculated weekday:', weekdayValue);
+                        }
+                        
+                        const deleteUrl = `/api/planning/shifts/${employeeId}/${date}/${weekdayValue}`;
+                        console.log('Deleting shift before update with URL:', deleteUrl);
+                        
+                        try {
+                            await fetch(deleteUrl, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Authorization': 'Bearer ' + localStorage.getItem('jwtToken')
+                                }
+                            });
+                            console.log('Deleted existing shift before update');
+                        } catch (deleteError) {
+                            console.warn('Could not delete existing shift, continuing with create:', deleteError);
+                        }
+                    }
                     
-                    if (response.ok) {
-                        // Close the modal
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('editShiftModal'));
-                        modal.hide();
+                    // Create a new shift with updated values
+                    const apiUrl = `/api/planning/shifts`;
+                    console.log('Creating new shift with URL:', apiUrl, 'and data:', shiftData);
+                    
+                    try {
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': 'Bearer ' + localStorage.getItem('jwtToken')
+                            },
+                            body: JSON.stringify(shiftData)
+                        });
                         
-                        // Reload the schedule to ensure everything is in sync
-                        this.loadSchedule();
-                        
-                        alert('Shift updated successfully!');
-                    } else {
-                        alert('Error updating shift. Please try again.');
+                        if (response.ok) {
+                            // Get the response data if available
+                            let responseData;
+                            try {
+                                responseData = await response.json();
+                                console.log('Shift update successful, response:', responseData);
+                            } catch (e) {
+                                console.log('No JSON response available');
+                            }
+                            
+                            // Close the modal
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('editShiftModal'));
+                            modal.hide();
+                            
+                            // Reload the schedule to ensure everything is in sync
+                            await this.loadSchedule();
+                            
+                            alert('Shift updated successfully!');
+                        } else {
+                            const errorText = await response.text();
+                            console.error('Error updating shift:', response.status, errorText);
+                            alert(`Error updating shift (${response.status}). Please try again.`);
+                        }
+                    } catch (networkError) {
+                        console.error('Network error when updating shift:', networkError);
+                        alert('Network error when updating shift. Please check your connection and try again.');
                     }
                 } catch (error) {
                     console.error('Error updating shift:', error);
                     alert('Error updating shift. Please try again.');
                 }
-            }
+            },
+            isConsecutiveDay(date1, date2) {
+                // Function to check if two date strings are consecutive days
+                // date1 and date2 are in the format 'YYYY-MM-DD'
+                try {
+                    const d1 = new Date(date1);
+                    const d2 = new Date(date2);
+                    
+                    // Check if the second date is the day after the first
+                    const oneDayInMs = 24 * 60 * 60 * 1000; // One day in milliseconds
+                    return (d2.getTime() - d1.getTime()) === oneDayInMs;
+                } catch (e) {
+                    console.error('Error comparing dates:', e, date1, date2);
+                    return false;
+                }
+            },
         };
     }
 
@@ -1519,6 +1796,47 @@
         if (editShiftModal) {
             editShiftModal.addEventListener('shown.bs.modal', function() {
                 validateEditShiftTimes();
+            });
+        }
+        
+        // Add event handler for shift form submission
+        const addShiftForm = document.getElementById('addShiftForm');
+        if (addShiftForm) {
+            addShiftForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Validate times
+                if (!validateShiftTimes()) {
+                    return; // Stop if validation fails
+                }
+                
+                const formData = new FormData(addShiftForm);
+                const employeeId = formData.get('employeeId');
+                const dateStr = formData.get('date');
+                const position = formData.get('position');
+                const startTime = formData.get('startTime');
+                const endTime = formData.get('endTime');
+                
+                if (!employeeId || !dateStr || !position || !startTime || !endTime) {
+                    alert('Please fill in all fields');
+                    return;
+                }
+                
+                // Calculate weekday
+                const dateObj = new Date(dateStr);
+                
+                // Get the Alpine.js component instance
+                const planningInterface = document.getElementById('planningInterface');
+                if (planningInterface && planningInterface.__x) {
+                    // Call the Alpine.js component's addShift method
+                    await planningInterface.__x.data.addShift(employeeId, dateObj, position, startTime, endTime);
+                    
+                    // Close the modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addShiftModal'));
+                    modal.hide();
+                } else {
+                    console.error('Could not access the Alpine.js component');
+                }
             });
         }
     });

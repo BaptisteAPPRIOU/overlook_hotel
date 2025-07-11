@@ -74,6 +74,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 endTime: endTime
             };
             
+            console.log('Adding new shift:', shiftData);
+            
             try {
                 const response = await fetch('/api/planning/shifts', {
                     method: 'POST',
@@ -87,6 +89,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await response.json();
                 
                 if (result.success) {
+                    console.log('Shift added successfully with ID:', result.id);
+                    
                     // Close modal and refresh the planning view
                     const modal = bootstrap.Modal.getInstance(document.getElementById('addShiftModal'));
                     modal.hide();

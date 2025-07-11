@@ -512,11 +512,20 @@ public class EmployeePlanningService {
             System.out.println("Processing workday: Employee " + employeeId + " on " + dateStr + " from " + 
                              workday.getPlannedStartTime() + " to " + workday.getPlannedEndTime());
             
+            // Create a unique identifier for this shift that includes the weekday value 
+            // so the frontend can use it for specific shift operations
+            String shiftId = workday.getId().getEmployeeId() + "," + workday.getId().getWeekday();
+            
+            // Determine the shift type using the weekday value
+            String shiftType = determineShiftTypeFromWeekday(workday.getId().getWeekday());
+            
             schedule.computeIfAbsent(employeeId, k -> new HashMap<>())
                     .computeIfAbsent(dateStr, k -> new ArrayList<>())
                     .add(Map.of(
-                            "id", workday.getId().toString(),
-                            "type", determineShiftType(workday.getPlannedStartTime()),
+                            "id", shiftId,
+                            "type", shiftType,
+                            "position", shiftType,
+                            "weekday", workday.getId().getWeekday(),
                             "startTime", workday.getPlannedStartTime() != null ? workday.getPlannedStartTime().toString() : "",
                             "endTime", workday.getPlannedEndTime() != null ? workday.getPlannedEndTime().toString() : "",
                             "status", "SCHEDULED"
@@ -563,18 +572,61 @@ public class EmployeePlanningService {
             
             Employee employee = employeeRepository.findById(employeeId)
                     .orElseThrow(() -> new RuntimeException("Employee not found"));
-
-            // Create EmployeeWorkday
-            EmployeeWorkday workday = new EmployeeWorkday();
+                    
+            // Check if there are existing shifts for this employee on this day
+            List<EmployeeWorkday> existingShifts = workdayRepository.findByEmployeeUserIdAndWorkDate(employeeId, date);
+            
+            System.out.println("Found " + existingShifts.size() + " existing shifts for employee " + employeeId + " on " + date);
+            
+            // Check for potential time conflicts with existing shifts
+            for (EmployeeWorkday existingShift : existingShifts) {
+                LocalTime existingStart = existingShift.getPlannedStartTime();
+                LocalTime existingEnd = existingShift.getPlannedEndTime();
+                
+                // Check if there's a time overlap
+                // (New start during existing shift OR new end during existing shift OR new shift encompasses existing shift)
+                boolean overlaps = 
+                    (startTime.compareTo(existingStart) >= 0 && startTime.compareTo(existingEnd) < 0) || 
+                    (endTime.compareTo(existingStart) > 0 && endTime.compareTo(existingEnd) <= 0) ||
+                    (startTime.compareTo(existingStart) <= 0 && endTime.compareTo(existingEnd) >= 0);
+                
+                if (overlaps) {
+                    System.out.println("Potential time conflict detected with existing shift: " + 
+                                    existingStart + " - " + existingEnd);
+                    System.out.println("New shift time: " + startTime + " - " + endTime);
+                    // Uncomment to enforce no overlapping shifts:
+                    // throw new RuntimeException("This shift overlaps with an existing shift for this employee on the same day");
+                }
+            }
+            
+            // Create a new entry with a unique composite key to allow multiple shifts per day
             WorkdayId workdayId = new WorkdayId();
             workdayId.setEmployeeId(employeeId);
             workdayId.setWorkDate(date);
-            workdayId.setWeekday(weekday);
             
+            // To avoid conflicts, create a unique workday ID by modifying the weekday value
+            // We'll use the base weekday (1-7) plus an offset for multiple shifts on the same day
+            int shiftOffset = existingShifts.size() * 10; // Each shift adds 10 to weekday
+            int uniqueWeekday = weekday + shiftOffset;
+            workdayId.setWeekday(uniqueWeekday);
+            
+            System.out.println("Creating shift with unique weekday ID: " + uniqueWeekday + " (base weekday: " + weekday + ", offset: " + shiftOffset + ")");
+            
+            EmployeeWorkday workday = new EmployeeWorkday();
             workday.setId(workdayId);
             workday.setEmployee(employee);
             workday.setPlannedStartTime(startTime);
             workday.setPlannedEndTime(endTime);
+            
+            // We'll use the position information to modify the weekday value
+            // to indicate the position without requiring a position field in EmployeeWorkday
+            String position = shiftData.get("position") != null ? shiftData.get("position").toString() : "EMPLOYEE";
+            if (position.equals("MANAGER")) {
+                // If this is a manager shift, add 5 to the uniqueWeekday to mark it
+                workdayId.setWeekday(uniqueWeekday + 5);
+                System.out.println("Set as MANAGER shift with weekday: " + workdayId.getWeekday());
+            }
+            
             workday.setPlannedBreakMinutes(DEFAULT_BREAK_MINUTES);
 
             EmployeeWorkday savedWorkday = workdayRepository.save(workday);
@@ -696,6 +748,55 @@ public class EmployeePlanningService {
     }
 
     /**
+     * Delete a specific shift by employee ID, date, and weekday.
+     * The weekday parameter helps identify which shift to delete when there are multiple shifts on the same day.
+     */
+    @Transactional
+    public void deleteSpecificShift(Long employeeId, LocalDate date, Integer weekday) {
+        System.out.println("Deleting shift for employee " + employeeId + " on " + date + " with weekday code " + weekday);
+        
+        // For direct deletion when we know the exact composite key
+        if (weekday != null) {
+            WorkdayId workdayId = new WorkdayId();
+            workdayId.setEmployeeId(employeeId);
+            workdayId.setWorkDate(date);
+            workdayId.setWeekday(weekday);
+            
+            if (workdayRepository.existsById(workdayId)) {
+                System.out.println("Found shift with exact ID - deleting directly");
+                workdayRepository.deleteById(workdayId);
+                return;
+            }
+        }
+        
+        // If direct deletion failed or weekday was null, try to find all shifts for this employee and day
+        List<EmployeeWorkday> workdays = workdayRepository.findByEmployeeUserIdAndWorkDate(employeeId, date);
+        System.out.println("Found " + workdays.size() + " shifts for employee " + employeeId + " on " + date);
+        
+        if (workdays.isEmpty()) {
+            throw new RuntimeException("No shifts found for employee " + employeeId + " on " + date);
+        }
+        
+        // If weekday is specified, try to find a shift with that weekday code
+        if (weekday != null) {
+            for (EmployeeWorkday workday : workdays) {
+                if (workday.getId().getWeekday().equals(weekday)) {
+                    System.out.println("Deleting shift with weekday: " + weekday);
+                    workdayRepository.delete(workday);
+                    return;
+                }
+            }
+        }
+        
+        // If we get here, either no weekday was specified or we couldn't find a shift with that weekday
+        // In this case, delete the first shift as a fallback (or all shifts if deleteAll is true)
+        if (!workdays.isEmpty()) {
+            System.out.println("Deleting the first shift found");
+            workdayRepository.delete(workdays.get(0));
+        }
+    }
+
+    /**
      * Publish schedule and notify employees.
      */
     public boolean publishScheduleToEmployees() {
@@ -711,15 +812,17 @@ public class EmployeePlanningService {
     }
 
     /**
-     * Determine shift type based on start time.
+     * Determine shift type based on weekday value.
+     * We use this method to interpret the position from the weekday value
+     * since we don't have a position field in EmployeeWorkday.
      */
-    private String determineShiftType(LocalTime startTime) {
-        if (startTime.isBefore(LocalTime.of(12, 0))) {
-            return "MORNING";
-        } else if (startTime.isBefore(LocalTime.of(18, 0))) {
-            return "AFTERNOON";
+    private String determineShiftTypeFromWeekday(Integer weekday) {
+        // If weekday has been modified to indicate manager (e.g., by adding 5),
+        // return MANAGER, otherwise EMPLOYEE
+        if (weekday != null && weekday % 10 >= 5) {
+            return "MANAGER";
         } else {
-            return "EVENING";
+            return "EMPLOYEE";
         }
     }
 }
