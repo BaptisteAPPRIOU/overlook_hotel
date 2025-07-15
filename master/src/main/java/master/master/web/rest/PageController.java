@@ -2,6 +2,8 @@ package master.master.web.rest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -89,13 +91,31 @@ public class PageController {
         model.addAttribute("room", java.util.Collections.emptyList());
         model.addAttribute("reviews", java.util.Collections.emptyList());
 
-        // Mock current user data to prevent template errors
-        // Change this role to test different access levels: "ADMIN", "EMPLOYEE", "CLIENT"
-        java.util.Map<String, String> currentUser = new java.util.HashMap<>();
-        currentUser.put("firstName", "Admin");
-        currentUser.put("lastName", "User");
-        currentUser.put("role", "ADMIN"); // Only ADMIN can see employee management and planning
-        model.addAttribute("currentUser", currentUser);
+        // Get current authenticated user information
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            java.util.Map<String, String> currentUser = new java.util.HashMap<>();
+            currentUser.put("email", authentication.getName());
+            
+            // Get user role from authorities
+            String role = authentication.getAuthorities().iterator().next().getAuthority();
+            currentUser.put("role", role);
+            
+            // Set default names (you might want to fetch these from a User entity later)
+            currentUser.put("firstName", "Current");
+            currentUser.put("lastName", "User");
+            
+            model.addAttribute("currentUser", currentUser);
+            log.info("Current user: {} with role: {}", authentication.getName(), role);
+        } else {
+            // Fallback for testing (should not happen with proper security config)
+            java.util.Map<String, String> currentUser = new java.util.HashMap<>();
+            currentUser.put("firstName", "Test");
+            currentUser.put("lastName", "User");
+            currentUser.put("role", "EMPLOYEE");
+            model.addAttribute("currentUser", currentUser);
+            log.warn("No authentication found, using fallback user data");
+        }
         
         return "employeeDashboard";
     }

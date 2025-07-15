@@ -1,11 +1,8 @@
 package master.master.filter;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import master.master.security.JwtUtil;
-import master.master.service.CustomUserDetailsService;
+import java.io.IOException;
+
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,7 +10,12 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import master.master.security.JwtUtil;
+import master.master.service.CustomUserDetailsService;
 
 /**
  * JWT Authentication Filter that extends OncePerRequestFilter to ensure it's executed once per request.
@@ -52,23 +54,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
         String email = null;
         String jwtToken = null;
 
-        // Le header Authorization doit commencer par "Bearer "
+        // First, check Authorization header for "Bearer " token
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             jwtToken = authHeader.substring(7);
-            if (jwtUtil.isTokenValid(jwtToken)) {
-                email = jwtUtil.extractEmail(jwtToken);
+        }
+        
+        // If no token in header, check cookies
+        if (jwtToken == null && request.getCookies() != null) {
+            for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
+                if ("jwtToken".equals(cookie.getName())) {
+                    jwtToken = cookie.getValue();
+                    break;
+                }
             }
         }
 
-        // Si email est extrait et pas déjà authentifié, on authentifie la requête
+        // Validate token and extract email
+        if (jwtToken != null && jwtUtil.isTokenValid(jwtToken)) {
+            email = jwtUtil.extractEmail(jwtToken);
+        }
+
+        // If email is extracted and not already authenticated, authenticate the request
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 

@@ -36,13 +36,28 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints
                         .requestMatchers("/api/v1/login", "/api/v1/register", "/error").permitAll()
-                        .requestMatchers("/", "/clientLogin", "/employeeLogin", "/register", "/employeeDashboard", "/roomManagement").permitAll()
+                        .requestMatchers("/", "/clientLogin", "/employeeLogin", "/register").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/image/**").permitAll()
 
-                        // Employee endpoints - Temporarily allow all for debugging
-                        .requestMatchers("/api/v1/employees/**").permitAll()
-                        .requestMatchers("/employees/**").permitAll()
+                        // Employee Dashboard and related pages - Only EMPLOYEE and ADMIN can access
+                        .requestMatchers("/employeeDashboard").hasAnyAuthority("EMPLOYEE", "ADMIN")
+                        .requestMatchers("/roomManagement").hasAnyAuthority("EMPLOYEE", "ADMIN")
+                        .requestMatchers("/planning").hasAnyAuthority("EMPLOYEE", "ADMIN")
+                        .requestMatchers("/my-planning").hasAnyAuthority("EMPLOYEE", "ADMIN")
 
+                        // Employee API endpoints - Only EMPLOYEE and ADMIN can access
+                        .requestMatchers("/api/v1/employees/**").hasAnyAuthority("EMPLOYEE", "ADMIN")
+                        .requestMatchers("/employees/**").hasAnyAuthority("EMPLOYEE", "ADMIN")
+                        .requestMatchers("/api/dashboard/**").hasAnyAuthority("EMPLOYEE", "ADMIN")
+                        .requestMatchers("/planning/**").hasAnyAuthority("EMPLOYEE", "ADMIN")
+
+                        // Time tracking endpoints - Only EMPLOYEE and ADMIN can access
+                        .requestMatchers("/api/v1/time-tracking/**").hasAnyAuthority("EMPLOYEE", "ADMIN")
+
+                        // Room management API - Only EMPLOYEE and ADMIN can access
+                        .requestMatchers("/api/v1/rooms/**").hasAnyAuthority("EMPLOYEE", "ADMIN")
+
+                        // Client API endpoints
                         .requestMatchers("/api/v1/clients/**")
                         .hasAnyAuthority("CLIENT", "ADMIN")
                         .requestMatchers("/api/v1/clients/*/reservations/**")
@@ -51,6 +66,16 @@ public class SecurityConfig {
                         .hasAnyAuthority("CLIENT", "ADMIN")
 
                         .anyRequest().authenticated()
+                )
+                .exceptionHandling(exceptions -> exceptions
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            // Redirect to login page with error message for access denied
+                            response.sendRedirect("/?error=access_denied");
+                        })
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            // Redirect to login page for unauthenticated requests
+                            response.sendRedirect("/?error=not_authenticated");
+                        })
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form.disable())
