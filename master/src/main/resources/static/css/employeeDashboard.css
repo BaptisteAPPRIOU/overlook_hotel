@@ -357,3 +357,100 @@
                 min-width: 150px;
             }
         }
+
+        /* Leave Request Status Badges */
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status-approved {
+            background-color: #d1edda;
+            color: #155724;
+            border: 1px solid #74c0fc;
+        }
+
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #ff7675;
+        }
+
+        .status-cancelled {
+            background-color: #e2e3e5;
+            color: #383d41;
+            border: 1px solid #ced4da;
+        }
+
+        /* Leave Request Tables */
+        #myLeaveRequestsTable, #pendingLeaveRequestsTable {
+            font-size: 14px;
+        }
+
+        #myLeaveRequestsTable th, #pendingLeaveRequestsTable th {
+            background-color: #f8f9fa;
+            border-top: none;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        #myLeaveRequestsTable td, #pendingLeaveRequestsTable td {
+            vertical-align: middle;
+        }
+
+        /* Leave Request Form */
+        #leaveRequestForm {
+            max-width: 100%;
+        }
+
+        #leaveRequestForm .row {
+            margin-bottom: 1rem;
+        }
+
+        #leaveRequestForm .mb-3 {
+            margin-bottom: 1rem;
+        }
+
+        #reasonCharCount {
+            font-size: 11px;
+            color: #6c757d;
+        }
+
+        /* Action buttons in tables */
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            border-radius: 0.25rem;
+        }
+
+        /* Responsive table improvements */
+        .table-responsive {
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Animation for notifications */
+        .alert.show {
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
