@@ -11,6 +11,9 @@
 
 </head>
 <body>
+<!-- Notification Container -->
+<div id="notificationContainer" class="position-fixed" style="top: 20px; right: 20px; z-index: 9999;"></div>
+
 <div class="container-fluid">
     <div class="row">
         <!-- Sidebar -->
@@ -95,47 +98,58 @@
             <section class="main-card hidden" data-cat="leave">
                 <div class="card">
                     <h4>Request Leave</h4>
-                    <form method="post" th:action="@{/leave/request}">
+                    <form id="leaveRequestForm" method="post" th:action="@{/leave/request}">
                         <div class="row">
                             <div class="col-md-6">
-                                <label class="form-label" for="startDate">Start Date</label>
-                                <input class="form-control" id="startDate" name="startDate" required type="date">
+                                <label class="form-label" for="leaveStartDate">Start Date</label>
+                                <input class="form-control" id="leaveStartDate" name="startDate" required type="date">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label" for="endDate">End Date</label>
-                                <input class="form-control" id="endDate" name="endDate" required type="date">
+                                <label class="form-label" for="leaveEndDate">End Date</label>
+                                <input class="form-control" id="leaveEndDate" name="endDate" required type="date">
                             </div>
                         </div>
-                        <label class="form-label" for="reason">Reason</label>
-                        <textarea class="form-control" id="reason" name="reason" placeholder="Enter reason for leave"
-                                  required rows="3"></textarea>
-                        <button class="btn btn-primary" type="submit">Submit Leave Request</button>
+                        <div class="mb-3">
+                            <label class="form-label" for="leaveType">Leave Type</label>
+                            <select class="form-control" id="leaveType" name="type" required>
+                                <option value="">Select leave type</option>
+                                <option value="VACATION">Vacation</option>
+                                <option value="SICK">Sick Leave</option>
+                                <option value="PERSONAL">Personal Leave</option>
+                                <option value="MATERNITY">Maternity Leave</option>
+                                <option value="PATERNITY">Paternity Leave</option>
+                                <option value="BEREAVEMENT">Bereavement Leave</option>
+                                <option value="EMERGENCY">Emergency Leave</option>
+                                <option value="STUDY">Study Leave</option>
+                                <option value="UNPAID">Unpaid Leave</option>
+                            </select>
+                        </div>
+                        <label class="form-label" for="leaveReason">Reason</label>
+                        <textarea class="form-control" id="leaveReason" name="reason" placeholder="Enter reason for leave"
+                                  required rows="3" maxlength="500"></textarea>
+                        <div class="text-muted small">
+                            <span id="reasonCharCount">0</span>/500 characters
+                        </div>
+                        <button class="btn btn-primary" type="submit" id="submitLeaveRequestBtn">Submit Leave Request</button>
                     </form>
                 </div>
 
                 <div class="card">
                     <h4>My Leave Requests</h4>
                     <div class="table-responsive">
-                        <table class="table table-striped">
+                        <table class="table table-striped" id="myLeaveRequestsTable">
                             <thead>
                             <tr>
-                                <th>Start Date</th>
-                                <th>End Date</th>
-                                <th>Reason</th>
+                                <th>Type</th>
+                                <th>Dates</th>
+                                <th>Duration</th>
                                 <th>Status</th>
+                                <th>Submitted</th>
+                                <th>Actions</th>
                             </tr>
                             </thead>
                             <tbody>
-                            <tr th:each="req : ${myLeaveRequests}">
-                                <td th:text="${req.startDate}">2023-12-01</td>
-                                <td th:text="${req.endDate}">2023-12-05</td>
-                                <td th:text="${req.reason}">Vacation</td>
-                                <td>
-                                    <span class="badge"
-                                          th:classappend="${req.status == 'APPROVED' ? 'bg-success' : (req.status == 'REJECTED' ? 'bg-danger' : 'bg-warning')}"
-                                          th:text="${req.status}">PENDING</span>
-                                </td>
-                            </tr>
+                            <!-- Data will be populated by JavaScript -->
                             </tbody>
                         </table>
                     </div>
@@ -389,33 +403,20 @@
                 <div class="card">
                     <h4>Pending Leave Requests</h4>
                     <div class="table-responsive">
-                        <table class="table table-striped">
+                        <table class="table table-striped" id="pendingLeaveRequestsTable">
                             <thead>
                             <tr>
                                 <th>Employee</th>
-                                <th>Start Date</th>
-                                <th>End Date</th>
+                                <th>Type</th>
+                                <th>Dates</th>
+                                <th>Duration</th>
                                 <th>Reason</th>
+                                <th>Submitted</th>
                                 <th>Actions</th>
                             </tr>
                             </thead>
                             <tbody>
-                            <tr th:each="req : ${leaveRequests}">
-                                <td th:text="${req.employeeName}">John Doe</td>
-                                <td th:text="${req.startDate}">2023-12-01</td>
-                                <td th:text="${req.endDate}">2023-12-05</td>
-                                <td th:text="${req.reason}">Vacation</td>
-                                <td>
-                                    <form method="post" style="display: inline;"
-                                          th:action="@{'/leave/approve/' + ${req.id}}">
-                                        <button class="btn btn-success btn-sm" type="submit">Approve</button>
-                                    </form>
-                                    <form method="post" style="display: inline;"
-                                          th:action="@{'/leave/reject/' + ${req.id}}">
-                                        <button class="btn btn-danger btn-sm" type="submit">Reject</button>
-                                    </form>
-                                </td>
-                            </tr>
+                            <!-- Data will be populated by JavaScript -->
                             </tbody>
                         </table>
                     </div>
@@ -436,5 +437,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:src="@{/js/employeeDashboard.js}"></script>
 <script th:src="@{/js/employeePlanning.js}"></script>
+<script th:src="@{/js/leaveRequests.js}"></script>
 </body>
 </html>
