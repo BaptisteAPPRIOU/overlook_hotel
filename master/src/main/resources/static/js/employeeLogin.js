@@ -42,6 +42,9 @@ document.getElementById("employeeLoginForm").addEventListener("submit", async fu
     }
 
     localStorage.setItem("jwtToken", token);
+    
+    // Also set as cookie for server-side pages (remove secure flag for localhost)
+    document.cookie = `jwtToken=${token}; path=/; samesite=strict`;
 
     if (role === "EMPLOYEE" || role === "ADMIN") {
       window.location.href = "/employeeDashboard";

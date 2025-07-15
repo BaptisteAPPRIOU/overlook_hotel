@@ -24,6 +24,9 @@ public class LeaveRequestService {
     @Autowired
     private LeaveRequestRepository leaveRequestRepository;
 
+    @Autowired
+    private EmployeeService employeeService;
+
     /**
      * Create a new leave request.
      */
@@ -59,8 +62,19 @@ public class LeaveRequestService {
      */
     @Transactional(readOnly = true)
     public List<LeaveRequestDto> getPendingLeaveRequests() {
-        List<LeaveRequest> pendingRequests = leaveRequestRepository.findByStatusOrderByCreatedAtDesc("PENDING");
+        List<LeaveRequest> pendingRequests = leaveRequestRepository.findByStatusOrderByCreatedAtDesc(LeaveRequest.LeaveStatus.PENDING);
         return pendingRequests.stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get all leave requests for admin oversight.
+     */
+    @Transactional(readOnly = true)
+    public List<LeaveRequestDto> getAllLeaveRequests() {
+        List<LeaveRequest> allRequests = leaveRequestRepository.findAllByOrderByCreatedAtDesc();
+        return allRequests.stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
@@ -71,7 +85,7 @@ public class LeaveRequestService {
      */
     @Transactional(readOnly = true)
     public Long getPendingLeaveRequestCount() {
-        return leaveRequestRepository.countByStatus("PENDING");
+        return leaveRequestRepository.countByStatus(LeaveRequest.LeaveStatus.PENDING);
     }
 
     /**
@@ -248,7 +262,12 @@ public class LeaveRequestService {
      * Get employee name by ID.
      */
     private String getEmployeeName(Long employeeId) {
-        return "Employee " + employeeId;
+        try {
+            var employee = employeeService.getEmployee(employeeId);
+            return employee.getFirstName() + " " + employee.getLastName();
+        } catch (Exception e) {
+            return "Employee " + employeeId;
+        }
     }
 
     /**

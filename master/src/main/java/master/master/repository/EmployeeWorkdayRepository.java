@@ -1,14 +1,16 @@
 package master.master.repository;
 
-import master.master.domain.EmployeeWorkday;
-import master.master.domain.WorkdayId;
+import java.time.LocalDate;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import master.master.domain.EmployeeWorkday;
+import master.master.domain.WorkdayId;
 
 /**
  * Repository interface for managing EmployeeWorkday entities.
@@ -104,6 +106,24 @@ public interface EmployeeWorkdayRepository extends JpaRepository<EmployeeWorkday
             "ORDER BY EXTRACT(dow FROM ew.work_date)",
             nativeQuery = true)
     List<Integer> findWorkdaysByEmployeeId(@Param("employeeId") Long employeeId);
-    // @Query("SELECT DISTINCT DAYOFWEEK(ew.id.workDate) FROM EmployeeWorkday ew WHERE ew.employee.userId = :employeeId ORDER BY DAYOFWEEK(ew.id.workDate)")
-    // List<Integer> findWorkdaysByEmployeeId(@Param("employeeId") Long employeeId);
+
+    /**
+     * Find workdays within a specific date range.
+     *
+     * @param startDate the start date of the range
+     * @param endDate the end date of the range
+     * @return list of workdays within the date range
+     */
+    @Query("SELECT ew FROM EmployeeWorkday ew WHERE ew.id.workDate BETWEEN :startDate AND :endDate")
+    List<EmployeeWorkday> findByIdWorkDateBetween(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+    
+    /**
+     * Find workdays for an employee on a specific date.
+     *
+     * @param employeeId the employee's user ID
+     * @param workDate the specific date
+     * @return list of workdays for the employee on the specified date
+     */
+    @Query("SELECT ew FROM EmployeeWorkday ew WHERE ew.employee.userId = :employeeId AND ew.id.workDate = :workDate")
+    List<EmployeeWorkday> findByEmployeeUserIdAndWorkDate(@Param("employeeId") Long employeeId, @Param("workDate") LocalDate workDate);
 }

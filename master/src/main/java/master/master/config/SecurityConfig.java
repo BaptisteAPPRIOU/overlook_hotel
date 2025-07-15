@@ -1,7 +1,5 @@
 package master.master.config;
 
-import master.master.filter.JwtAuthenticationFilter;
-import master.master.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -14,6 +12,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import master.master.filter.JwtAuthenticationFilter;
+import master.master.service.CustomUserDetailsService;
 
 @Configuration
 @EnableWebSecurity
@@ -54,6 +55,25 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/clients/**")
                         .hasAuthority("ADMIN")
 
+                        // Employee Dashboard and related pages - Only EMPLOYEE and ADMIN can access
+                        .requestMatchers("/employeeDashboard").hasAnyAuthority("EMPLOYEE", "ADMIN")
+                        .requestMatchers("/roomManagement").hasAnyAuthority("EMPLOYEE", "ADMIN")
+                        .requestMatchers("/planning").hasAnyAuthority("EMPLOYEE", "ADMIN")
+                        .requestMatchers("/my-planning").hasAnyAuthority("EMPLOYEE", "ADMIN")
+
+                        // Employee API endpoints - Only EMPLOYEE and ADMIN can access
+                        .requestMatchers("/api/v1/employees/**").hasAnyAuthority("EMPLOYEE", "ADMIN")
+                        .requestMatchers("/employees/**").hasAnyAuthority("EMPLOYEE", "ADMIN")
+                        .requestMatchers("/api/dashboard/**").hasAnyAuthority("EMPLOYEE", "ADMIN")
+                        .requestMatchers("/planning/**").hasAnyAuthority("EMPLOYEE", "ADMIN")
+
+                        // Time tracking endpoints - Only EMPLOYEE and ADMIN can access
+                        .requestMatchers("/api/v1/time-tracking/**").hasAnyAuthority("EMPLOYEE", "ADMIN")
+
+                        // Room management API - Only EMPLOYEE and ADMIN can access
+                        .requestMatchers("/api/v1/rooms/**").hasAnyAuthority("EMPLOYEE", "ADMIN")
+
+                        // Client API endpoints
                         .requestMatchers("/api/v1/clients/**")
                         .hasAnyAuthority("CLIENT", "ADMIN")
 
@@ -71,6 +91,16 @@ public class SecurityConfig {
 
                         // toute autre requête doit être authentifiée
                         .anyRequest().authenticated()
+                )
+                .exceptionHandling(exceptions -> exceptions
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            // Redirect to login page with error message for access denied
+                            response.sendRedirect("/?error=access_denied");
+                        })
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            // Redirect to login page for unauthenticated requests
+                            response.sendRedirect("/?error=not_authenticated");
+                        })
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form.disable())

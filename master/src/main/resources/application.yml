@@ -1,7 +1,9 @@
 server:
   port: 8080
   error:
-    include-stacktrace: never
+    include-stacktrace: always
+    include-message: always
+    include-binding-errors: always
 
 spring:
   datasource:
@@ -32,6 +34,9 @@ spring:
 
 logging:
   level:
-    org.springframework.security: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    '[org.springframework.security]': DEBUG
+    '[org.hibernate.SQL]': DEBUG
+    '[org.hibernate.type.descriptor.sql.BasicBinder]': TRACE
+    '[org.springframework.web]': DEBUG
+    '[master.master]': DEBUG
+    root: INFO

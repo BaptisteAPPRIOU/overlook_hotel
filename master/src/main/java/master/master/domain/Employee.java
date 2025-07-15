@@ -1,12 +1,20 @@
 package master.master.domain;
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Represents an employee entity in the system.
@@ -90,6 +98,13 @@ public class Employee implements Serializable {
      */
     public String getEmail() {
         return user != null ? user.getEmail() : null;
+    }
+
+    /**
+     * Get role from associated user.
+     */
+    public RoleType getRole() {
+        return user != null ? user.getRole() : null;
     }
 
     /**

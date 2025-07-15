@@ -20,7 +20,12 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     /**
      * Find all leave requests by status.
      */
-    List<LeaveRequest> findByStatusOrderByCreatedAtDesc(String status);
+    List<LeaveRequest> findByStatusOrderByCreatedAtDesc(LeaveRequest.LeaveStatus status);
+
+    /**
+     * Find all leave requests ordered by creation date (most recent first).
+     */
+    List<LeaveRequest> findAllByOrderByCreatedAtDesc();
 
     /**
      * Find all leave requests for a specific employee.
@@ -30,12 +35,12 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     /**
      * Find all leave requests for a specific employee by status.
      */
-    List<LeaveRequest> findByEmployeeIdAndStatusOrderByCreatedAtDesc(Long employeeId, String status);
+    List<LeaveRequest> findByEmployeeIdAndStatusOrderByCreatedAtDesc(Long employeeId, LeaveRequest.LeaveStatus status);
 
     /**
      * Count pending leave requests.
      */
-    Long countByStatus(String status);
+    Long countByStatus(LeaveRequest.LeaveStatus status);
 
     /**
      * Find overlapping leave requests for an employee within a date range.
