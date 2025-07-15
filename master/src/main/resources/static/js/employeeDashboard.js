@@ -116,3 +116,36 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Global utility functions for leave requests and other features
+window.showNotification = function(message, type) {
+    // Create a simple notification system
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'} alert-dismissible fade show`;
+    notification.style.cssText = 'min-width: 300px; margin-bottom: 10px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    // Add to notification container or body
+    const container = document.getElementById('notificationContainer') || document.body;
+    container.appendChild(notification);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 5000);
+};
+
+window.isCurrentUserAdmin = function() {
+    // Check if current user has admin privileges
+    // This can be determined by checking if the user can see admin-only sections
+    const approvalSection = document.querySelector('[data-cat="approval"]');
+    const employeeSection = document.querySelector('[data-cat="employees"]');
+    return approvalSection && employeeSection; // If both admin sections exist, user is admin
+};
+
+window.showMessage = window.showNotification; // Alias for compatibility
+
