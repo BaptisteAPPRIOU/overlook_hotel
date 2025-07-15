@@ -6,34 +6,30 @@ import master.master.repository.RoomRepository;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 /**
  * REST controller for managing Room entities.
- * <p>
- * Provides endpoints for listing, retrieving, creating, updating, and deleting
- * rooms.
- * All endpoints require the user to have the 'EMPLOYEE' authority.
- * </p>
  *
- * <ul>
- * <li><b>GET /api/v1/rooms</b>: List all rooms.</li>
- * <li><b>GET /api/v1/rooms/{id}</b>: Retrieve a specific room by its ID.</li>
- * <li><b>POST /api/v1/rooms</b>: Create a new room.</li>
- * <li><b>PUT /api/v1/rooms/{id}</b>: Update an existing room by its ID.</li>
- * <li><b>DELETE /api/v1/rooms/{id}</b>: Delete a room by its ID.</li>
- * </ul>
+ * Provides endpoints for listing, retrieving, creating, updating,
+ * and deleting rooms.
  *
- * <p>
  * Access to these endpoints is restricted to users with the 'EMPLOYEE'
  * authority.
- * </p>
+ *
+ * Endpoints:
+ *   GET    /api/v1/rooms       – List all rooms.
+ *   GET    /api/v1/rooms/{id}  – Retrieve a specific room by ID.
+ *   POST   /api/v1/rooms       – Create a new room.
+ *   PUT    /api/v1/rooms/{id}  – Update an existing room by ID.
+ *   DELETE /api/v1/rooms/{id}  – Delete a room by ID.
  *
  * @author tiste
  */
+@PreAuthorize("hasAuthority('EMPLOYEE')")
 
 @RestController
 @RequestMapping("/api/v1/rooms")
@@ -57,6 +53,13 @@ public class RoomController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Create a new room.
+     * If the room already exists (e.g., same number), returns a 400 Bad Request response.
+     *
+     * @param dto the room data to create
+     * @return a ResponseEntity with the created room or a 400 Bad Request response
+     */
     @PostMapping
     public Room create(@RequestBody RoomDto dto) {
         Room room = new Room();
@@ -85,6 +88,14 @@ public class RoomController {
         return roomRepository.save(room);
     }
 
+    /**
+     * Update an existing room by its ID.
+     * If the room does not exist, returns a 404 Not Found response.
+     *
+     * @param id  the ID of the room to update
+     * @param dto the updated room data
+     * @return a ResponseEntity with the updated room or a 404 Not Found response
+     */
     @PutMapping("/{id}")
     public ResponseEntity<Room> update(@PathVariable Long id, @RequestBody RoomDto dto) {
         return roomRepository.findById(id).map(existing -> {
@@ -101,6 +112,13 @@ public class RoomController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Delete a room by its ID.
+     * If the room does not exist, returns a 404 Not Found response.
+     *
+     * @param id the ID of the room to delete
+     * @return a ResponseEntity indicating the result of the deletion
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return roomRepository.findById(id).map(r -> {
@@ -109,10 +127,20 @@ public class RoomController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Handle DataIntegrityViolationException to provide a user-friendly error message.
+     * This is triggered when a room with the same number already exists or other
+     * integrity constraints are violated.
+     *
+     * @param e the exception thrown
+     * @return a ResponseEntity with a bad request status and an error message
+     */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<String> handleConstraintViolation(DataIntegrityViolationException e) {
+        Throwable rootCause = e.getRootCause();
+        String causeMessage = (rootCause != null) ? rootCause.getMessage() : e.getMessage();
         return ResponseEntity
                 .badRequest()
-                .body("Invalid room data: " + e.getRootCause().getMessage());
+                .body("Invalid room data: " + causeMessage);
     }
 }
