@@ -1,17 +1,18 @@
 package master.master.service;
 
-import master.master.domain.LeaveRequest;
-import master.master.repository.LeaveRequestRepository;
-import master.master.web.rest.dto.CreateLeaveRequestDto;
-import master.master.web.rest.dto.LeaveRequestDto;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import master.master.domain.LeaveRequest;
+import master.master.repository.LeaveRequestRepository;
+import master.master.web.rest.dto.CreateLeaveRequestDto;
+import master.master.web.rest.dto.LeaveRequestDto;
 
 /**
  * Service for managing employee leave requests.
