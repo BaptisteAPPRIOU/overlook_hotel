@@ -27,7 +27,7 @@ public class RoomDto {
     private LocalDateTime next_maintenance_date;
     private String name;
     private Double price;
-    private String status; // AVAILABLE, OCCUPIED, MAINTENANCE
+    private String status;
     private LocalDateTime created_at;
     private String created_by;
     private LocalDateTime updated_at;
