@@ -126,25 +126,4 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
             "AND lr.createdAt < :cutoffDate " +
             "ORDER BY lr.createdAt ASC")
     List<LeaveRequest> findPendingRequestsOlderThan(@Param("cutoffDate") LocalDateTime cutoffDate);
-
-    /**
-     * Find leave requests for employees in a specific department.
-     * Note: This assumes there's a way to get department info from employee
-     * TODO: Uncomment when Employee entity has department field
-     */
-    // @Query("SELECT lr FROM LeaveRequest lr " +
-    //         "JOIN Employee e ON lr.employeeId = e.userId " +
-    //         "WHERE e.department = :department " +
-    //         "ORDER BY lr.createdAt DESC")
-    // List<LeaveRequest> findByEmployeeDepartment(@Param("department") String department);
-
-    /**
-     * Find leave requests that start within next N days.
-     * Useful for upcoming leave notifications.
-     * TODO: Fix date arithmetic in HQL query - PostgreSQL doesn't support this syntax
-     */
-    // @Query("SELECT lr FROM LeaveRequest lr WHERE lr.status = 'APPROVED' " +
-    //         "AND lr.startDate BETWEEN CURRENT_DATE AND (CURRENT_DATE + :days) " +
-    //         "ORDER BY lr.startDate ASC")
-    // List<LeaveRequest> findUpcomingApprovedLeave(@Param("days") Integer days);
 }

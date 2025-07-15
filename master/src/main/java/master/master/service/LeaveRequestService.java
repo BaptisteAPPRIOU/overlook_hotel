@@ -245,7 +245,7 @@ public class LeaveRequestService {
         return LeaveRequestDto.builder()
                 .id(leaveRequest.getId())
                 .employeeId(leaveRequest.getEmployeeId())
-                .employeeName(getEmployeeName(leaveRequest.getEmployeeId())) // TODO: Fetch from employee service
+                .employeeName(getEmployeeName(leaveRequest.getEmployeeId()))
                 .startDate(leaveRequest.getStartDate())
                 .endDate(leaveRequest.getEndDate())
                 .reason(leaveRequest.getReason())
