@@ -117,6 +117,26 @@ public class LeaveRequestController {
     }
 
     /**
+     * Get all leave requests for admin oversight.
+     * GET /api/v1/leave-requests/all
+     */
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllLeaveRequests() {
+        try {
+            List<LeaveRequestDto> allRequests = leaveRequestService.getAllLeaveRequests();
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "data", allRequests
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "success", false,
+                    "message", "Failed to load all leave requests: " + e.getMessage()
+            ));
+        }
+    }
+
+    /**
      * Approve a leave request.
      * PUT /api/v1/leave-requests/{requestId}/approve
      */
