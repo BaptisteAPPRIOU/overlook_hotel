@@ -51,11 +51,6 @@ public class EmployeeController {
         this.employeeService = employeeService;
         this.workdayService = workdayService;
     }
-// TODO: a clean ou récup
-//    @GetMapping
-//    public List<Employee> getAllEmployees() {
-//        return employeeRepository.findAll();
-//    }
 
     @PostMapping
     public ResponseEntity<Employee> create(@RequestBody CreateEmployeeRequestDto request) {

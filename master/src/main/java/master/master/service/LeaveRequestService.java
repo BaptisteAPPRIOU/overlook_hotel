@@ -24,10 +24,6 @@ public class LeaveRequestService {
     @Autowired
     private LeaveRequestRepository leaveRequestRepository;
 
-    // TODO: Inject EmployeeRepository when available
-    // @Autowired
-    // private EmployeeRepository employeeRepository;
-
     /**
      * Create a new leave request.
      */
@@ -159,14 +155,11 @@ public class LeaveRequestService {
      */
     @Transactional(readOnly = true)
     public Double getLeaveBalance(Long employeeId, String leaveType) {
-        // TODO: Get total leave days used this year when method is fixed
         // int currentYear = LocalDate.now().getYear();
         // Long usedDays = leaveRequestRepository.getTotalLeaveDaysUsed(employeeId, leaveType.toUpperCase(), currentYear);
 
-        // TODO: Get employee's allocated leave days from employee entity/policy
         // For now, use default allocations
         double allocatedDays = getDefaultLeaveAllocation(leaveType);
-        // TODO: Calculate actual remaining days when database queries are working
         // return Math.max(0, allocatedDays - (usedDays != null ? usedDays : 0));
         return allocatedDays; // Return full allocation for now
     }
@@ -188,7 +181,6 @@ public class LeaveRequestService {
     public LeaveStatistics getLeaveStatistics() {
         List<Object[]> statusStats = leaveRequestRepository.getLeaveRequestStatsByStatus();
         List<Object[]> typeStats = leaveRequestRepository.getLeaveRequestStatsByType();
-        // TODO: Uncomment when getAverageApprovalTimeInDays method is fixed
         // Double avgApprovalTime = leaveRequestRepository.getAverageApprovalTimeInDays();
 
         return LeaveStatistics.builder()
@@ -210,11 +202,6 @@ public class LeaveRequestService {
             throw new IllegalArgumentException("Leave cannot be requested for past dates");
         }
 
-        // TODO: Add more validation rules
-        // - Check if employee exists
-        // - Validate minimum notice period
-        // - Check blackout dates
-        // - Validate leave balance
     }
 
     /**
@@ -259,10 +246,8 @@ public class LeaveRequestService {
 
     /**
      * Get employee name by ID.
-     * TODO: Replace with actual employee service call.
      */
     private String getEmployeeName(Long employeeId) {
-        // TODO: Implement actual employee lookup
         return "Employee " + employeeId;
     }
 

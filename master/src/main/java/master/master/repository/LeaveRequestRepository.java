@@ -81,27 +81,6 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
             @Param("endDate") LocalDate endDate);
 
     /**
-     * Get total leave days used by employee and leave type within a year.
-     * TODO: Fix HQL function compatibility issues with PostgreSQL
-     */
-    // @Query("SELECT COALESCE(SUM(FUNCTION('DATE_PART', 'day', lr.endDate - lr.startDate) + 1), 0) " +
-    //         "FROM LeaveRequest lr WHERE lr.employeeId = :employeeId " +
-    //         "AND lr.type = :leaveType AND lr.status = 'APPROVED' " +
-    //         "AND EXTRACT(YEAR FROM lr.startDate) = :year")
-    // Long getTotalLeaveDaysUsed(
-    //         @Param("employeeId") Long employeeId,
-    //         @Param("leaveType") String leaveType,
-    //         @Param("year") Integer year);
-
-    /**
-     * Calculate average approval time for leave requests.
-     * TODO: Fix HQL function compatibility issues with PostgreSQL
-     */
-    // @Query("SELECT AVG(FUNCTION('DATE_PART', 'epoch', lr.updatedAt) - FUNCTION('DATE_PART', 'epoch', lr.createdAt)) / 86400 FROM LeaveRequest lr " +
-    //         "WHERE lr.status IN ('APPROVED', 'REJECTED') AND lr.updatedAt IS NOT NULL")
-    // Double getAverageApprovalTimeInDays();
-
-    /**
      * Find all leave requests approved by a specific manager.
      */
     List<LeaveRequest> findByApprovedByOrderByUpdatedAtDesc(String approvedBy);
