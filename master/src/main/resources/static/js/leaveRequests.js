@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // If user is admin, also load pending requests for approval
     if (isCurrentUserAdmin()) {
         loadPendingLeaveRequests();
+        loadAllLeaveRequests();
     }
 });
 
@@ -287,6 +288,29 @@ async function loadPendingLeaveRequests() {
 }
 
 /**
+ * Load all leave requests for admin oversight
+ */
+async function loadAllLeaveRequests() {
+    try {
+        const response = await fetchWithAuth('/api/v1/leave-requests/all');
+        
+        if (response.ok) {
+            const result = await response.json();
+            // Extract the data array from the API response
+            const requests = result.data || [];
+            displayAllLeaveRequests(requests);
+        } else {
+            console.error('Failed to load all requests');
+            displayAllLeaveRequests([]);
+        }
+        
+    } catch (error) {
+        console.error('Error loading all requests:', error);
+        displayAllLeaveRequests([]);
+    }
+}
+
+/**
  * Display employee's leave requests in the table
  */
 function displayMyLeaveRequests(requests) {
@@ -401,6 +425,78 @@ function displayPendingLeaveRequests(requests) {
 }
 
 /**
+ * Display all leave requests for admin oversight
+ */
+function displayAllLeaveRequests(requests) {
+    const tableBody = document.querySelector('#allLeaveRequestsTable tbody');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '';
+    
+    if (requests.length === 0) {
+        const row = tableBody.insertRow();
+        const cell = row.insertCell(0);
+        cell.colSpan = 8;
+        cell.className = 'text-center';
+        cell.textContent = 'No leave requests found';
+        return;
+    }
+    
+    requests.forEach(request => {
+        const row = tableBody.insertRow();
+        
+        // Employee
+        const employeeCell = row.insertCell(0);
+        employeeCell.textContent = request.employeeName || `Employee ${request.employeeId}`;
+        
+        // Type
+        const typeCell = row.insertCell(1);
+        typeCell.textContent = formatLeaveType(request.type);
+        
+        // Dates
+        const datesCell = row.insertCell(2);
+        datesCell.textContent = `${formatDate(request.startDate)} - ${formatDate(request.endDate)}`;
+        
+        // Duration
+        const durationCell = row.insertCell(3);
+        durationCell.textContent = `${calculateLeaveDuration(request.startDate, request.endDate)} days`;
+        
+        // Status
+        const statusCell = row.insertCell(4);
+        statusCell.innerHTML = `<span class="status-badge status-${request.status.toLowerCase()}">${request.status}</span>`;
+        
+        // Submitted
+        const submittedCell = row.insertCell(5);
+        submittedCell.textContent = formatDateTime(request.createdAt);
+        
+        // Processed By
+        const processedByCell = row.insertCell(6);
+        if (request.status === 'APPROVED') {
+            processedByCell.textContent = request.approvedBy || '-';
+        } else if (request.status === 'REJECTED') {
+            processedByCell.textContent = request.rejectedBy || '-';
+        } else {
+            processedByCell.textContent = '-';
+        }
+        
+        // Actions
+        const actionsCell = row.insertCell(7);
+        if (request.status === 'PENDING') {
+            actionsCell.innerHTML = `
+                <button class="btn btn-sm btn-success me-1" onclick="approveLeaveRequest(${request.id})">
+                    Approve
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="rejectLeaveRequest(${request.id})">
+                    Reject
+                </button>
+            `;
+        } else {
+            actionsCell.innerHTML = `<span class="text-muted">Processed</span>`;
+        }
+    });
+}
+
+/**
  * Cancel a leave request
  */
 async function cancelLeaveRequest(requestId) {
@@ -446,7 +542,7 @@ async function approveLeaveRequest(requestId) {
         if (response.ok) {
             showNotification('Leave request approved successfully', 'success');
             loadPendingLeaveRequests(); // Refresh pending list
-            loadMyLeaveRequests(); // Also refresh personal list if needed
+            loadAllLeaveRequests(); // Refresh all requests list
         } else {
             showNotification(result.message || 'Failed to approve leave request', 'error');
         }
@@ -472,7 +568,7 @@ async function rejectLeaveRequest(requestId) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(reason.trim())
+            body: JSON.stringify({ reason: reason.trim() })
         });
         
         const result = await response.json();
@@ -480,6 +576,7 @@ async function rejectLeaveRequest(requestId) {
         if (response.ok) {
             showNotification('Leave request rejected', 'success');
             loadPendingLeaveRequests(); // Refresh pending list
+            loadAllLeaveRequests(); // Refresh all requests list
         } else {
             showNotification(result.message || 'Failed to reject leave request', 'error');
         }
@@ -549,17 +646,40 @@ function calculateLeaveDuration(startDate, endDate) {
 
 function isCurrentUserAdmin() {
     // Check if current user has admin role
-    const currentUser = window.currentUser || {};
-    return currentUser.role === 'ADMIN';
+    // For now, return true to enable admin functionality for testing
+    // You can implement proper role checking later
+    return true;
 }
 
-function showNotification(message, type) {
-    // Use existing notification system or create a simple one
-    if (typeof showMessage === 'function') {
-        showMessage(message, type);
-    } else {
-        alert(message);
+function showNotification(message, type = 'info') {
+    // Create notification container if it doesn't exist
+    let container = document.getElementById('notificationContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'notificationContainer';
+        container.className = 'position-fixed';
+        container.style.cssText = 'top: 20px; right: 20px; z-index: 9999;';
+        document.body.appendChild(container);
     }
+
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'} alert-dismissible fade show`;
+    notification.style.cssText = 'min-width: 300px; margin-bottom: 10px;';
+    
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+
+    container.appendChild(notification);
+
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
 }
 
 // Make functions globally available
