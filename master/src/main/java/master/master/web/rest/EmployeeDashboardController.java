@@ -3,7 +3,6 @@ package master.master.web.rest;
 import master.master.domain.Employee;
 import master.master.service.EmployeeService;
 import master.master.service.EmployeeWorkdayService;
-import master.master.service.LeaveRequestService;
 import master.master.service.ScheduleService;
 import master.master.web.rest.dto.*;
 import org.springframework.http.ResponseEntity;
@@ -35,14 +34,7 @@ import java.util.List;
  *   <li><b>GET /api/schedules/range</b>: Get schedules for date range</li>
  * </ul>
  *
- * <h3>Leave Management Endpoints:</h3>
- * <ul>
- *   <li><b>POST /api/leave/request</b>: Submit leave request</li>
- *   <li><b>GET /api/leave/requests</b>: Get pending leave requests</li>
- *   <li><b>POST /api/leave/approve/{id}</b>: Approve leave request</li>
- *   <li><b>POST /api/leave/reject/{id}</b>: Reject leave request</li>
- * </ul>
- *
+
  * @author Hotel Reservation System
  * @version 2.0
  */
@@ -53,22 +45,19 @@ public class EmployeeDashboardController {
     private final EmployeeService employeeService;
     private final EmployeeWorkdayService workdayService;
     private final ScheduleService scheduleService;
-    private final LeaveRequestService leaveRequestService;
 //    private final RoomService roomService;
 //    private final ReviewService reviewService;
 
     public EmployeeDashboardController(
             EmployeeService employeeService,
             EmployeeWorkdayService workdayService,
-            ScheduleService scheduleService,
-            LeaveRequestService leaveRequestService
+            ScheduleService scheduleService
 //            RoomService roomService,
 //            ReviewService reviewService
     ) {
         this.employeeService = employeeService;
         this.workdayService = workdayService;
         this.scheduleService = scheduleService;
-        this.leaveRequestService = leaveRequestService;
 //        this.roomService = roomService;
 //        this.reviewService = reviewService;
     }    // =============================================================================
@@ -206,78 +195,6 @@ public class EmployeeDashboardController {
     public ResponseEntity<Void> setEmployeeWorkdays(@PathVariable Long id, @RequestBody List<Integer> weekdays) {
         try {
             workdayService.setWorkdays(id, weekdays);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    // =============================================================================
-    // LEAVE REQUEST MANAGEMENT ENDPOINTS
-    // =============================================================================
-
-    /**
-     * Submit a new leave request.
-     * Used by the "Request Leave" form.
-     */
-    @PostMapping("/api/dashboard/leave/request")
-    public ResponseEntity<LeaveRequestDto> submitLeaveRequest(@RequestBody CreateLeaveRequestDto request) {
-        try {
-            LeaveRequestDto leaveRequest = leaveRequestService.createLeaveRequest(request);
-            return ResponseEntity.ok(leaveRequest);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    /**
-     * Get all pending leave requests.
-     * Used by the "Leave Approval" section.
-     */
-    @GetMapping("/api/dashboard/leave/requests")
-    public ResponseEntity<List<LeaveRequestDto>> getPendingLeaveRequests() {
-        try {
-            List<LeaveRequestDto> requests = leaveRequestService.getPendingLeaveRequests();
-            return ResponseEntity.ok(requests);
-        } catch (Exception e) {
-            return ResponseEntity.ok(List.of());
-        }
-    }
-
-    /**
-     * Get leave requests for a specific employee.
-     * Used by the "My Leave Requests" table.
-     */
-    @GetMapping("/api/dashboard/leave/requests/employee/{employeeId}")
-    public ResponseEntity<List<LeaveRequestDto>> getEmployeeLeaveRequests(@PathVariable Long employeeId) {
-        try {
-            List<LeaveRequestDto> requests = leaveRequestService.getEmployeeLeaveRequests(employeeId);
-            return ResponseEntity.ok(requests);
-        } catch (Exception e) {
-            return ResponseEntity.ok(List.of());
-        }
-    }
-
-    /**
-     * Approve a leave request.
-     */
-    @PostMapping("/api/dashboard/leave/approve/{id}")
-    public ResponseEntity<Void> approveLeaveRequest(@PathVariable Long id, @RequestBody ApproveLeaveRequestDto request) {
-        try {
-            leaveRequestService.approveLeaveRequest(id, request.getApprovalComment());
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    /**
-     * Reject a leave request.
-     */
-    @PostMapping("/api/dashboard/leave/reject/{id}")
-    public ResponseEntity<Void> rejectLeaveRequest(@PathVariable Long id, @RequestBody RejectLeaveRequestDto request) {
-        try {
-            leaveRequestService.rejectLeaveRequest(id, request.getRejectionReason(), request.getRejectionComment());
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
