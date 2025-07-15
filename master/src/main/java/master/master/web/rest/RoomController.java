@@ -29,7 +29,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
  *
  * @author tiste
  */
-@PreAuthorize("hasAuthority('EMPLOYEE')")
 
 @RestController
 @RequestMapping("/api/v1/rooms")
