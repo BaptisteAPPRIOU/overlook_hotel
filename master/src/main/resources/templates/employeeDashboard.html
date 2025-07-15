@@ -222,49 +222,99 @@
             <!-- 1) Room Booking -->
             <section class="main-card" data-cat="booking">
                 <div class="card">
-                    <h4>Create Room</h4>
-                    <form method="post" th:action="@{/room}">
-                        <input class="form-control" name="number" placeholder="Room number" required type="text">
-                        <select class="form-select" name="type">
-                            <option value="">Select room type</option>
-                            <option value="Single">Single</option>
-                            <option value="Double">Double</option>
-                            <option value="Suite">Suite</option>
-                        </select>
-                        <button class="btn btn-primary" type="submit">Create Room</button>
-                    </form>
-                </div>
+                    <h4>Rooms Management</h4>
 
-                <div class="card">
-                    <h4>Modify Room</h4>
-                    <form method="post" th:action="@{/room/update}">
-                        <select class="form-select" name="id" required>
-                            <option value="">Select room to modify</option>
-                            <option th:each="r : ${rooms}" th:text="${r.number}" th:value="${r.id}"></option>
-                        </select>
-                        <select class="form-select" name="type">
-                            <option value="">Select new room type</option>
-                            <option value="Single">Single</option>
-                            <option value="Double">Double</option>
-                            <option value="Suite">Suite</option>
-                        </select>
-                        <button class="btn btn-success" type="submit">Modify Room</button>
-                    </form>
-                </div>
+                    <!-- Tableau dynamique -->
+                    <div class="table-responsive mb-4">
+                        <table class="table table-striped align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Number</th>
+                                    <th>Type</th>
+                                    <th>Capacity</th>
+                                    <th>Features</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="roomsTableBody">
+                            <!-- rempli par employeeRooms.js -->
+                            </tbody>
+                        </table>
+                    </div>
 
-                <div class="card">
-                    <h4>Delete Room</h4>
-                    <form method="post" th:action="@{/room/delete}">
-                        <select class="form-select" name="id" required>
-                            <option value="">Select room to delete</option>
-                            <option th:each="r : ${room}" th:text="${r.number}" th:value="${r.id}"></option>
-                        </select>
-                        <button class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this room?')"
-                                type="submit">Delete Room
-                        </button>
+                    <!-- Formulaire de création / mise à jour -->
+                    <form id="roomForm" class="row g-2 align-items-end">
+                        <div class="col-auto">
+                            <label for="roomNumber" class="visually-hidden">Nº</label>
+                            <input id="roomNumber" type="text"
+                                class="form-control form-control-sm"
+                                placeholder="Nº" required>
+                        </div>
+
+                        <div class="col-auto">
+                            <label for="roomType" class="visually-hidden">Type</label>
+                            <select id="roomType"
+                                    class="form-select form-select-sm"
+                                    required>
+                            <option value="">Type</option>
+                            <option value="CONFERENCE">Conference</option>
+                            <option value="MEETING">Meeting</option>
+                            <option value="OFFICE">Office</option>
+                            <option value="TRAINING">Training</option>
+                            <option value="BOARDROOM">Boardroom</option>
+                            </select>
+                        </div>
+
+                        <div class="col-auto">
+                            <label for="roomCapacity" class="visually-hidden">Capacity</label>
+                            <input id="roomCapacity" type="number" min="1"
+                                class="form-control form-control-sm"
+                                placeholder="Cap." required>
+                        </div>
+
+                        <div class="col-auto">
+                            <label for="roomPrice" class="visually-hidden">Price</label>
+                            <input id="roomPrice" type="number" min="0" step="0.01"
+                                class="form-control form-control-sm"
+                                placeholder="Prix" required>
+                        </div>
+
+                        <div class="col-auto">
+                            <div class="form-check form-check-inline">
+                                <input id="hasProjector" class="form-check-input form-check-input-sm" type="checkbox">
+                                <label class="form-check-label small" for="hasProjector">Projector</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input id="hasWhiteboard" class="form-check-input form-check-input-sm" type="checkbox">
+                                <label class="form-check-label small" for="hasWhiteboard">Whiteboard</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input id="hasVideoConference" class="form-check-input form-check-input-sm" type="checkbox">
+                                <label class="form-check-label small" for="hasVideoConference">Video</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input id="hasAirConditioning" class="form-check-input form-check-input-sm" type="checkbox">
+                                <label class="form-check-label small" for="hasAirConditioning">A/C</label>
+                            </div>
+                        </div>
+
+                        <div class="col-auto">
+                            <div class="form-check">
+                                <input id="isOccupied" class="form-check-input form-check-input-sm" type="checkbox">
+                                <label class="form-check-label small" for="isOccupied">Occupied</label>
+                            </div>
+                        </div>
+
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-primary btn-sm">Create</button>
+                        </div>
                     </form>
                 </div>
             </section>
+
+            <script th:src="@{/js/employeeRooms.js}"></script>
 
             <!-- 2) Leave Request -->
             <section class="main-card hidden" data-cat="leave">
