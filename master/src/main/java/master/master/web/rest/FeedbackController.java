@@ -17,6 +17,7 @@ public class FeedbackController {
         this.service = service;
     }
 
+    // Endpoint to create feedback for a specific user
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public FeedbackDto.Info create(@PathVariable Long userId,
@@ -24,6 +25,7 @@ public class FeedbackController {
         return service.create(userId, dto);
     }
 
+    // Endpoint to retrieve all feedbacks for a specific user
     @GetMapping
     public List<FeedbackDto.Info> list(@PathVariable Long userId) {
         return service.findByUser(userId);

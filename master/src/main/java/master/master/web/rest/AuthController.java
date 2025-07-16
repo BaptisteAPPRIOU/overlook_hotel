@@ -112,6 +112,7 @@ public class AuthController {
 
     }
 
+    // Handle user logout requests
     @PostMapping("/logout")
     public ResponseEntity<AuthResponseDto> logout(HttpServletRequest request) {
         String header = request.getHeader("Authorization");

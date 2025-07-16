@@ -47,29 +47,34 @@ public class PageController {
         this.employeePlanningService = employeePlanningService;
     }
 
+    // Home page that redirects to the login page
     @GetMapping("/")
     public String homeLoginPage() {
         return "homeLoginPage";
     }
 
+    //  Client and Employee login pages
     @GetMapping("/clientLogin")
     public String clientLoginPage(Model model) {
         model.addAttribute("title", "Client Login");
         return "clientLoginPage";
     }
 
+    // Employee login page
     @GetMapping("/employeeLogin")
     public String employeeLoginPage(Model model) {
         model.addAttribute("title", "Employee Login");
         return "employeeLoginPage";
     }
 
+    // Registration page for new users
     @GetMapping("/register")
     public String registerPage(Model model) {
         model.addAttribute("title", "Register");
         return "registerPage";
     }
 
+    // Employee dashboard page
     @GetMapping("/employeeDashboard")
     public String employeeDashboardPage(Model model) {
         // Add title
@@ -120,6 +125,7 @@ public class PageController {
         return "employeeDashboard";
     }
 
+    // Room management page for employees
     @GetMapping("/roomManagement")
     public String roomManagementPage(Model model) {
         model.addAttribute("title", "Room Management");
@@ -164,7 +170,6 @@ public class PageController {
     }
 
     // Employee Planning Management endpoints
-
     @GetMapping("/planning")
     public String planningPage(Model model) {
         model.addAttribute("title", "Employee Planning Management");
@@ -199,6 +204,7 @@ public class PageController {
         return "employeePlanning";
     }
 
+    // Endpoint to create default planning for an employee
     @PostMapping("/planning/create-default")
     public String createDefaultPlanning(@RequestParam Long employeeId, Model model) {
         log.info("Creating default 35h/week planning for employee ID: {}", employeeId);
@@ -215,6 +221,7 @@ public class PageController {
         return "redirect:/planning";
     }
 
+    // Endpoint to view the current user's planning
     @GetMapping("/my-planning")
     public String myPlanningPage(Model model) {
         model.addAttribute("title", "My Work Schedule");
