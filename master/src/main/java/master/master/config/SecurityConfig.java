@@ -38,6 +38,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/login", "/api/v1/register", "/error").permitAll()
                         .requestMatchers("/", "/clientLogin", "/employeeLogin", "/register").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/image/**").permitAll()
+                        .requestMatchers("/api/public/**").permitAll()  // Public room API
 
                         // Employee Dashboard and related pages - Only EMPLOYEE and ADMIN can access
                         .requestMatchers("/employeeDashboard").hasAnyAuthority("EMPLOYEE", "ADMIN")
