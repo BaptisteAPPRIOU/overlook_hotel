@@ -1,133 +1,157 @@
 package master.master.service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import master.master.domain.ReservationId;
+import master.master.domain.Review;
+import master.master.domain.Room;
+import master.master.domain.User;
+import master.master.domain.UserReservation;
+import master.master.repository.ReservationRepository;
+import master.master.repository.ReviewRepository;
+import master.master.repository.RoomRepository;
+import master.master.repository.UserRepository;
+
 /**
- * Service for hotel website functionality including room availability,
- * guest reviews, and reservation management for public-facing features.
+ * Service for handling hotel website functionality with real database integration.
+ * Provides methods for room management, guest reviews, and reservation handling.
  */
 @Service
-@Transactional
+@Transactional(readOnly = true)
 public class HotelWebsiteService {
 
-    // Sample data - replace with actual repository calls in production
-    
+    private final RoomRepository roomRepository;
+    private final ReviewRepository reviewRepository;
+    private final ReservationRepository reservationRepository;
+    private final UserRepository userRepository;
+
+    public HotelWebsiteService(RoomRepository roomRepository,
+                              ReviewRepository reviewRepository,
+                              ReservationRepository reservationRepository,
+                              UserRepository userRepository) {
+        this.roomRepository = roomRepository;
+        this.reviewRepository = reviewRepository;
+        this.reservationRepository = reservationRepository;
+        this.userRepository = userRepository;
+    }
+
     /**
      * Get available rooms for specific dates and guest count.
+     * Filters by room capacity and availability status.
      */
     public List<Map<String, Object>> getAvailableRooms(LocalDate checkIn, LocalDate checkOut, int adults, int children) {
-        // TODO: Implement actual room availability check with database
-        List<Map<String, Object>> rooms = getAllRoomTypes();
-        
-        // Filter based on occupancy
         int totalGuests = adults + children;
-        return rooms.stream()
-                .filter(room -> (Integer) room.get("maxOccupancy") >= totalGuests)
-                .map(room -> {
-                    // Add availability status based on dates (mock logic)
-                    room.put("availability", calculateAvailability(checkIn, checkOut));
-                    return room;
-                })
-                .toList();
+        
+        // Get all available rooms that can accommodate the guests
+        List<Room> availableRooms = roomRepository.findAll().stream()
+            .filter(room -> room.getStatus() == Room.RoomStatus.AVAILABLE)
+            .filter(room -> room.getType().isHotelRoom()) // Hotel rooms
+            .filter(room -> room.getCapacity() != null && room.getCapacity() >= totalGuests)
+            .collect(Collectors.toList());
+        
+        return availableRooms.stream()
+            .map(this::convertRoomToMap)
+            .collect(Collectors.toList());
     }
 
     /**
      * Get all room types with basic information.
      */
     public List<Map<String, Object>> getAllRoomTypes() {
-        List<Map<String, Object>> rooms = new ArrayList<>();
+        List<Room> allRooms = roomRepository.findAll().stream()
+            .filter(room -> room.getType().isHotelRoom()) // Hotel rooms
+            .collect(Collectors.toList());
         
-        // Sample room data - replace with actual database queries
-        rooms.add(createRoomMap(1, "Chambre Deluxe", "DELUXE", 
-            "Chambre spacieuse avec vue sur la montagne, parfaite pour un séjour romantique.", 
-            189, 2, "Lit king-size", 35, 
-            "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3", 
-            true, false));
-            
-        rooms.add(createRoomMap(2, "Suite Présidentielle", "SUITE", 
-            "Notre suite la plus luxueuse avec salon séparé, jacuzzi et vue panoramique.", 
-            450, 4, "Lit king-size + canapé-lit", 85, 
-            "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3", 
-            true, true));
-            
-        rooms.add(createRoomMap(3, "Chambre Standard", "STANDARD", 
-            "Chambre confortable avec toutes les commodités essentielles pour un séjour agréable.", 
-            129, 2, "Lit double", 25, 
-            "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3", 
-            false, false));
-            
-        rooms.add(createRoomMap(4, "Chambre Familiale", "FAMILY", 
-            "Spacieuse chambre familiale avec lits superposés, idéale pour les familles.", 
-            229, 6, "Lit double + lits superposés", 45, 
-            "https://images.unsplash.com/photo-1560472355-536de3962603?ixlib=rb-4.0.3", 
-            true, false));
-            
-        rooms.add(createRoomMap(5, "Chambre Superior", "SUPERIOR", 
-            "Chambre élégante avec décoration raffinée et équipements modernes.", 
-            159, 2, "Lit queen-size", 30, 
-            "https://images.unsplash.com/photo-1566665797739-1674de7a421a?ixlib=rb-4.0.3", 
-            false, false));
-            
-        rooms.add(createRoomMap(6, "Suite Junior", "JUNIOR_SUITE", 
-            "Suite avec coin salon et vue imprenable sur la vallée.", 
-            289, 3, "Lit king-size + fauteuil-lit", 55, 
-            "https://images.unsplash.com/photo-1587985064135-0366536eab42?ixlib=rb-4.0.3", 
-            true, true));
-
-        return rooms;
+        return allRooms.stream()
+            .map(this::convertRoomToMap)
+            .collect(Collectors.toList());
     }
 
     /**
-     * Get validated guest reviews for the Livret d'Or.
+     * Get validated guest reviews for the "Livret d'Or".
+     * Only returns reviews that have been verified by an admin.
      */
     public List<Map<String, Object>> getValidatedReviews(int offset, int limit) {
-        // TODO: Implement actual database query for validated reviews
-        List<Map<String, Object>> allReviews = getSampleReviews();
+        List<Review> verifiedReviews = reviewRepository.findAll().stream()
+            .filter(Review::getIsVerified)
+            .sorted((r1, r2) -> r2.getCreatedAt().compareTo(r1.getCreatedAt()))
+            .skip(offset)
+            .limit(limit)
+            .collect(Collectors.toList());
         
-        // Simulate pagination
-        int start = Math.min(offset, allReviews.size());
-        int end = Math.min(offset + limit, allReviews.size());
-        
-        return allReviews.subList(start, end);
+        return verifiedReviews.stream()
+            .map(this::convertReviewToMap)
+            .collect(Collectors.toList());
     }
 
     /**
-     * Get latest validated reviews.
+     * Get latest validated reviews (most recent first).
      */
     public List<Map<String, Object>> getLatestValidatedReviews(int limit) {
-        // TODO: Implement actual database query for latest validated reviews
-        List<Map<String, Object>> allReviews = getSampleReviews();
-        
-        // Return the most recent reviews (first items in our sample data)
-        return allReviews.subList(0, Math.min(limit, allReviews.size()));
+        return getValidatedReviews(0, limit);
     }
 
     /**
      * Create a reservation request.
      */
+    @Transactional
     public Map<String, Object> createReservationRequest(Map<String, Object> reservationData) {
-        // TODO: Implement actual reservation creation logic
         Map<String, Object> result = new HashMap<>();
         
         try {
-            // Simulate reservation creation
-            String reservationId = "RES-" + System.currentTimeMillis();
+            // Extract reservation data
+            Long roomId = Long.valueOf(reservationData.get("roomId").toString());
+            Long userId = Long.valueOf(reservationData.get("userId").toString());
+            LocalDate checkIn = LocalDate.parse(reservationData.get("checkIn").toString());
+            LocalDate checkOut = LocalDate.parse(reservationData.get("checkOut").toString());
+            Boolean payNow = Boolean.valueOf(reservationData.get("payNow").toString());
+            
+            // Verify room availability
+            Optional<Room> roomOpt = roomRepository.findById(roomId);
+            if (!roomOpt.isPresent()) {
+                result.put("success", false);
+                result.put("message", "Chambre non trouvée");
+                return result;
+            }
+            
+            Room room = roomOpt.get();
+            if (room.getStatus() != Room.RoomStatus.AVAILABLE) {
+                result.put("success", false);
+                result.put("message", "Chambre non disponible");
+                return result;
+            }
+            
+            // Create reservation
+            ReservationId reservationId = new ReservationId();
+            reservationId.setUserId(userId);
+            reservationId.setRoomId(roomId);
+            
+            UserReservation reservation = UserReservation.builder()
+                .id(reservationId)
+                .reservationDateStart(checkIn)
+                .reservationDateEnd(checkOut)
+                .payed(payNow)
+                .build();
+            
+            reservationRepository.save(reservation);
+            
+            // Update room status to reserved
+            room.setStatus(Room.RoomStatus.RESERVED);
+            roomRepository.save(room);
             
             result.put("success", true);
-            result.put("reservationId", reservationId);
             result.put("message", "Réservation créée avec succès");
-            result.put("status", "PENDING_PAYMENT");
-            
-            // Log reservation details for debugging
-            System.out.println("New reservation created: " + reservationId);
-            System.out.println("Reservation data: " + reservationData);
+            result.put("reservationId", reservationId);
+            result.put("totalPrice", calculateTotalPrice(room.getPrice(), checkIn, checkOut));
             
         } catch (Exception e) {
             result.put("success", false);
@@ -143,122 +167,127 @@ public class HotelWebsiteService {
     public Map<String, Object> getHotelInformation() {
         Map<String, Object> hotelInfo = new HashMap<>();
         
+        // Basic hotel information
         hotelInfo.put("name", "Overlook Hotel");
         hotelInfo.put("description", "Un établissement de luxe niché dans les montagnes du Colorado");
-        hotelInfo.put("address", "333 Wonderland Road, Estes Park, Colorado 80517, États-Unis");
-        hotelInfo.put("phone", "+1 (555) 123-4567");
-        hotelInfo.put("email", "contact@overlookhotel.com");
-        hotelInfo.put("establishedYear", 1907);
-        hotelInfo.put("totalRooms", 237);
-        hotelInfo.put("totalSuites", 42);
-        hotelInfo.put("averageRating", 4.7);
-        hotelInfo.put("totalReviews", 1523);
+        hotelInfo.put("established", 1907);
         
-        // Add amenities
-        List<String> amenities = List.of(
-            "Spa & Wellness Center",
-            "Restaurant gastronomique",
-            "Piscine intérieure chauffée",
-            "Salle de sport",
-            "Centre d'affaires",
-            "Service de conciergerie",
-            "WiFi gratuit",
-            "Parking valet"
-        );
-        hotelInfo.put("amenities", amenities);
+        // Statistics from database
+        long totalRooms = roomRepository.count();
+        long availableRooms = roomRepository.findAll().stream()
+            .filter(room -> room.getStatus() == Room.RoomStatus.AVAILABLE)
+            .filter(room -> room.getType().isHotelRoom())
+            .count();
+        
+        long totalReviews = reviewRepository.count();
+        long verifiedReviews = reviewRepository.findAll().stream()
+            .filter(Review::getIsVerified)
+            .count();
+        
+        Double averageRating = reviewRepository.getAverageRating();
+        
+        hotelInfo.put("totalRooms", totalRooms);
+        hotelInfo.put("availableRooms", availableRooms);
+        hotelInfo.put("totalReviews", totalReviews);
+        hotelInfo.put("verifiedReviews", verifiedReviews);
+        hotelInfo.put("averageRating", averageRating != null ? Math.round(averageRating * 10.0) / 10.0 : 0.0);
         
         return hotelInfo;
     }
 
-    // =====================================
-    // HELPER METHODS
-    // =====================================
-
-    private Map<String, Object> createRoomMap(int id, String name, String type, String description,
-            int price, int maxOccupancy, String bedType, int size, String image,
-            boolean hasBalcony, boolean hasJacuzzi) {
+    /**
+     * Convert Room entity to Map for API response.
+     */
+    private Map<String, Object> convertRoomToMap(Room room) {
+        Map<String, Object> roomMap = new HashMap<>();
+        roomMap.put("id", room.getId());
+        roomMap.put("number", room.getNumber());
+        roomMap.put("name", room.getName() != null ? room.getName() : "Chambre " + room.getNumber());
+        roomMap.put("type", room.getType().toString());
+        roomMap.put("capacity", room.getCapacity());
+        roomMap.put("description", room.getDescription() != null ? room.getDescription() : "Chambre confortable avec toutes les commodités");
+        roomMap.put("price", room.getPrice() != null ? room.getPrice() : 150.0);
+        roomMap.put("status", room.getStatus().getDisplayName());
+        roomMap.put("floorNumber", room.getFloorNumber());
         
-        Map<String, Object> room = new HashMap<>();
-        room.put("id", id);
-        room.put("name", name);
-        room.put("type", type);
-        room.put("description", description);
-        room.put("price", price);
-        room.put("maxOccupancy", maxOccupancy);
-        room.put("bedType", bedType);
-        room.put("size", size);
-        room.put("image", image);
-        room.put("hasBalcony", hasBalcony);
-        room.put("hasJacuzzi", hasJacuzzi);
-        room.put("availability", "available"); // Default availability
+        // Features
+        Map<String, Boolean> features = new HashMap<>();
+        features.put("hasProjector", room.getHasProjector() != null ? room.getHasProjector() : false);
+        features.put("hasWhiteboard", room.getHasWhiteboard() != null ? room.getHasWhiteboard() : false);
+        features.put("hasVideoConference", room.getHasVideoConference() != null ? room.getHasVideoConference() : false);
+        features.put("hasAirConditioning", room.getHasAirConditioning() != null ? room.getHasAirConditioning() : true);
+        roomMap.put("features", features);
         
-        return room;
-    }
-
-    private String calculateAvailability(LocalDate checkIn, LocalDate checkOut) {
-        // Mock availability calculation
-        // In production, this would check actual room bookings
-        long daysBetween = checkIn.until(checkOut).getDays();
-        
-        if (Math.random() < 0.1) { // 10% chance of unavailable
-            return "unavailable";
-        } else if (Math.random() < 0.3) { // 20% chance of limited availability
-            return "limited";
+        // Amenities from database
+        List<String> amenities = room.getAmenities();
+        if (amenities != null && !amenities.isEmpty()) {
+            roomMap.put("amenities", amenities);
         } else {
-            return "available";
+            // Fallback amenities if none are set
+            roomMap.put("amenities", Arrays.asList(
+                "WiFi gratuit",
+                "Télévision écran plat",
+                "Coffre-fort",
+                "Sèche-cheveux"
+            ));
         }
+        
+        // Get average rating for this room
+        Double avgRating = reviewRepository.getAverageRatingByRoomId(room.getId());
+        roomMap.put("rating", avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0);
+        
+        // Get review count for this room
+        Long reviewCount = reviewRepository.countByRoomId(room.getId());
+        roomMap.put("reviewCount", reviewCount != null ? reviewCount : 0);
+        
+        return roomMap;
     }
 
-    private List<Map<String, Object>> getSampleReviews() {
-        List<Map<String, Object>> reviews = new ArrayList<>();
+    /**
+     * Convert Review entity to Map for API response.
+     */
+    private Map<String, Object> convertReviewToMap(Review review) {
+        Map<String, Object> reviewMap = new HashMap<>();
+        reviewMap.put("id", review.getId());
+        reviewMap.put("rating", review.getRating());
+        reviewMap.put("comment", review.getComment());
+        reviewMap.put("reviewDate", review.getReviewDate().toString());
+        reviewMap.put("createdAt", review.getCreatedAt().toString());
+        reviewMap.put("isAnonymous", review.getIsAnonymous());
+        reviewMap.put("helpfulCount", review.getHelpfulCount());
         
-        reviews.add(createReviewMap(1, "Marie Dubois", 5.0,
-            "Séjour absolument magique ! L'hôtel est somptueux et le service irréprochable. La vue depuis notre chambre était à couper le souffle.",
-            "2024-12-15", "3 nuits", "VALIDATED"));
-            
-        reviews.add(createReviewMap(2, "Jean-Pierre Martin", 4.5,
-            "Excellent hôtel avec un cadre exceptionnel. Le spa est fantastique et le restaurant propose une cuisine raffinée. Nous reviendrons !",
-            "2024-12-10", "5 nuits", "VALIDATED"));
-            
-        reviews.add(createReviewMap(3, "Sophie Laurent", 5.0,
-            "Un week-end parfait dans un cadre idyllique. L'accueil était chaleureux et notre suite était magnifique. Merci pour ces moments inoubliables.",
-            "2024-12-08", "2 nuits", "VALIDATED"));
-            
-        reviews.add(createReviewMap(4, "Paul Bernaud", 4.0,
-            "Très bel hôtel avec une architecture impressionnante. Les chambres sont spacieuses et bien équipées. Seul bémol : le wifi un peu lent.",
-            "2024-12-05", "4 nuits", "VALIDATED"));
-            
-        reviews.add(createReviewMap(5, "Catherine Moreau", 5.0,
-            "L'Overlook Hotel dépasse toutes les attentes ! Le service personnalisé, la qualité des prestations et la beauté des lieux en font un endroit unique.",
-            "2024-12-01", "1 semaine", "VALIDATED"));
-            
-        reviews.add(createReviewMap(6, "Michel Rousseau", 4.5,
-            "Hôtel de grande classe dans un environnement exceptionnel. Le petit-déjeuner était délicieux et le personnel très attentionné.",
-            "2024-11-28", "3 nuits", "VALIDATED"));
-            
-        reviews.add(createReviewMap(7, "Isabelle Garnier", 4.5,
-            "Une expérience formidable dans un cadre enchanteur. Les activités proposées sont variées et le personnel est aux petits soins.",
-            "2024-11-25", "4 nuits", "VALIDATED"));
-            
-        reviews.add(createReviewMap(8, "François Leroy", 5.0,
-            "Magnifique hôtel avec une histoire fascinante. Chaque détail est soigné et l'atmosphère est unique. Un vrai coup de cœur !",
-            "2024-11-20", "6 nuits", "VALIDATED"));
-
-        return reviews;
+        // Get room information
+        Optional<Room> roomOpt = roomRepository.findById(review.getRoomId());
+        if (roomOpt.isPresent()) {
+            Room room = roomOpt.get();
+            reviewMap.put("roomNumber", room.getNumber());
+            reviewMap.put("roomName", room.getName() != null ? room.getName() : "Chambre " + room.getNumber());
+        }
+        
+        // Get author information (if not anonymous)
+        if (!review.getIsAnonymous()) {
+            Optional<User> userOpt = userRepository.findById(review.getAuthorId());
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                // Only show first name for privacy
+                String authorName = user.getFirstName() != null ? user.getFirstName() : "Client";
+                reviewMap.put("authorName", authorName);
+            } else {
+                reviewMap.put("authorName", "Client");
+            }
+        } else {
+            reviewMap.put("authorName", "Client anonyme");
+        }
+        
+        return reviewMap;
     }
 
-    private Map<String, Object> createReviewMap(int id, String clientName, double rating,
-            String comment, String date, String stayDuration, String status) {
-        
-        Map<String, Object> review = new HashMap<>();
-        review.put("id", id);
-        review.put("clientName", clientName);
-        review.put("rating", rating);
-        review.put("comment", comment);
-        review.put("date", date);
-        review.put("stayDuration", stayDuration);
-        review.put("status", status);
-        
-        return review;
+    /**
+     * Calculate total price for a stay.
+     */
+    private double calculateTotalPrice(Double roomPrice, LocalDate checkIn, LocalDate checkOut) {
+        if (roomPrice == null) roomPrice = 150.0; // Default price
+        long nights = checkIn.until(checkOut).getDays();
+        return roomPrice * nights;
     }
 }
