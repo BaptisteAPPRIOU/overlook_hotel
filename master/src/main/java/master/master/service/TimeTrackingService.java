@@ -136,6 +136,7 @@ public class TimeTrackingService {
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Employee not found"));
     }
 
+    // Find or create a workday record for the employee on the specified date
     private EmployeeWorkday findOrCreateWorkday(Long employeeId, LocalDate workDate) {
         int weekday = workDate.getDayOfWeek().getValue(); // 1=Monday, 7=Sunday
         WorkdayId workdayId = new WorkdayId(employeeId, weekday, workDate);
@@ -149,6 +150,7 @@ public class TimeTrackingService {
                 });
     }
 
+    // Build a DTO for time tracking information
     private TimeTrackingDto buildTimeTrackingDto(Employee employee, EmployeeWorkday workday, LocalDate workDate) {
         String status = determineStatus(workday);
         
@@ -174,6 +176,7 @@ public class TimeTrackingService {
                 .build();
     }
 
+    // Determine the status of the workday based on clock-in/clock-out times
     private String determineStatus(EmployeeWorkday workday) {
         if (workday.getClockIn() == null && workday.getClockOut() == null) {
             return workday.getPlannedStartTime() != null ? "SCHEDULED" : "NO_SCHEDULE";
@@ -189,6 +192,7 @@ public class TimeTrackingService {
         }
     }
 
+    // Calculate minutes late if the employee clocked in after the planned start time
     private Integer calculateMinutesLate(EmployeeWorkday workday) {
         if (workday.getClockIn() != null && workday.getPlannedStartTime() != null && workday.isLate()) {
             return (int) Duration.between(workday.getPlannedStartTime(), workday.getClockIn()).toMinutes();
@@ -196,6 +200,7 @@ public class TimeTrackingService {
         return 0;
     }
 
+    // Calculate minutes early if the employee left early
     private Integer calculateMinutesEarly(EmployeeWorkday workday) {
         if (workday.getClockOut() != null && workday.getPlannedEndTime() != null && workday.isEarlyLeave()) {
             return (int) Duration.between(workday.getClockOut(), workday.getPlannedEndTime()).toMinutes();

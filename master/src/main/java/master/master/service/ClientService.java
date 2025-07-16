@@ -23,9 +23,7 @@ public class ClientService {
         this.mapper = mapper;
     }
 
-    /**
-     * Crée un Client si le User a le rôle CLIENT.
-     */
+    // This method creates a new client from a User entity.
     @Transactional
     public void createFromUser(User user) {
         if (user.getRole() == RoleType.CLIENT) {
@@ -36,9 +34,7 @@ public class ClientService {
         }
     }
 
-    /**
-     * Liste uniquement les vrais clients.
-     */
+    // This method retrieves all clients in the system.
     public List<ClientDto.Info> findAllClients() {
         return repo.findAllByUserRole(RoleType.CLIENT)
                 .stream()
@@ -46,12 +42,14 @@ public class ClientService {
                 .toList();
     }
 
+    // This method retrieves a specific client by their user ID.
     public ClientDto.Info findOneClient(Long userId) {
         Client c = repo.findByUserIdAndUserRole(userId, RoleType.CLIENT)
                 .orElseThrow(() -> new RuntimeException("Not found"));
         return mapper.toDto(c);
     }
 
+    // This method updates an existing client's details.
     @Transactional
     public ClientDto.Info update(ClientDto.Update dto) {
         Client c = repo.findByUserIdAndUserRole(dto.getUserId(), RoleType.CLIENT)
@@ -60,6 +58,7 @@ public class ClientService {
         return mapper.toDto(c);
     }
 
+    // This method deletes a client and their associated User account.
     @Transactional
     public void delete(Long userId) {
         Client c = repo.findByUserIdAndUserRole(userId, RoleType.CLIENT)

@@ -247,11 +247,17 @@ public class EmployeePlanningService {
     // HELPER METHODS
     // =============================================================================
 
+    /**
+     * Get employee by ID, throws exception if not found.
+     */
     private Employee getEmployeeById(Long employeeId) {
         return employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Employee not found"));
     }
 
+    /**
+     * Get the next date for a specific weekday (1=Monday, 7=Sunday).
+     */
     private LocalTime getStartTimeForDay(CreatePlanningRequestDto request, Integer dayOfWeek) {
         switch (dayOfWeek) {
             case 1: return request.getMondayStart() != null ? request.getMondayStart() : request.getStartTime();
@@ -265,6 +271,9 @@ public class EmployeePlanningService {
         }
     }
 
+    /**
+     * Get the end time for a specific weekday (1=Monday, 7=Sunday).
+     */
     private LocalTime getEndTimeForDay(CreatePlanningRequestDto request, Integer dayOfWeek) {
         switch (dayOfWeek) {
             case 1: return request.getMondayEnd() != null ? request.getMondayEnd() : request.getEndTime();
@@ -278,6 +287,9 @@ public class EmployeePlanningService {
         }
     }
 
+    /**
+     * Calculate daily working hours based on start time, end time and break duration.
+     */
     private double calculateDailyHours(LocalTime startTime, LocalTime endTime, Integer breakMinutes) {
         if (startTime == null || endTime == null) return 0.0;
         

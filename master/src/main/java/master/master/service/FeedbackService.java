@@ -30,6 +30,7 @@ public class FeedbackService {
         this.mapper = mapper;
     }
 
+    // This method creates a new feedback entry for a user.
     @Transactional
     public FeedbackDto.Info create(Long userId, FeedbackDto.Create dto) {
         User user = userRepo.findById(userId)
@@ -40,6 +41,7 @@ public class FeedbackService {
         return mapper.toDto(repo.save(fb));
     }
 
+    // This method retrieves all feedback entries made by a specific user.
     public List<FeedbackDto.Info> findByUser(Long userId) {
         return repo.findByUser_Id(userId)
                 .stream()

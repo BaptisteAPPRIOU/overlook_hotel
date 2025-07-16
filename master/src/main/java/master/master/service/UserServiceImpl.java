@@ -31,6 +31,7 @@ public class UserServiceImpl implements UserService {
         this.jwtUtil = jwtUtil;
     }
 
+    // This method registers a new user with the provided details.
     @Override
     @Transactional
     public User register(RegisterRequestDto dto) {
@@ -43,6 +44,7 @@ public class UserServiceImpl implements UserService {
         return userRepo.save(user);
     }
 
+    // This method authenticates a user and returns a JWT token.
     @Override
     public String authenticateAndGetToken(LoginRequestDto dto) {
         authManager.authenticate(
@@ -51,6 +53,7 @@ public class UserServiceImpl implements UserService {
         return jwtUtil.generateToken(dto.getEmail());
     }
 
+    // This method retrieves a user by their email address.
     @Override
     public User findByEmail(String email) {
         User user = userRepo.findByEmail(email);

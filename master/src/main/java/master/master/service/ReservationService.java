@@ -34,6 +34,7 @@ public class ReservationService {
         this.mapper = mapper;
     }
 
+    // This method creates a new reservation for a user.
     @Transactional
     public ReservationDto.Info create(Long userId, ReservationDto.Create dto) {
         Client client = clientRepo.findByUserIdAndUserRole(userId, RoleType.CLIENT)
@@ -55,6 +56,7 @@ public class ReservationService {
         return mapper.toDto(repo.save(ur));
     }
 
+    // This method retrieves all reservations made by a specific user.
     public List<ReservationDto.Info> findByUser(Long userId) {
         return repo.findByIdUserId(userId)
                 .stream()
