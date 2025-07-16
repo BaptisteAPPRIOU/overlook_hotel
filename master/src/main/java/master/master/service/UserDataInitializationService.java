@@ -13,11 +13,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import master.master.domain.Client;
+import master.master.domain.Employee;
 import master.master.domain.Review;
 import master.master.domain.RoleType;
 import master.master.domain.Room;
 import master.master.domain.User;
 import master.master.repository.ClientRepository;
+import master.master.repository.EmployeeRepository;
 import master.master.repository.ReviewRepository;
 import master.master.repository.RoomRepository;
 import master.master.repository.UserRepository;
@@ -32,15 +34,17 @@ public class UserDataInitializationService implements ApplicationRunner {
 
     private final UserRepository userRepository;
     private final ClientRepository clientRepository;
+    private final EmployeeRepository employeeRepository;
     private final RoomRepository roomRepository;
     private final ReviewRepository reviewRepository;
     private final PasswordEncoder passwordEncoder;
 
     public UserDataInitializationService(UserRepository userRepository, ClientRepository clientRepository, 
-                                       RoomRepository roomRepository, ReviewRepository reviewRepository,
-                                       PasswordEncoder passwordEncoder) {
+                                       EmployeeRepository employeeRepository, RoomRepository roomRepository, 
+                                       ReviewRepository reviewRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.clientRepository = clientRepository;
+        this.employeeRepository = employeeRepository;
         this.roomRepository = roomRepository;
         this.reviewRepository = reviewRepository;
         this.passwordEncoder = passwordEncoder;
@@ -163,7 +167,13 @@ public class UserDataInitializationService implements ApplicationRunner {
         employee.setEmail("john.doe@olh.fr");
         employee.setPassword(passwordEncoder.encode("employee123"));
         employee.setRole(RoleType.EMPLOYEE);
-        userRepository.save(employee);
+        User savedEmployee = userRepository.save(employee);
+        
+        // Create corresponding Employee record
+        Employee employeeRecord = new Employee();
+        employeeRecord.setUser(savedEmployee); // Only set the user - @MapsId will handle the userId
+        employeeRepository.save(employeeRecord);
+        
         System.out.println("Created employee user: john.doe@olh.fr / employee123");
     }
 
