@@ -166,7 +166,7 @@ public class EmployeePlanningService {
                 .collect(Collectors.toMap(
                     w -> w.getId().getWeekday(),
                     w -> w,
-                    (existing, _) -> existing
+                    (existing, replacement) -> existing
                 ));
         
         List<EmployeePlanningDto.WorkDayPlanningDto> workDays = new ArrayList<>();
