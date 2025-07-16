@@ -236,25 +236,6 @@ public class EmployeeDashboardController {
         }
     }
 
-//    /**
-//     * Get dashboard statistics.
-//     * Can be used for dashboard summary widgets.
-//     */
-//    @GetMapping("/api/dashboard/stats")
-//    public ResponseEntity<DashboardStatsDto> getDashboardStats() {
-//        try {
-//            DashboardStatsDto stats = DashboardStatsDto.builder()
-//                    .totalEmployees(employeeService.getTotalEmployeeCount())
-//                    .pendingLeaveRequests(leaveRequestService.getPendingLeaveRequestCount())
-//                    .totalRooms(roomService.getTotalRoomCount())
-//                    .averageRating(reviewService.getAverageRating())
-//                    .build();
-//            return ResponseEntity.ok(stats);
-//        } catch (Exception e) {
-//            return ResponseEntity.ok(DashboardStatsDto.builder().build());
-//        }
-//    }
-
     // =============================================================================
     // ERROR HANDLING
     // =============================================================================

@@ -2,6 +2,7 @@ package master.master.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -29,16 +30,31 @@ public class SecurityConfig {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
+    // Security filter chain configuration
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints
-                        .requestMatchers("/api/v1/login", "/api/v1/register", "/error").permitAll()
-                        .requestMatchers("/", "/clientLogin", "/employeeLogin", "/register").permitAll()
-                        .requestMatchers("/css/**", "/js/**", "/image/**").permitAll()
-                        .requestMatchers("/api/public/**").permitAll()  // Public room API
+
+                        .requestMatchers(
+                                "/", "/clientLogin", "/employeeLogin", "/register", "employeeDashboard"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/css/**", "/js/**", "/image/**", "/favicon.ico"
+                        ).permitAll()
+
+
+                        .requestMatchers(
+                                "/api/v1/login", "/api/v1/register", "/error"
+                        ).permitAll()
+
+
+                        .requestMatchers("/api/v1/logout").authenticated()
+
+
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/clients/**")
+                        .hasAuthority("ADMIN")
 
                         // Employee Dashboard and related pages - Only EMPLOYEE and ADMIN can access
                         .requestMatchers("/employeeDashboard").hasAnyAuthority("EMPLOYEE", "ADMIN")
@@ -61,10 +77,18 @@ public class SecurityConfig {
                         // Client API endpoints
                         .requestMatchers("/api/v1/clients/**")
                         .hasAnyAuthority("CLIENT", "ADMIN")
-                        .requestMatchers("/api/v1/clients/*/reservations/**")
-                        .hasAnyAuthority("CLIENT", "ADMIN")
-                        .requestMatchers("/api/v1/clients/*/feedbacks/**")
-                        .hasAnyAuthority("CLIENT", "ADMIN")
+
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/employees/**")
+                        .hasAuthority("ADMIN")
+
+                        .requestMatchers("/api/v1/employees/**")
+                        .hasAnyAuthority("EMPLOYEE", "ADMIN")
+
+                        .requestMatchers("/api/v1/admin/**")
+                        .hasAuthority("ADMIN")
+
+                        .requestMatchers("/api/v1/rooms/**")
+                        .hasAnyAuthority("EMPLOYEE", "ADMIN")
 
                         // Fidelity point endpoints - Only CLIENT can access
                         .requestMatchers("/api/v1/fidelity/**")
@@ -74,6 +98,7 @@ public class SecurityConfig {
                         .requestMatchers("/clientHomePage", "/home", "/client/home", "/clientProfile")
                         .hasAuthority("CLIENT")
 
+                        // toute autre requête doit être authentifiée
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptions -> exceptions
@@ -93,11 +118,13 @@ public class SecurityConfig {
         return http.build();
     }
 
+    // Bean for PasswordEncoder
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // Bean for AuthenticationManager
     @Bean
     public AuthenticationManager authenticationManager(
             HttpSecurity http,

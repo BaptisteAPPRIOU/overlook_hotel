@@ -87,27 +87,6 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
             @Param("endDate") LocalDate endDate);
 
     /**
-     * Get total leave days used by employee and leave type within a year.
-     * TODO: Fix HQL function compatibility issues with PostgreSQL
-     */
-    // @Query("SELECT COALESCE(SUM(FUNCTION('DATE_PART', 'day', lr.endDate - lr.startDate) + 1), 0) " +
-    //         "FROM LeaveRequest lr WHERE lr.employeeId = :employeeId " +
-    //         "AND lr.type = :leaveType AND lr.status = 'APPROVED' " +
-    //         "AND EXTRACT(YEAR FROM lr.startDate) = :year")
-    // Long getTotalLeaveDaysUsed(
-    //         @Param("employeeId") Long employeeId,
-    //         @Param("leaveType") String leaveType,
-    //         @Param("year") Integer year);
-
-    /**
-     * Calculate average approval time for leave requests.
-     * TODO: Fix HQL function compatibility issues with PostgreSQL
-     */
-    // @Query("SELECT AVG(FUNCTION('DATE_PART', 'epoch', lr.updatedAt) - FUNCTION('DATE_PART', 'epoch', lr.createdAt)) / 86400 FROM LeaveRequest lr " +
-    //         "WHERE lr.status IN ('APPROVED', 'REJECTED') AND lr.updatedAt IS NOT NULL")
-    // Double getAverageApprovalTimeInDays();
-
-    /**
      * Find all leave requests approved by a specific manager.
      */
     List<LeaveRequest> findByApprovedByOrderByUpdatedAtDesc(String approvedBy);
@@ -132,25 +111,4 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
             "AND lr.createdAt < :cutoffDate " +
             "ORDER BY lr.createdAt ASC")
     List<LeaveRequest> findPendingRequestsOlderThan(@Param("cutoffDate") LocalDateTime cutoffDate);
-
-    /**
-     * Find leave requests for employees in a specific department.
-     * Note: This assumes there's a way to get department info from employee
-     * TODO: Uncomment when Employee entity has department field
-     */
-    // @Query("SELECT lr FROM LeaveRequest lr " +
-    //         "JOIN Employee e ON lr.employeeId = e.userId " +
-    //         "WHERE e.department = :department " +
-    //         "ORDER BY lr.createdAt DESC")
-    // List<LeaveRequest> findByEmployeeDepartment(@Param("department") String department);
-
-    /**
-     * Find leave requests that start within next N days.
-     * Useful for upcoming leave notifications.
-     * TODO: Fix date arithmetic in HQL query - PostgreSQL doesn't support this syntax
-     */
-    // @Query("SELECT lr FROM LeaveRequest lr WHERE lr.status = 'APPROVED' " +
-    //         "AND lr.startDate BETWEEN CURRENT_DATE AND (CURRENT_DATE + :days) " +
-    //         "ORDER BY lr.startDate ASC")
-    // List<LeaveRequest> findUpcomingApprovedLeave(@Param("days") Integer days);
 }

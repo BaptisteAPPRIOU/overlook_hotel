@@ -51,16 +51,13 @@ public class EmployeeController {
     private final EmployeeService employeeService;
     private final EmployeeWorkdayService workdayService;
 
+    // Constructor to inject dependencies
     public EmployeeController(EmployeeService employeeService, EmployeeWorkdayService workdayService) {
         this.employeeService = employeeService;
         this.workdayService = workdayService;
     }
-// TODO: a clean ou récup
-//    @GetMapping
-//    public List<Employee> getAllEmployees() {
-//        return employeeRepository.findAll();
-//    }
 
+    // Endpoint to create a new employee
     @PostMapping
     public ResponseEntity<Employee> create(@RequestBody CreateEmployeeRequestDto request) {
         log.info("Received employee creation request for: {} {}", request.getFirstName(), request.getLastName());
@@ -74,32 +71,38 @@ public class EmployeeController {
         }
     }
 
+    // Endpoint to retrieve an employee by ID
     @GetMapping("/{id}")
     public ResponseEntity<Employee> getOne(@PathVariable Long id) {
         return ResponseEntity.ok(employeeService.getEmployee(id));
     }
 
+    // Endpoint to retrieve all employees
     @GetMapping
     public ResponseEntity<List<Employee>> getAll() {
         return ResponseEntity.ok(employeeService.getAllEmployees());
     }
 
+    // Endpoint to update an existing employee
     @PutMapping("/{id}")
     public ResponseEntity<Employee> update(@PathVariable Long id, @RequestBody CreateEmployeeRequestDto request) {
         return ResponseEntity.ok(employeeService.updateEmployee(id, request));
     }
 
+    // Endpoint to delete an employee by ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         employeeService.deleteEmployee(id);
         return ResponseEntity.noContent().build();
     }
 
+    // Endpoint to retrieve workdays for a specific employee
     @GetMapping("/{id}/workdays")
     public ResponseEntity<List<Integer>> getWorkdays(@PathVariable Long id) {
         return ResponseEntity.ok(workdayService.getWorkdaysByEmployeeId(id));
     }
 
+    // Endpoint to set or update workdays for a specific employee
     @PostMapping("/{id}/workdays")
     public ResponseEntity<Void> setWorkdays(@PathVariable Long id, @RequestBody List<Integer> weekdays) {
         workdayService.setWorkdays(id, weekdays);
