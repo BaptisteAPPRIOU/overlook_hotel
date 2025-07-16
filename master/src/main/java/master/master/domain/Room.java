@@ -101,6 +101,9 @@ public class Room {
     @Column(name = "name", nullable = true, length = 100)
     private String name;
 
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
     @Column(name = "price", precision = 10)
     private Double price;
 
