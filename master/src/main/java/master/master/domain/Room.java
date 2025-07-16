@@ -1,14 +1,26 @@
 // src/main/java/master/master/domain/Room.java
 package master.master.domain;
 
-import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * JPA Entity for Room.
@@ -37,7 +49,7 @@ import lombok.Data;
  */
 
 @Entity
-@Table(name = "room")
+@Table(name = "rooms")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -191,21 +203,34 @@ public class Room {
     }
 
     /**
-     * Enum for room types.
+     * Enum for hotel room types.
      */
     public enum RoomType {
-        CONFERENCE("Conference Room"),
-        MEETING("Meeting Room"),
-        OFFICE("Office"),
-        TRAINING("Training Room"),
-        BOARDROOM("Board Room"),
-        HUDDLE("Huddle Room"),
-        PHONE_BOOTH("Phone Booth"),
-        LOUNGE("Lounge"),
-        COLLABORATION("Collaboration Space"),
-        PRESENTATION("Presentation Room"),
-        ROOM("Room"),
-        EVENT("Event");
+        STANDARD("Chambre Standard"),
+        SUPERIOR("Chambre Supérieure"),
+        DELUXE("Chambre Deluxe"),
+        JUNIOR_SUITE("Junior Suite"),
+        SUITE("Suite"),
+        PRESIDENTIAL_SUITE("Suite Présidentielle"),
+        FAMILY_ROOM("Chambre Familiale"),
+        TWIN("Chambre Twin"),
+        DOUBLE("Chambre Double"),
+        SINGLE("Chambre Simple"),
+        PENTHOUSE("Penthouse"),
+        
+        // Keep some meeting room types for backward compatibility during migration
+        @Deprecated CONFERENCE("Conference Room"),
+        @Deprecated MEETING("Meeting Room"),
+        @Deprecated OFFICE("Office"),
+        @Deprecated TRAINING("Training Room"),
+        @Deprecated BOARDROOM("Board Room"),
+        @Deprecated HUDDLE("Huddle Room"),
+        @Deprecated PHONE_BOOTH("Phone Booth"),
+        @Deprecated LOUNGE("Lounge"),
+        @Deprecated COLLABORATION("Collaboration Space"),
+        @Deprecated PRESENTATION("Presentation Room"),
+        @Deprecated ROOM("Room"),
+        @Deprecated EVENT("Event");
 
         private final String displayName;
 
@@ -215,6 +240,24 @@ public class Room {
 
         public String getDisplayName() {
             return displayName;
+        }
+        
+        /**
+         * Check if this is a hotel room type (not a meeting room type).
+         */
+        public boolean isHotelRoom() {
+            return !this.name().equals("CONFERENCE") && 
+                   !this.name().equals("MEETING") && 
+                   !this.name().equals("OFFICE") && 
+                   !this.name().equals("TRAINING") && 
+                   !this.name().equals("BOARDROOM") && 
+                   !this.name().equals("HUDDLE") && 
+                   !this.name().equals("PHONE_BOOTH") && 
+                   !this.name().equals("LOUNGE") && 
+                   !this.name().equals("COLLABORATION") && 
+                   !this.name().equals("PRESENTATION") && 
+                   !this.name().equals("ROOM") && 
+                   !this.name().equals("EVENT");
         }
     }
 
