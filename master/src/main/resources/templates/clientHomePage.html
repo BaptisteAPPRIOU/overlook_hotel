@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overlook Hotel - Accueil</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/clientHomePage.css}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#home">
+                <img th:src="@{/image/logo_noBg.png}" alt="Overlook Hotel" height="40">
+                Overlook Hotel
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#home">Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">L'Hôtel</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#rooms">Chambres</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#reviews">Livret d'Or</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-outline-danger ms-2" href="/logout">
+                            <i class="fas fa-sign-out-alt"></i> Déconnexion
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div class="hero-overlay">
+            <div class="container">
+                <div class="row justify-content-center text-center">
+                    <div class="col-lg-8">
+                        <h1 class="hero-title">Bienvenue à l'Overlook Hotel</h1>
+                        <p class="hero-subtitle">Une expérience luxueuse au cœur des montagnes</p>
+                        <a href="#rooms" class="btn btn-primary btn-lg">Réserver Maintenant</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Hotel Section -->
+    <section id="about" class="py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h2 class="section-title">L'Overlook Hotel</h2>
+                    <p class="lead">Situé majestueusement dans les montagnes du Colorado, l'Overlook Hotel offre une expérience unique alliant luxe, histoire et nature sauvage.</p>
+                    <p>Construit en 1907, notre établissement historique propose 237 chambres et suites élégamment décorées, chacune offrant une vue spectaculaire sur les paysages montagneux environnants.</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="feature-item">
+                                <i class="fas fa-mountain text-primary"></i>
+                                <h5>Vue Panoramique</h5>
+                                <p>Vues imprenables sur les montagnes du Colorado</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-item">
+                                <i class="fas fa-spa text-primary"></i>
+                                <h5>Spa & Wellness</h5>
+                                <p>Centre de bien-être avec soins de luxe</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-item">
+                                <i class="fas fa-utensils text-primary"></i>
+                                <h5>Restaurant Gastronomique</h5>
+                                <p>Cuisine raffinée avec produits locaux</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-item">
+                                <i class="fas fa-swimming-pool text-primary"></i>
+                                <h5>Piscine Chauffée</h5>
+                                <p>Piscine intérieure avec vue sur la montagne</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="about-image">
+                        <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3" alt="Overlook Hotel" class="img-fluid rounded shadow">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Rooms Section -->
+    <section id="rooms" class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">Nos Chambres</h2>
+                <p class="lead">Découvrez nos différentes catégories de chambres, chacune conçue pour votre confort</p>
+            </div>
+            
+            <!-- Room Filters -->
+            <div class="row mb-4">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card p-4">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Arrivée</label>
+                                <input type="date" class="form-control" id="checkInDate">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Départ</label>
+                                <input type="date" class="form-control" id="checkOutDate">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Adultes</label>
+                                <select class="form-select" id="adults">
+                                    <option value="1">1</option>
+                                    <option value="2" selected>2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Enfants</label>
+                                <select class="form-select" id="children">
+                                    <option value="0" selected>0</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">&nbsp;</label>
+                                <button class="btn btn-primary w-100" onclick="searchRooms()">
+                                    <i class="fas fa-search"></i> Rechercher
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rooms Grid -->
+            <div class="row" id="roomsContainer">
+                <!-- Rooms will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews Section (Livret d'Or) -->
+    <section id="reviews" class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">Livret d'Or</h2>
+                <p class="lead">Découvrez les témoignages de nos clients satisfaits</p>
+            </div>
+            
+            <div class="row" id="reviewsContainer">
+                <!-- Reviews will be loaded here -->
+            </div>
+            
+            <div class="text-center mt-4">
+                <button class="btn btn-outline-primary" onclick="loadMoreReviews()">
+                    Voir plus d'avis
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <h5>Overlook Hotel</h5>
+                    <p>333 Wonderland Road<br>
+                    Estes Park, Colorado 80517<br>
+                    États-Unis</p>
+                    <p><i class="fas fa-phone"></i> +1 (555) 123-4567<br>
+                    <i class="fas fa-envelope"></i> contact@overlookhotel.com</p>
+                </div>
+                <div class="col-lg-4">
+                    <h5>Services</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-light">Restaurant</a></li>
+                        <li><a href="#" class="text-light">Spa & Wellness</a></li>
+                        <li><a href="#" class="text-light">Salle de sport</a></li>
+                        <li><a href="#" class="text-light">Piscine</a></li>
+                        <li><a href="#" class="text-light">Centre d'affaires</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4">
+                    <h5>Suivez-nous</h5>
+                    <div class="social-links">
+                        <a href="#" class="text-light me-3"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-light me-3"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-light me-3"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-light"><i class="fab fa-tripadvisor"></i></a>
+                    </div>
+                    <div class="mt-3">
+                        <h6>Newsletter</h6>
+                        <div class="input-group">
+                            <input type="email" class="form-control" placeholder="Votre email">
+                            <button class="btn btn-primary" type="button">S'abonner</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="text-center">
+                <p>&copy; 2025 Overlook Hotel. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Reservation Modal -->
+    <div class="modal fade" id="reservationModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Réservation de chambre</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="reservationForm">
+                        <!-- Reservation form will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/clientHomePage.js}"></script>
+</body>
+</html>
