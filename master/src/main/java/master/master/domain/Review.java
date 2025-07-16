@@ -1,13 +1,21 @@
 package master.master.domain;
 
-import jakarta.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 /**
  * JPA Entity for Review.
@@ -51,6 +59,12 @@ public class Review {
     @Column(name = "is_verified", nullable = false)
     @Builder.Default
     private Boolean isVerified = false;
+
+    @Column(name = "verified_by", length = 100)
+    private String verifiedBy;
+
+    @Column(name = "verified_at")
+    private LocalDateTime verifiedAt;
 
     @Column(name = "helpful_count")
     @Builder.Default

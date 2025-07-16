@@ -14,7 +14,6 @@
         <div class="container">
             <a class="navbar-brand" href="#home">
                 <img th:src="@{/image/logo_noBg.png}" alt="Overlook Hotel" height="40">
-                Overlook Hotel
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -32,6 +31,11 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#reviews">Livret d'Or</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/clientProfile">
+                            <i class="fas fa-user"></i> Mon Profil
+                        </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link btn btn-outline-danger ms-2" href="/logout">
@@ -173,6 +177,12 @@
             
             <div class="row" id="reviewsContainer">
                 <!-- Reviews will be loaded here -->
+                <div class="col-12 text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement des avis...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Chargement des avis validés...</p>
+                </div>
             </div>
             
             <div class="text-center mt-4">

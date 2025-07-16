@@ -48,7 +48,26 @@ public class ClientPageController {
      * @return the client home page template
      */
     @GetMapping("/client/home")
-    public String clientHome(Model model) {
+    public String clientHomeRedirect(Model model) {
         return clientHomePage(model);
+    }
+
+    /**
+     * Display the client profile page for authenticated users.
+     * This page includes:
+     * - Personal information management
+     * - Reservation history with filtering options
+     * - Review system for past stays
+     * 
+     * @param model Spring MVC model for passing data to the view
+     * @return the client profile page template
+     */
+    @GetMapping("/clientProfile")
+    public String clientProfile(Model model) {
+        // Add any model attributes needed for the profile page
+        model.addAttribute("pageTitle", "Mon Profil - Overlook Hotel");
+        model.addAttribute("metaDescription", "Gérez votre profil et consultez vos réservations à l'Overlook Hotel.");
+        
+        return "clientProfile";
     }
 }

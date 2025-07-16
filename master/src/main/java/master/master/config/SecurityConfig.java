@@ -66,6 +66,14 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/clients/*/feedbacks/**")
                         .hasAnyAuthority("CLIENT", "ADMIN")
 
+                        // Fidelity point endpoints - Only CLIENT can access
+                        .requestMatchers("/api/v1/fidelity/**")
+                        .hasAuthority("CLIENT")
+
+                        // Client pages - require CLIENT authority only
+                        .requestMatchers("/clientHomePage", "/home", "/client/home", "/clientProfile")
+                        .hasAuthority("CLIENT")
+
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptions -> exceptions

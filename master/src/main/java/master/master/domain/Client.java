@@ -1,6 +1,11 @@
 package master.master.domain;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.OneToOne;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,6 +37,7 @@ public class Client {
     @JoinColumn(name = "user_id")
     private User user;
 
-    private int fidelityPoint;
+    @Column(name = "fidelity_point", nullable = false, columnDefinition = "integer default 0")
+    private Integer fidelityPoint;
 
 }

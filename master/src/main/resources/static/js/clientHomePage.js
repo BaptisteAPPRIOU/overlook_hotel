@@ -294,8 +294,15 @@ async function loadReviews() {
         currentReviews = reviews;
     } catch (error) {
         console.error('Error loading reviews:', error);
-        document.getElementById('reviewsContainer').innerHTML = 
-            '<div class="col-12 text-center"><p class="text-muted">Erreur lors du chargement des avis.</p></div>';
+        document.getElementById('reviewsContainer').innerHTML = `
+            <div class="col-12 text-center">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h5>Erreur de chargement</h5>
+                    <p class="mb-0">Impossible de charger les avis pour le moment. Veuillez réessayer plus tard.</p>
+                </div>
+            </div>
+        `;
     }
 }
 
@@ -334,6 +341,20 @@ async function loadMoreReviews() {
 // Display reviews
 function displayReviews(reviews) {
     const container = document.getElementById('reviewsContainer');
+    
+    if (!reviews || reviews.length === 0) {
+        container.innerHTML = `
+            <div class="col-12 text-center">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <h5>Aucun avis validé pour le moment</h5>
+                    <p class="mb-0">Les premiers avis de nos clients apparaîtront ici une fois validés par notre équipe.</p>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
     container.innerHTML = reviews.slice(0, reviewsLimit).map(review => createReviewCard(review)).join('');
 }
 
@@ -348,13 +369,20 @@ function createReviewCard(review) {
     return `
         <div class="col-lg-4 col-md-6">
             <div class="review-card fade-in-up">
-                <div class="review-stars">
-                    ${generateStars(review.rating)}
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="review-stars">
+                        ${generateStars(review.rating)}
+                    </div>
+                    <span class="badge bg-success">
+                        <i class="fas fa-check-circle"></i> Validé
+                    </span>
                 </div>
-                <p class="review-text">"${review.comment}"</p>
-                <div class="review-author">${review.clientName}</div>
-                <div class="review-date">${formatDate(review.date)}</div>
-                ${review.stayDuration ? `<small class="text-muted">Séjour de ${review.stayDuration}</small>` : ''}
+                <p class="review-text">"${review.comment || 'Excellent séjour!'}"</p>
+                <div class="review-author">
+                    <strong>${review.authorName || 'Client'}</strong>
+                    ${review.roomName ? `<small class="text-muted"> - ${review.roomName}</small>` : ''}
+                </div>
+                <div class="review-date">${formatDate(review.reviewDate || review.createdAt)}</div>
             </div>
         </div>
     `;
@@ -407,7 +435,7 @@ function openReservationModal(roomId) {
     const modalContent = `
         <div class="row">
             <div class="col-md-6">
-                <img src="${room.image}" alt="${room.name}" class="img-fluid rounded">
+                <img src="${room.imageUrl}" alt="${room.name}" class="img-fluid rounded">
             </div>
             <div class="col-md-6">
                 <h4>${room.name}</h4>
@@ -563,7 +591,7 @@ function getSampleRooms() {
             maxOccupancy: 2,
             bedType: "Lit king-size",
             size: 35,
-            image: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3",
+            imageUrl: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3",
             availability: "available",
             hasBalcony: true,
             hasJacuzzi: false
@@ -577,7 +605,7 @@ function getSampleRooms() {
             maxOccupancy: 4,
             bedType: "Lit king-size + canapé-lit",
             size: 85,
-            image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3",
+            imageUrl: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3",
             availability: "limited",
             hasBalcony: true,
             hasJacuzzi: true
@@ -591,7 +619,7 @@ function getSampleRooms() {
             maxOccupancy: 2,
             bedType: "Lit double",
             size: 25,
-            image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3",
+            imageUrl: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3",
             availability: "available",
             hasBalcony: false,
             hasJacuzzi: false
@@ -605,7 +633,7 @@ function getSampleRooms() {
             maxOccupancy: 6,
             bedType: "Lit double + lits superposés",
             size: 45,
-            image: "https://images.unsplash.com/photo-1560472355-536de3962603?ixlib=rb-4.0.3",
+            imageUrl: "https://images.unsplash.com/photo-1560472355-536de3962603?ixlib=rb-4.0.3",
             availability: "available",
             hasBalcony: true,
             hasJacuzzi: false
@@ -619,7 +647,7 @@ function getSampleRooms() {
             maxOccupancy: 2,
             bedType: "Lit queen-size",
             size: 30,
-            image: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?ixlib=rb-4.0.3",
+            imageUrl: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?ixlib=rb-4.0.3",
             availability: "unavailable",
             hasBalcony: false,
             hasJacuzzi: false
@@ -633,7 +661,7 @@ function getSampleRooms() {
             maxOccupancy: 3,
             bedType: "Lit king-size + fauteuil-lit",
             size: 55,
-            image: "https://images.unsplash.com/photo-1587985064135-0366536eab42?ixlib=rb-4.0.3",
+            imageUrl: "https://images.unsplash.com/photo-1587985064135-0366536eab42?ixlib=rb-4.0.3",
             availability: "limited",
             hasBalcony: true,
             hasJacuzzi: true
