@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="addShiftModal">
+        <!-- Add Shift Modal -->
+        <div aria-hidden="true" aria-labelledby="addShiftModalLabel" class="modal fade" id="addShiftModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addShiftModalLabel">Add New Shift</h5>
+                        <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addShiftForm">
+                            <div class="mb-3">
+                                <label class="form-label" for="shiftEmployee">Employee</label>
+                                <select class="form-select" id="shiftEmployee" name="employeeId" required>
+                                    <option value="">Select Employee</option>
+                                    <option th:each="e : ${employees}" th:text="${e.firstName + ' ' + e.lastName}"
+                                            th:value="${e.userId}"></option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="shiftDate">Date</label>
+                                <input class="form-control" id="shiftDate" name="date" required type="date">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="shiftPosition">Position</label>
+                                <select class="form-select" id="shiftPosition" name="position" required>
+                                    <option value="">Select Position</option>
+                                    <option value="EMPLOYEE">Employee</option>
+                                    <option value="MANAGER">Manager</option>
+                                </select>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <label class="form-label" for="shiftStartTime">Start Time</label>
+                                    <input class="form-control" id="shiftStartTime" name="startTime" required type="time" onchange="validateShiftTimes()" oninput="validateShiftTimes()">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label" for="shiftEndTime">End Time</label>
+                                    <input class="form-control" id="shiftEndTime" name="endTime" required type="time" onchange="validateShiftTimes()" oninput="validateShiftTimes()" step="60" max="24:00">
+                                </div>
+                            </div>
+                            <div class="invalid-feedback" id="timeValidationMessage" style="display: none; color: red; margin-top: -10px; margin-bottom: 10px;">
+                                Start time cannot be later than end time.
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+                        <button class="btn btn-primary" id="addShiftBtn" type="button">Add Shift</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

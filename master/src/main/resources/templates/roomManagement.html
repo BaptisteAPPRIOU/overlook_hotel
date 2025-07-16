@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}">Room Management</title>
+    <link rel="stylesheet" th:href="@{/css/authPage.css}"/>
+    <link rel="stylesheet" th:href="@{/css/employeeRooms.css}"/>
+    <script defer th:src="@{/js/employeeRooms.js}"></script>
+</head>
+<body>
+<div class="card">
+    <h1 th:text="${title}">Room Management</h1>
+
+    <table class="rooms-table">
+        <thead>
+        <tr>
+            <th>Number</th>
+            <th>Type</th>
+            <th>Occupied</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody id="roomsTableBody">
+        <!-- rows injected by JS -->
+        </tbody>
+    </table>
+
+    <form id="roomForm">
+        <input
+                id="roomNumber"
+                type="text"
+                placeholder="Room Number"
+                required />
+
+        <select id="roomType">
+            <option
+                    th:each="t : ${T(master.master.domain.RoomType).values()}"
+                    th:value="${t}"
+                    th:text="${t}">
+            </option>
+        </select>
+
+        <label>
+            <input type="checkbox" id="isOccupied"/>
+            Occupied
+        </label>
+
+        <button type="submit">Create Room</button>
+    </form>
+</div>
+</body>
+</html>

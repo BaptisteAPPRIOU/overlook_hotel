@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Profil - Overlook Hotel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/clientProfile.css}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/clientHomePage">
+                <img th:src="@{/image/logo_noBg.png}" alt="Overlook Hotel" height="40">
+                Overlook Hotel
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/clientHomePage">
+                            <i class="fas fa-home"></i> Accueil
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/clientProfile">
+                            <i class="fas fa-user"></i> Mon Profil
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-outline-danger ms-2" href="/logout">
+                            <i class="fas fa-sign-out-alt"></i> Déconnexion
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Profile Content -->
+    <div class="container-fluid mt-5 pt-4">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3">
+                <div class="profile-sidebar">
+                    <div class="profile-avatar text-center">
+                        <div class="avatar-circle">
+                            <i class="fas fa-user fa-3x"></i>
+                        </div>
+                        <h4 class="mt-3" id="userFullName">Chargement...</h4>
+                        <p class="text-muted" id="userEmail">Chargement...</p>
+                    </div>
+                    
+                    <div class="profile-menu">
+                        <a href="#profile-info" class="menu-item active" onclick="showSection('profile-info')">
+                            <i class="fas fa-user-edit"></i> Informations Personnelles
+                        </a>
+                        <a href="#fidelity" class="menu-item" onclick="showSection('fidelity')">
+                            <i class="fas fa-star-half-alt"></i> Programme Fidélité
+                        </a>
+                        <a href="#reservations" class="menu-item" onclick="showSection('reservations')">
+                            <i class="fas fa-calendar-alt"></i> Mes Réservations
+                        </a>
+                        <a href="#reviews" class="menu-item" onclick="showSection('reviews')">
+                            <i class="fas fa-star"></i> Mes Avis
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <!-- Profile Information Section -->
+                <div id="profile-info" class="content-section active">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-user-edit"></i> Informations Personnelles</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="profileForm">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="firstName" class="form-label">Prénom</label>
+                                        <input type="text" class="form-control" id="firstName" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="lastName" class="form-label">Nom</label>
+                                        <input type="text" class="form-control" id="lastName" required>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="email" class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="email" readonly>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="phone" class="form-label">Téléphone</label>
+                                        <input type="tel" class="form-control" id="phone" placeholder="+33 1 23 45 67 89">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label for="address" class="form-label">Adresse</label>
+                                        <textarea class="form-control" id="address" rows="2" placeholder="Votre adresse complète"></textarea>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <button type="button" class="btn btn-secondary me-2" onclick="resetProfile()">Annuler</button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Sauvegarder
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fidelity Section -->
+                <div id="fidelity" class="content-section">
+                    <div class="row">
+                        <!-- Fidelity Status Card -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-star-half-alt"></i> Statut Fidélité</h5>
+                                </div>
+                                <div class="card-body text-center">
+                                    <div class="fidelity-level-badge mb-3">
+                                        <i class="fas fa-medal fa-3x" id="fidelityLevelIcon"></i>
+                                        <h4 class="mt-2" id="fidelityLevelName">Chargement...</h4>
+                                    </div>
+                                    <div class="fidelity-points">
+                                        <h2 class="text-primary" id="currentPoints">0</h2>
+                                        <p class="text-muted">Points Fidélité</p>
+                                    </div>
+                                    <div class="progress mb-3">
+                                        <div class="progress-bar" role="progressbar" id="fidelityProgress"></div>
+                                    </div>
+                                    <p class="small text-muted" id="pointsToNext">Points jusqu'au niveau suivant: 0</p>
+                                    <div class="discount-info">
+                                        <span class="badge bg-success fs-6" id="discountBadge">Réduction: 0%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Points History Card -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-history"></i> Historique Points</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="points-summary mb-3">
+                                        <div class="row text-center">
+                                            <div class="col-4">
+                                                <div class="stat-item">
+                                                    <i class="fas fa-plus-circle text-success"></i>
+                                                    <p class="mb-0 fw-bold" id="totalEarned">0</p>
+                                                    <small class="text-muted">Gagnés</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="stat-item">
+                                                    <i class="fas fa-minus-circle text-danger"></i>
+                                                    <p class="mb-0 fw-bold" id="totalRedeemed">0</p>
+                                                    <small class="text-muted">Échangés</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="stat-item">
+                                                    <i class="fas fa-bed text-info"></i>
+                                                    <p class="mb-0 fw-bold" id="totalNights">0</p>
+                                                    <small class="text-muted">Nuits</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-outline-primary btn-sm w-100" onclick="recalculatePoints()">
+                                        <i class="fas fa-sync-alt"></i> Recalculer les points
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Redemption Options -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-gift"></i> Échanger mes Points</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row" id="redemptionOptions">
+                                <!-- Redemption options will be loaded here -->
+                                <div class="col-12 text-center">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Chargement des options...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fidelity Program Rules -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5><i class="fas fa-info-circle"></i> Comment ça marche ?</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-coins text-warning"></i> Gagner des Points</h6>
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success"></i> 10 points par nuit</li>
+                                        <li><i class="fas fa-check text-success"></i> +50 points pour 7+ nuits</li>
+                                        <li><i class="fas fa-check text-success"></i> +25 points réservation anticipée (30+ jours)</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-medal text-primary"></i> Niveaux Fidélité</h6>
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-medal text-secondary"></i> Bronze: 0-199 pts (0% réduction)</li>
+                                        <li><i class="fas fa-medal text-info"></i> Argent: 200-499 pts (5% réduction)</li>
+                                        <li><i class="fas fa-medal text-warning"></i> Or: 500-999 pts (10% réduction)</li>
+                                        <li><i class="fas fa-medal text-danger"></i> Diamant: 1000+ pts (15% réduction)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reservations Section -->
+                <div id="reservations" class="content-section">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5><i class="fas fa-calendar-alt"></i> Mes Réservations</h5>
+                            <div class="filter-buttons">
+                                <button class="btn btn-sm btn-outline-primary active" onclick="filterReservations('all')">Toutes</button>
+                                <button class="btn btn-sm btn-outline-success" onclick="filterReservations('confirmed')">Confirmées</button>
+                                <button class="btn btn-sm btn-outline-warning" onclick="filterReservations('past')">Passées</button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="filterReservations('cancelled')">Annulées</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="reservationsContainer">
+                                <!-- Reservations will be loaded here -->
+                                <div class="text-center">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Chargement...</span>
+                                    </div>
+                                    <p class="mt-3">Chargement de vos réservations...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reviews Section -->
+                <div id="reviews" class="content-section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-star"></i> Mes Avis sur l'Hôtel</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="reviewsContainer">
+                                <!-- Reviews will be loaded here -->
+                                <div class="text-center">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Chargement...</span>
+                                    </div>
+                                    <p class="mt-3">Chargement de vos avis...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Modal -->
+    <div class="modal fade" id="reviewModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-star text-warning"></i> 
+                        Laisser un avis
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="reviewForm">
+                        <input type="hidden" id="reservationId">
+                        
+                        <div class="mb-4">
+                            <h6>Réservation:</h6>
+                            <div class="reservation-details bg-light p-3 rounded">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <strong>Chambre:</strong> <span id="reviewRoomInfo"></span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Séjour:</strong> <span id="reviewDateInfo"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Note globale *</label>
+                            <div class="star-rating" id="starRating">
+                                <i class="fas fa-star" data-rating="1"></i>
+                                <i class="fas fa-star" data-rating="2"></i>
+                                <i class="fas fa-star" data-rating="3"></i>
+                                <i class="fas fa-star" data-rating="4"></i>
+                                <i class="fas fa-star" data-rating="5"></i>
+                            </div>
+                            <input type="hidden" id="rating" required>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Propreté</label>
+                                <select class="form-select" id="cleanliness">
+                                    <option value="">Choisir une note</option>
+                                    <option value="1">1 - Très mauvais</option>
+                                    <option value="2">2 - Mauvais</option>
+                                    <option value="3">3 - Correct</option>
+                                    <option value="4">4 - Bien</option>
+                                    <option value="5">5 - Excellent</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Service</label>
+                                <select class="form-select" id="service">
+                                    <option value="">Choisir une note</option>
+                                    <option value="1">1 - Très mauvais</option>
+                                    <option value="2">2 - Mauvais</option>
+                                    <option value="3">3 - Correct</option>
+                                    <option value="4">4 - Bien</option>
+                                    <option value="5">5 - Excellent</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Confort</label>
+                                <select class="form-select" id="comfort">
+                                    <option value="">Choisir une note</option>
+                                    <option value="1">1 - Très mauvais</option>
+                                    <option value="2">2 - Mauvais</option>
+                                    <option value="3">3 - Correct</option>
+                                    <option value="4">4 - Bien</option>
+                                    <option value="5">5 - Excellent</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Rapport qualité/prix</label>
+                                <select class="form-select" id="valueForMoney">
+                                    <option value="">Choisir une note</option>
+                                    <option value="1">1 - Très mauvais</option>
+                                    <option value="2">2 - Mauvais</option>
+                                    <option value="3">3 - Correct</option>
+                                    <option value="4">4 - Bien</option>
+                                    <option value="5">5 - Excellent</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="reviewComment" class="form-label">Votre commentaire *</label>
+                            <textarea class="form-control" id="reviewComment" rows="4" 
+                                      placeholder="Partagez votre expérience avec les futurs clients..." required></textarea>
+                            <div class="form-text">Minimum 10 caractères</div>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="recommendHotel">
+                            <label class="form-check-label" for="recommendHotel">
+                                Je recommande cet hôtel
+                            </label>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="stayAnonymous">
+                            <label class="form-check-label" for="stayAnonymous">
+                                Publier cet avis de manière anonyme
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="submitReview()">
+                        <i class="fas fa-paper-plane"></i> Publier l'avis
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/clientProfile.js}"></script>
+</body>
+</html>

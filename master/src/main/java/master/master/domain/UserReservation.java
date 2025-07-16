@@ -1,6 +1,7 @@
 package master.master.domain;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDate;
 
@@ -28,22 +29,50 @@ import java.time.LocalDate;
  * </ul>
  * </p>
  */
+@Getter
+@Setter
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Table(name = "user_reservation")
 public class UserReservation {
+
     @EmbeddedId
+    @AttributeOverrides({
+            @AttributeOverride(name = "userId", column = @Column(name = "user_id")),
+            @AttributeOverride(name = "roomId", column = @Column(name = "room_id"))
+    })
     private ReservationId id;
 
-    @ManyToOne
     @MapsId("userId")
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne
     @MapsId("roomId")
-    @JoinColumn(name = "room_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_id", nullable = false)
     private Room room;
 
+    @Column(name = "reservation_date_start", nullable = false)
     private LocalDate reservationDateStart;
+
+    @Column(name = "reservation_date_end", nullable = false)
     private LocalDate reservationDateEnd;
-    private boolean isPayed;
+
+    @Column(name = "payed", nullable = false)
+    private boolean payed;
+
+    // Helper methods
+    public int getReservationDurationDays() {
+        if (reservationDateStart != null && reservationDateEnd != null) {
+            return (int) (reservationDateEnd.toEpochDay() - reservationDateStart.toEpochDay()) + 1;
+        }
+        return 0;
+    }
+
+    public boolean isActive() {
+        return reservationDateEnd != null && reservationDateEnd.isAfter(LocalDate.now());
+    }
 }

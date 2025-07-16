@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="addEmployeeModal">
+        <!-- Add Employee Modal -->
+        <div aria-hidden="true" aria-labelledby="addEmployeeModalLabel" class="modal fade" id="addEmployeeModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addEmployeeModalLabel">Add New Employee</h5>
+                        <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addEmployeeForm">
+                            <div class="mb-3">
+                                <label class="form-label" for="modalFirstName">First Name</label>
+                                <input class="form-control" id="modalFirstName" name="firstName" required type="text">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="modalLastName">Last Name</label>
+                                <input class="form-control" id="modalLastName" name="lastName" required type="text">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="modalEmail">Email</label>
+                                <input class="form-control" id="modalEmail" name="email" required type="email">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="modalPassword">Password</label>
+                                <input class="form-control" id="modalPassword" name="password" required type="password">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+                        <button class="btn btn-primary" form="addEmployeeForm" type="submit">Add Employee</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

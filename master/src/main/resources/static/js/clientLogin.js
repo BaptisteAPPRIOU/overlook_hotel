@@ -41,8 +41,11 @@ document.getElementById("clientLoginForm").addEventListener("submit", async func
     }
 
     localStorage.setItem("jwtToken", token);
+    
+    // Also set as cookie for server-side pages (remove secure flag for localhost)
+    document.cookie = `jwtToken=${token}; path=/; samesite=strict`;
 
-    window.location.href = "/clientDashboard.html";
+    window.location.href = "/clientHomePage";
   } catch (error) {
     messageElem.textContent = "Network error, please try again.";
   }
