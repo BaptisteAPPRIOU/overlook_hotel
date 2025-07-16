@@ -30,6 +30,7 @@ public class SecurityConfig {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
+    // Security filter chain configuration
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -109,11 +110,13 @@ public class SecurityConfig {
         return http.build();
     }
 
+    // Bean for PasswordEncoder
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // Bean for AuthenticationManager
     @Bean
     public AuthenticationManager authenticationManager(
             HttpSecurity http,
