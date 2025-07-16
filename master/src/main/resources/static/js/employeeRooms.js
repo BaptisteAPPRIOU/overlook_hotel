@@ -16,12 +16,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const numInput = document.getElementById("roomNumber");
     const typeSelect = document.getElementById("roomType");
     const occCb = document.getElementById("isOccupied");
-    const capInput     = document.getElementById("roomCapacity");
-    const priceInput   = document.getElementById("roomPrice");
-    const projCb       = document.getElementById("hasProjector");
-    const whiteCb      = document.getElementById("hasWhiteboard");
-    const vidCb        = document.getElementById("hasVideoConference");
-    const acCb         = document.getElementById("hasAirConditioning");
+    const capInput = document.getElementById("roomCapacity");
+    const priceInput = document.getElementById("roomPrice");
+    const projCb = document.getElementById("hasProjector");
+    const whiteCb = document.getElementById("hasWhiteboard");
+    const vidCb = document.getElementById("hasVideoConference");
+    const acCb = document.getElementById("hasAirConditioning");
 
     let editId = null;
 
@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function featureIcons(room) {
-    return `
+        return `
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; font-size:1.2em; text-align:center;">
         <span title="Projector">${room.hasProjector ? '📽️' : '—'}</span>
         <span title="Whiteboard">${room.hasWhiteboard ? '🖋️' : '—'}</span>
@@ -52,23 +52,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Charge et affiche la liste des rooms
     async function load() {
-    // on vide d'abord pour éviter affichage doublon
-    tbody.innerHTML = '';
+        // on vide d'abord pour éviter affichage doublon
+        tbody.innerHTML = '';
 
-    const res = await request(API);
-    if (!res.ok) {
-        console.error("Failed to load rooms:", res.status, await res.text());
-        return;
-    }
-    const rooms = await res.json();
-    if (!Array.isArray(rooms)) {
-        console.error("Expected rooms array but got:", rooms);
-        return;
-    }
+        const res = await request(API);
+        if (!res.ok) {
+            console.error("Failed to load rooms:", res.status, await res.text());
+            return;
+        }
+        const rooms = await res.json();
+        if (!Array.isArray(rooms)) {
+            console.error("Expected rooms array but got:", rooms);
+            return;
+        }
 
-    rooms.forEach(r => {
-        const row = tbody.insertRow();
-        row.innerHTML = `
+        rooms.forEach(r => {
+            const row = tbody.insertRow();
+            row.innerHTML = `
         <td>${r.number}</td>
         <td>${r.type}</td>
         <td>${r.capacity ?? '–'}</td>
@@ -80,15 +80,15 @@ document.addEventListener("DOMContentLoaded", () => {
             <button data-id="${r.id}" class="btn btn-sm btn-outline-danger del">🗑️</button>
         </td>
         `;
-    });
+        });
 
-    // handlers
-    tbody.querySelectorAll(".edit").forEach(btn =>
-        btn.addEventListener("click", () => startEdit(btn.dataset.id))
-    );
-    tbody.querySelectorAll(".del").forEach(btn =>
-        btn.addEventListener("click", () => deleteRoom(btn.dataset.id))
-    );
+        // handlers
+        tbody.querySelectorAll(".edit").forEach(btn =>
+            btn.addEventListener("click", () => startEdit(btn.dataset.id))
+        );
+        tbody.querySelectorAll(".del").forEach(btn =>
+            btn.addEventListener("click", () => deleteRoom(btn.dataset.id))
+        );
     }
 
     // Remplit le form pour édition
@@ -99,12 +99,12 @@ document.addEventListener("DOMContentLoaded", () => {
         numInput.value = r.number;
         typeSelect.value = r.type;
         occCb.checked = (r.status === "OCCUPIED");
-        capInput.value   = r.capacity;
+        capInput.value = r.capacity;
         priceInput.value = r.price;
-        projCb.checked   = r.hasProjector;
-        whiteCb.checked  = r.hasWhiteboard;
-        vidCb.checked    = r.hasVideoConference;
-        acCb.checked     = r.hasAirConditioning;
+        projCb.checked = r.hasProjector;
+        whiteCb.checked = r.hasWhiteboard;
+        vidCb.checked = r.hasVideoConference;
+        acCb.checked = r.hasAirConditioning;
         form.querySelector("button").textContent = "Update Room";
 
     }
@@ -121,17 +121,17 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
         const payload = {
             number: numInput.value,
-            type:   typeSelect.value,
-            capacity:           parseInt(capInput.value, 10),
-            price:              parseFloat(priceInput.value),
-            has_projector:      projCb.checked,
-            has_whiteboard:     whiteCb.checked,
+            type: typeSelect.value,
+            capacity: parseInt(capInput.value, 10),
+            price: parseFloat(priceInput.value),
+            has_projector: projCb.checked,
+            has_whiteboard: whiteCb.checked,
             has_video_conference: vidCb.checked,
             has_air_conditionning: acCb.checked,
-            status:             occCb.checked ? "OCCUPIED" : "AVAILABLE"
+            status: occCb.checked ? "OCCUPIED" : "AVAILABLE"
         };
         const method = editId ? "PUT" : "POST";
-        const url    = editId ? `${API}/${editId}` : API;
+        const url = editId ? `${API}/${editId}` : API;
         await request(url, {
             method,
             body: JSON.stringify(payload)
