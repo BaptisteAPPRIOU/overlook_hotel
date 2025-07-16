@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.3/dist/cdn.min.js"></script>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>Employee Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/employeeDashboard.css}">
+
+</head>
+<body>
+<!-- Notification Container -->
+<div id="notificationContainer" class="position-fixed" style="top: 20px; right: 20px; z-index: 9999;"></div>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-2 sidebar">
+            <div class="sidebar-logo">
+                <img alt="Company Logo" th:src="@{/image/logo_noBg_no_name.png}">
+            </div>
+            <button class="nav-btn active" data-cat="booking">Room Booking</button>
+            <button class="nav-btn" data-cat="leave">Leave Request</button>
+            <button class="nav-btn" data-cat="schedule">Work Schedule</button>
+            <button class="nav-btn" data-cat="attendance">Planning Management</button>
+            <button class="nav-btn" data-cat="reviews">Room Reviews</button>
+            <button class="nav-btn" data-cat="employees">Employee Management</button>
+            <button class="nav-btn" data-cat="approval">Leave Approval</button>
+            <hr style="margin: 20px 15px; border-color: #c0d4e5;">
+            <button class="nav-btn" onclick="window.location.href='/settings'">Settings</button>
+            <button class="nav-btn" onclick="window.location.href='/logout'">Logout</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="col-md-10 content">
+            <!-- User Header -->
+            <div class="user-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Employee Dashboard</h4>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- <input class="form-control form-control-sm" placeholder="Search..." style="width: 200px;"
+                           type="text"> -->
+                    <span class="fw-bold"
+                          th:text="${currentUser != null ? currentUser.firstName + ' ' + currentUser.lastName : 'Admin User'}">Admin User</span>
+                    <img alt="Admin" class="user-avatar" th:src="@{/image/Employee_logo.png}">
+                </div>
+            </div>
+
+            <!-- 1) Room Booking -->
+            <section class="main-card" data-cat="booking">
+                <div class="card">
+                    <h4>Rooms Management</h4>
+
+                    <!-- Tableau dynamique -->
+                    <div class="table-responsive mb-4">
+                        <table class="table table-striped align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Number</th>
+                                    <th>Type</th>
+                                    <th>Capacity</th>
+                                    <th>Features</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="roomsTableBody">
+                            <!-- rempli par employeeRooms.js -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Formulaire de création / mise à jour -->
+                    <form id="roomForm" class="row g-2 align-items-end">
+                        <div class="col-auto">
+                            <label for="roomNumber" class="visually-hidden">Nº</label>
+                            <input id="roomNumber" type="text"
+                                class="form-control form-control-sm"
+                                placeholder="Nº" required>
+                        </div>
+
+                        <div class="col-auto">
+                            <label for="roomType" class="visually-hidden">Type</label>
+                            <select id="roomType"
+                                    class="form-select form-select-sm"
+                                    required>
+                            <option value="">Type</option>
+                            <option value="STANDARD">Standard Room</option>
+                            <option value="SUPERIOR">Superior Room</option>
+                            <option value="DELUXE">Deluxe Room</option>
+                            <option value="JUNIOR_SUITE">Junior Suite</option>
+                            <option value="SUITE">Suite</option>
+                            <option value="PRESIDENTIAL_SUITE">Presidential Suite</option>
+                            <option value="FAMILY_ROOM">Family Room</option>
+                            <option value="TWIN">Twin Room</option>
+                            <option value="DOUBLE">Double Room</option>
+                            <option value="SINGLE">Single Room</option>
+                            <option value="PENTHOUSE">Penthouse</option>
+                            </select>
+                        </div>
+
+                        <div class="col-auto">
+                            <label for="roomCapacity" class="visually-hidden">Capacity</label>
+                            <input id="roomCapacity" type="number" min="1"
+                                class="form-control form-control-sm"
+                                placeholder="Cap." required>
+                        </div>
+
+                        <div class="col-auto">
+                            <label for="roomPrice" class="visually-hidden">Price</label>
+                            <input id="roomPrice" type="number" min="0" step="0.01"
+                                class="form-control form-control-sm"
+                                placeholder="Prix" required>
+                        </div>
+
+                        <div class="col-auto">
+                            <div class="form-check form-check-inline">
+                                <input id="hasProjector" class="form-check-input form-check-input-sm" type="checkbox">
+                                <label class="form-check-label small" for="hasProjector">Projector</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input id="hasWhiteboard" class="form-check-input form-check-input-sm" type="checkbox">
+                                <label class="form-check-label small" for="hasWhiteboard">Whiteboard</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input id="hasVideoConference" class="form-check-input form-check-input-sm" type="checkbox">
+                                <label class="form-check-label small" for="hasVideoConference">Video</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input id="hasAirConditioning" class="form-check-input form-check-input-sm" type="checkbox">
+                                <label class="form-check-label small" for="hasAirConditioning">A/C</label>
+                            </div>
+                        </div>
+
+                        <div class="col-auto">
+                            <div class="form-check">
+                                <input id="isOccupied" class="form-check-input form-check-input-sm" type="checkbox">
+                                <label class="form-check-label small" for="isOccupied">Occupied</label>
+                            </div>
+                        </div>
+
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-primary btn-sm">Create</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <script th:src="@{/js/employeeRooms.js}"></script>
+
+            <!-- 2) Leave Request -->
+            <section class="main-card hidden" data-cat="leave">
+                <div class="card">
+                    <h4>Request Leave</h4>
+                    <form id="leaveRequestForm" method="post" th:action="@{/leave/request}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label" for="leaveStartDate">Start Date</label>
+                                <input class="form-control" id="leaveStartDate" name="startDate" required type="date">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="leaveEndDate">End Date</label>
+                                <input class="form-control" id="leaveEndDate" name="endDate" required type="date">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="leaveType">Leave Type</label>
+                            <select class="form-control" id="leaveType" name="type" required>
+                                <option value="">Select leave type</option>
+                                <option value="VACATION">Vacation</option>
+                                <option value="SICK">Sick Leave</option>
+                                <option value="PERSONAL">Personal Leave</option>
+                                <option value="MATERNITY">Maternity Leave</option>
+                                <option value="PATERNITY">Paternity Leave</option>
+                                <option value="BEREAVEMENT">Bereavement Leave</option>
+                                <option value="EMERGENCY">Emergency Leave</option>
+                                <option value="STUDY">Study Leave</option>
+                                <option value="UNPAID">Unpaid Leave</option>
+                            </select>
+                        </div>
+                        <label class="form-label" for="leaveReason">Reason</label>
+                        <textarea class="form-control" id="leaveReason" name="reason" placeholder="Enter reason for leave"
+                                  required rows="3" maxlength="500"></textarea>
+                        <div class="text-muted small">
+                            <span id="reasonCharCount">0</span>/500 characters
+                        </div>
+                        <button class="btn btn-primary" type="submit" id="submitLeaveRequestBtn">Submit Leave Request</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h4>My Leave Requests</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="myLeaveRequestsTable">
+                            <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Dates</th>
+                                <th>Duration</th>
+                                <th>Status</th>
+                                <th>Submitted</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <!-- Data will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3) Work Schedule -->
+            <section class="main-card hidden" data-cat="schedule">
+                <div class="card">
+                    <h4>My Work Schedule</h4>
+                    <div class="calendar-placeholder" id="work-calendar">
+                        <i class="fas fa-calendar-alt fa-3x mb-3"></i>
+                        <p>Work Schedule Calendar Coming Soon</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4) Employee Planning Management -->
+            <section class="main-card hidden" data-cat="attendance">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Employee Planning Management</span>
+                        <div>
+                            <!-- <button class="btn btn-success btn-sm" id="publishScheduleBtn">
+                                <i class="fas fa-bullhorn"></i> PUBLISH & NOTIFY ENTIRE SCHEDULE
+                            </button> -->
+                            <button class="btn btn-primary btn-sm" data-bs-target="#addShiftModal" data-bs-toggle="modal">
+                                <i class="fas fa-plus"></i> Add Shift
+                            </button>
+                            <!-- <button class="btn btn-orange btn-sm">
+                                <i class="fas fa-download"></i> Export Schedule
+                            </button> -->
+                        </div>
+                    </div>
+
+                    <!-- Schedule Planning Interface -->
+                    <div class="schedule-container" id="planningInterface"
+                         x-data="planningData()"
+                         x-init="loadEmployees(); loadSchedule(); setupShiftModalHandlers()">
+
+                        <!-- Schedule Header -->
+                        <div class="schedule-header d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded">
+                            <div class="d-flex align-items-center gap-3">
+                                <h5 class="mb-0">Schedule</h5>
+                            </div>
+                            
+                            <div class="d-flex align-items-center gap-2">
+                                <button class="btn btn-outline-secondary btn-sm" @click="previousWeek()">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <span class="fw-bold" x-text="formatWeekRange()"></span>
+                                <button class="btn btn-outline-secondary btn-sm" @click="nextWeek()">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                                <button class="btn btn-primary btn-sm" @click="goToToday()">TODAY</button>
+                                <!-- <select class="form-select form-select-sm" style="width: auto;">
+                                    <option>Week</option>
+                                </select> -->
+                            </div>
+                        </div>
+
+                        <!-- Position Filters -->
+                        <div class="position-filters mb-3 mt-3">
+                            <div class="mb-2">
+                                <strong>SHIFT COLORS</strong>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <template x-for="(shift, key) in shifts" :key="key">
+                                    <div class="position-legend d-flex align-items-center me-3 mb-1">
+                                        <span class="position-color me-2" :style="'background-color: ' + shift.color + '; width: 12px; height: 12px; border-radius: 2px;'"></span>
+                                        <span x-text="shift.name" class="small"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                        
+                        <!-- Schedule Grid - Integrated Table Style -->
+                        <div class="schedule-grid">
+                            <div class="schedule-table-container">
+                                <table class="schedule-table" style="width: 100%; border-collapse: separate; border-spacing: 1px;">
+                                    <thead>
+                                        <tr>
+                                            <!-- Employee Column Header -->
+                                            <th style="width: 160px; background-color: #2c5aa0; color: white; padding: 10px; border-radius: 4px 0 0 0;">
+                                                <div class="text-center">EMPLOYEES</div>
+                                            </th>
+                                            
+                                            <!-- Days Headers -->
+                                            <template x-for="day in getWeekDays()" :key="day.getTime()">
+                                                <th style="background-color: #2c5aa0; color: white; padding: 10px; text-align: center;">
+                                                    <div class="fw-bold" x-text="formatDate(day)"></div>
+                                                </th>
+                                            </template>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template x-for="employee in employees.filter(e => selectedEmployees.length === 0 || selectedEmployees.includes(e.userId || e.employeeId))" :key="employee.userId || employee.employeeId">
+                                            <tr :class="isEmployeeSelected(employee.employeeId || employee.userId) ? 'bg-light' : ''" style="border-bottom: 2px solid #dee2e6;">
+                                                <!-- Employee Column -->
+                                                <td class="employee-cell" style="background-color: #f8f9fa; padding: 10px; border-right: 2px solid #dee2e6;">
+                                                    <div class="d-flex align-items-center" 
+                                                         @click="toggleEmployee(employee.employeeId || employee.userId)"
+                                                         style="cursor: pointer;">
+                                                        <div class="employee-avatar me-2 bg-secondary rounded-circle d-flex align-items-center justify-content-center" 
+                                                             style="min-width: 28px; height: 28px; font-size: 12px; color: white;">
+                                                            <span x-text="getEmployeeInitials(employee)"></span>
+                                                        </div>
+                                                        <div class="employee-details">
+                                                            <div class="employee-name fw-bold" x-text="getEmployeeName(employee)" style="font-size: 14px;"></div>
+                                                            <div class="employee-hours text-muted" style="font-size: 12px;" x-text="getEmployeeHours(employee)"></div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                
+                                                <!-- Schedule Cells -->
+                                                <template x-for="day in getWeekDays()" :key="day.getTime()">
+                                                    <td class="day-cell position-relative" 
+                                                        style="background-color: #ffffff; padding: 8px; border: 1px solid #dee2e6; min-height: 80px; vertical-align: top;"
+                                                        @dragover.prevent 
+                                                        @drop="addShift((employee.userId || employee.employeeId), day, 'EMPLOYEE', '09:00', '17:00')"
+                                                    >
+                                                            
+                                                            <!-- Shifts for this day -->
+                                                            <template x-for="shift in getEmployeeSchedule((employee.userId || employee.employeeId), day)" :key="shift.id">
+                                                                <div class="shift-block position-relative mb-1 px-2 py-1 rounded text-white small"
+                                                                     :style="'background-color: ' + (shifts[shift.type]?.color || shifts.default.color) + '; cursor: pointer; box-shadow: 0 3px 6px rgba(0,0,0,0.4); border: 1px solid rgba(0,0,0,0.2);'"
+                                                                     @click="openEditShiftModal(shift, employee, day)"
+                                                                     draggable="true">
+                                                                    <div class="shift-time fw-bold" x-text="shift.startTime + ' - ' + shift.endTime"></div>
+                                                                    <div class="shift-type fw-bold" x-text="shift.type === 'MANAGER' ? 'Manager' : 'Employee'"></div>
+                                                                </div>
+                                                            </template>
+                                                    </td>
+                                                </template>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5) Room Reviews -->
+            <section class="main-card hidden" data-cat="reviews">
+                <div class="card">
+                    <h4>Room Reviews</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th>Room</th>
+                                <th>Author</th>
+                                <th>Rating</th>
+                                <th>Comment</th>
+                                <th>Date</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="rev : ${reviews}">
+                                <td th:text="${rev.roomNumber}">101</td>
+                                <td th:text="${rev.author}">John Doe</td>
+                                <td>
+                                    <span class="badge bg-warning" th:text="${rev.rating} + '/5'">4/5</span>
+                                </td>
+                                <td th:text="${rev.comment}">Great room!</td>
+                                <td th:text="${rev.reviewDate}">2023-12-01</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6) Employee Management -->
+            <section class="main-card hidden" data-cat="employees">
+                <div class="card">
+                    <h4>Add Employee</h4>
+                    <form id="registerForm" method="post" th:action="@{/employees}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label" for="firstName">First Name</label>
+                                <input class="form-control" id="firstName" name="firstName" placeholder="First Name"
+                                       required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="lastName">Last Name</label>
+                                <input class="form-control" id="lastName" name="lastName" placeholder="Last Name"
+                                       required>
+                            </div>
+                        </div>
+                        <label class="form-label" for="emailPrefix">Email</label>
+                        <div class="email-wrapper">
+                            <input class="form-control" id="emailPrefix" placeholder="Enter email prefix" required>
+                            <div class="email-suffix">@olh.fr</div>
+                        </div>
+                        <input id="email" name="email" type="hidden">
+                        <label class="form-label" for="password">Password</label>
+                        <input class="form-control" id="password" name="password" placeholder="Password" required
+                               type="password">
+                        <button class="btn btn-primary" type="submit">Register Employee</button>
+                    </form>
+                    <div class="form-message" id="message"></div>
+                </div>
+
+                <div class="card">
+                    <h4>Edit Employee</h4>
+                    <form method="post" th:action="@{/employees/update}">
+                        <label class="form-label" for="editEmployeeId">Select Employee</label>
+                        <select class="form-select" id="editEmployeeId" name="id" required>
+                            <option value="">Select employee to edit</option>
+                            <option th:each="e : ${employees}" th:text="${e.firstName + ' ' + e.lastName}"
+                                    th:value="${e.userId}"></option>
+                        </select>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label" for="newFirstName">New First Name</label>
+                                <input class="form-control" id="newFirstName" name="firstName"
+                                       placeholder="New First Name">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="newLastName">New Last Name</label>
+                                <input class="form-control" id="newLastName" name="lastName"
+                                       placeholder="New Last Name">
+                            </div>
+                        </div>
+                        <button class="btn btn-success" type="submit">Update Employee</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h4>Delete Employee</h4>
+                    <form method="post" th:action="@{/employees/delete}">
+                        <label class="form-label" for="deleteEmployeeId">Select Employee</label>
+                        <select class="form-select" id="deleteEmployeeId" name="id" required>
+                            <option value="">Select employee to delete</option>
+                            <option th:each="e : ${employees}" th:text="${e.firstName + ' ' + e.lastName}"
+                                    th:value="${e.userId}"></option>
+                        </select>
+                        <button class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this employee?')"
+                                type="submit">Delete
+                            Employee
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- 7) Leave Approval -->
+            <section class="main-card hidden" data-cat="approval">
+                <div class="card">
+                    <h4>Pending Leave Requests</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="pendingLeaveRequestsTable">
+                            <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Type</th>
+                                <th>Dates</th>
+                                <th>Duration</th>
+                                <th>Reason</th>
+                                <th>Submitted</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <!-- Data will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card mt-4">
+                    <h4>All Leave Requests</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="allLeaveRequestsTable">
+                            <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Type</th>
+                                <th>Dates</th>
+                                <th>Duration</th>
+                                <th>Status</th>
+                                <th>Submitted</th>
+                                <th>Processed By</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <!-- Data will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<!-- Add Shift Modal -->
+<div th:replace="fragments/modals/addShiftModal :: addShiftModal"></div>
+<!-- Edit/Delete Shift Modal -->
+<div th:replace="fragments/modals/editShiftModal :: editShiftModal"></div>
+<!-- Add Employee Modal -->
+<div th:replace="fragments/modals/addEmployeeModal :: addEmployeeModal"></div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/employeeDashboard.js}"></script>
+<script th:src="@{/js/employeePlanning.js}"></script>
+<script th:src="@{/js/leaveRequests.js}"></script>
+</body>
+</html>

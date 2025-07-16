@@ -1,0 +1,480 @@
+:root {
+    --primary-bg: rgba(17, 56, 38, 0.8);
+    --card-bg: rgba(156, 121, 69, 0.6);
+    --text-main: white;
+    --hover-accent: rgba(156, 121, 69, 1);
+}
+
+/*--------------------------------------------------------
+  Themes potentiels ajoutés
+--------------------------------------------------------*/
+
+ body {
+            background-color: var(--primary-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar {
+            background-color: var(--primary-bg);
+            min-height: 100vh;
+            padding: 20px 0;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-logo {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 0 15px;
+        }
+
+        .sidebar-logo img {
+            max-width: 80px;
+            height: auto;
+        }
+
+        .nav-btn {
+            display: block;
+            width: 100%;
+            color: var(--text-main);
+            text-decoration: none;
+            padding: 12px 20px;
+            border: none;
+            background: none;
+            text-align: left;
+            font-weight: 500;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background-color: var(--hover-accent);
+            color: var(--text-main);
+            transform: translateX(5px);
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .main-card {
+            display: none;
+        }
+
+        .main-card:not(.hidden) {
+            display: block;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            padding: 20px;
+            border: none;
+        }
+
+        .card h4 {
+            color: var(--text-main);
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .form-control, .form-select {
+            margin-bottom: 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 10px 15px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--text-main);
+            box-shadow: 0 0 0 0.2rem rgba(44, 90, 160, 0.25);
+        }
+
+        .btn {
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 500;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background-color: var(--text-main);
+            border-color: var(--text-main);
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .btn-purple {
+            background-color: #a59df4;
+            color: white;
+            border: none;
+        }
+
+        .btn-orange {
+            background-color: #ff6b57;
+            color: white;
+            border: none;
+        }
+
+        .table thead {
+            background-color: var(--card-bg);
+        }
+
+        .card-header {
+            background-color: #e0efff;
+            font-weight: bold;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .email-wrapper {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .email-suffix {
+            background-color: #f8f9fa;
+            border: 2px solid #e1e8ed;
+            border-left: none;
+            padding: 10px 15px;
+            border-radius: 0 8px 8px 0;
+            color: #6c757d;
+        }
+
+        #emailPrefix {
+            border-radius: 8px 0 0 8px;
+            margin-bottom: 0;
+        }
+
+        .calendar-placeholder {
+            background-color: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            padding: 40px;
+            text-align: center;
+            color: #6c757d;
+            border-radius: 8px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .user-header {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Schedule Planning Styles */
+        .schedule-container {
+            background: var(--card-bg); /* Light blue background */
+            border-radius: 8px;
+            overflow: hidden;
+            padding: 8px;
+            border: 2px solid #2c5aa0;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .schedule-header {
+            background: var(--card-bg);
+            border-bottom: 2px solid var(--hover-accent);
+            margin-bottom: 10px !important;
+        }
+
+        .employee-sidebar {
+            background: var(--card-bg) !important;
+            border-right: 1px solid var(--hover-accent);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .employee-item {
+            transition: all 0.2s ease;
+            border: 1px solid var(--hover-accent) !important;
+        }
+
+        .employee-item:hover {
+            border-color: #007bff !important;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .employee-avatar {
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .position-color {
+            display: inline-block;
+            border-radius: 2px;
+        }
+
+        .schedule-calendar {
+            background: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .calendar-header {
+            border-bottom: 2px solid #dee2e6;
+            background-color: #e9efff;
+        }
+
+        .day-header {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .employee-row {
+            background-color: #ffffff;
+            border-bottom: 2px solid #dee2e6 !important;
+        }
+
+        .employee-row:hover {
+            background-color: #e6f2ff;
+        }
+
+        .day-cell {
+            transition: background-color 0.2s ease;
+            min-height: 80px;
+            background-color: var(--card-bg) !important;
+            border: 2px solid black !important;
+            margin: 2px;
+            border-radius: 4px;
+        }
+
+        .day-cell:hover {
+            background-color: var(--hover-accent) !important;
+        }
+
+        .shift-block {
+            font-size: 11px;
+            line-height: 1.2;
+            min-height: 32px;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(0,0,0,0.2);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .shift-block:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+
+        .shift-time {
+            font-size: 10px;
+            font-weight: bold;
+            opacity: 1;
+        }
+
+        .shift-type {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .btn-orange {
+            background-color: #ff6b35;
+            border-color: #ff6b35;
+        }
+
+        .btn-orange:hover {
+            background-color: #e55a2b;
+            border-color: #e55a2b;
+        }
+
+        .position-filters .form-check-input:checked {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        /* Drag and drop styles */
+        .day-cell.drag-over {
+            background-color: var(--card-bg);
+            border: 2px dashed var(--hover-accent);
+        }
+
+        .shift-block[draggable="true"] {
+            cursor: move;
+        }
+
+        .shift-block.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+
+        /* Table-based schedule styles */
+        .schedule-table {
+            table-layout: fixed;
+            border-collapse: separate;
+            border-spacing: 2px;
+            width: 100%;
+        }
+
+        .schedule-table th {
+            text-align: center;
+            padding: 10px;
+            background-color: var(--text-main);
+            color: white;
+            font-weight: 600;
+        }
+
+        .employee-cell {
+            background-color: #f0f5ff;
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            border-right: 2px solid #2c5aa0;
+        }
+
+        .schedule-table td {
+            height: 80px;
+            vertical-align: top;
+            padding: 6px;
+        }
+
+        .schedule-table-container {
+            overflow-x: auto;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            .employee-cell {
+                min-width: 150px;
+            }
+        }
+
+        /* Leave Request Status Badges */
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status-approved {
+            background-color: #d1edda;
+            color: #155724;
+            border: 1px solid #74c0fc;
+        }
+
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #ff7675;
+        }
+
+        .status-cancelled {
+            background-color: #e2e3e5;
+            color: #383d41;
+            border: 1px solid #ced4da;
+        }
+
+        /* Leave Request Tables */
+        #myLeaveRequestsTable, #pendingLeaveRequestsTable {
+            font-size: 14px;
+        }
+
+        #myLeaveRequestsTable th, #pendingLeaveRequestsTable th {
+            background-color: #f8f9fa;
+            border-top: none;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        #myLeaveRequestsTable td, #pendingLeaveRequestsTable td {
+            vertical-align: middle;
+        }
+
+        /* Leave Request Form */
+        #leaveRequestForm {
+            max-width: 100%;
+        }
+
+        #leaveRequestForm .row {
+            margin-bottom: 1rem;
+        }
+
+        #leaveRequestForm .mb-3 {
+            margin-bottom: 1rem;
+        }
+
+        #reasonCharCount {
+            font-size: 11px;
+            color: #6c757d;
+        }
+
+        /* Action buttons in tables */
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            border-radius: 0.25rem;
+        }
+
+        /* Responsive table improvements */
+        .table-responsive {
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Animation for notifications */
+        .alert.show {
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+/*--------------------------------------------------------
+  Overrides pour boutons primaires
+--------------------------------------------------------*/
+.btn-primary {
+    background-color: var(--primary-bg);
+    border-color: var(--primary-bg);
+    color: var(--text-main);
+}
+.btn-primary:hover {
+    background-color: var(--hover-accent);
+    border-color: var(--hover-accent);
+}

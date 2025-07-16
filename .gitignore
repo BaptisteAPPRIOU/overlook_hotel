@@ -28,3 +28,4 @@ replay_pid*
 
 ###TEMP###
 /master/src/main/resources/application.yml
+master/src/main/resources/db/migration/update_room_type_constraint.sql

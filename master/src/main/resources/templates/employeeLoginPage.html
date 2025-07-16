@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Employee Login</title>
+    <link rel="stylesheet" th:href="@{/css/authPage.css}"/>
+    <script defer th:src="@{/js/employeeLogin.js}"></script>
+</head>
+<body>
+
+<div class="main-card">
+    <img alt="Logo" class="logo" th:src="@{/image/logo_noBg_no_name.png}"/>
+    <h1>Employee Login</h1>
+
+    <form id="employeeLoginForm">
+        <input id="email" name="email" placeholder="Email" required type="email"/>
+        <input id="password" name="password" placeholder="Password" required type="password"/>
+        <button type="submit">Login</button>
+    </form>
+
+    <div id="message" style="color: red; margin-top: 10px;"></div>
+</div>
+
+</body>
+</html>

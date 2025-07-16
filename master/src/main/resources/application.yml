@@ -1,19 +1,24 @@
 server:
   port: 8080
+  error:
+    include-stacktrace: always
+    include-message: always
+    include-binding-errors: always
 
 spring:
   datasource:
-    url:
-    username:
-    password:
+    url: jdbc:postgresql://100.127.131.70:5432/overlookhoteldb
+    username: dev
+    password: _GB7rG-@*d649Pab
     driver-class-name: org.postgresql.Driver
-
-
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     show-sql: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+    spring.jpa.hibernate.ddl-auto: create-drop
+    spring.jpa.show-sql: true
+    spring.jpa.properties.hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
 
   thymeleaf:
     cache: false
@@ -29,6 +34,9 @@ spring:
 
 logging:
   level:
-    org.springframework.security: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    '[org.springframework.security]': DEBUG
+    '[org.hibernate.SQL]': DEBUG
+    '[org.hibernate.type.descriptor.sql.BasicBinder]': TRACE
+    '[org.springframework.web]': DEBUG
+    '[master.master]': DEBUG
+    root: INFO

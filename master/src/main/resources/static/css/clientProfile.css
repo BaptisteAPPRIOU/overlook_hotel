@@ -1,0 +1,441 @@
+/* Client Profile Styles */
+body {
+    background-color: #f8f9fa;
+}
+
+.profile-sidebar {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 20px;
+    position: sticky;
+    top: 100px;
+}
+
+.avatar-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    color: white;
+}
+
+.profile-menu {
+    margin-top: 30px;
+}
+
+.menu-item {
+    display: block;
+    padding: 15px 20px;
+    color: #666;
+    text-decoration: none;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    transition: all 0.3s ease;
+}
+
+.menu-item:hover, .menu-item.active {
+    background-color: #667eea;
+    color: white;
+    text-decoration: none;
+}
+
+.menu-item i {
+    width: 20px;
+    margin-right: 10px;
+}
+
+.content-section {
+    display: none;
+}
+
+.content-section.active {
+    display: block;
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px 10px 0 0 !important;
+    border: none;
+}
+
+.filter-buttons .btn {
+    margin-left: 5px;
+}
+
+.filter-buttons .btn.active {
+    background-color: #667eea;
+    border-color: #667eea;
+    color: white;
+}
+
+/* Reservation Cards */
+.reservation-card {
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.reservation-card:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.reservation-status {
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+.status-confirmed {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-past {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-cancelled {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.status-pending {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.room-image-small {
+    width: 80px;
+    height: 60px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+/* Review Styles */
+.review-card {
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    background: white;
+}
+
+.star-rating {
+    font-size: 1.5em;
+    color: #ddd;
+    cursor: pointer;
+}
+
+.star-rating i {
+    margin-right: 5px;
+    transition: color 0.2s ease;
+}
+
+.star-rating i:hover,
+.star-rating i.active {
+    color: #ffc107;
+}
+
+.rating-display .fa-star {
+    color: #ffc107;
+    margin-right: 2px;
+}
+
+.rating-display .fa-star.empty {
+    color: #ddd;
+}
+
+/* Review Form Enhancements */
+.reservation-details {
+    border-left: 4px solid #667eea;
+}
+
+.review-summary {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.review-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .profile-sidebar {
+        position: static;
+        margin-bottom: 20px;
+    }
+    
+    .filter-buttons {
+        margin-top: 10px;
+    }
+    
+    .filter-buttons .btn {
+        margin: 2px;
+        font-size: 0.8em;
+    }
+    
+    .reservation-card {
+        padding: 15px;
+    }
+    
+    .review-actions {
+        justify-content: center;
+    }
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.content-section.active {
+    animation: fadeIn 0.5s ease;
+}
+
+/* Form Enhancements */
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+}
+
+/* Loading States */
+.loading-placeholder {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 4px;
+    height: 20px;
+    margin: 10px 0;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Empty States */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 3em;
+    margin-bottom: 20px;
+    color: #dee2e6;
+}
+
+.empty-state h5 {
+    margin-bottom: 10px;
+    color: #495057;
+}
+
+/* Fidelity Section Styles */
+.fidelity-level-badge {
+    position: relative;
+}
+
+.fidelity-level-badge #fidelityLevelIcon {
+    transition: all 0.3s ease;
+}
+
+.fidelity-level-badge #fidelityLevelIcon.bronze {
+    color: #cd7f32;
+}
+
+.fidelity-level-badge #fidelityLevelIcon.silver {
+    color: #c0c0c0;
+}
+
+.fidelity-level-badge #fidelityLevelIcon.gold {
+    color: #ffd700;
+}
+
+.fidelity-level-badge #fidelityLevelIcon.diamond {
+    color: #b9f2ff;
+    text-shadow: 0 0 10px #b9f2ff;
+}
+
+.fidelity-points h2 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.stat-item {
+    padding: 10px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-2px);
+}
+
+.stat-item i {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+.redemption-option {
+    margin-bottom: 20px;
+}
+
+.redemption-card {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.redemption-card:hover {
+    border-color: #667eea;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.redemption-card.available {
+    cursor: pointer;
+}
+
+.redemption-card.unavailable {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.redemption-card.unavailable:hover {
+    transform: none;
+    border-color: #e9ecef;
+}
+
+.points-cost {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.redemption-type-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 0.8rem;
+}
+
+.fidelity-progress {
+    height: 8px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.fidelity-progress .progress-bar {
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    transition: width 0.6s ease;
+}
+
+/* Redemption Modal */
+.redemption-modal {
+    background-color: rgba(0,0,0,0.5);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1050;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.redemption-modal-content {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    transform: scale(0.7);
+    transition: transform 0.3s ease;
+}
+
+.redemption-modal.show .redemption-modal-content {
+    transform: scale(1);
+}
+
+.redemption-confirmation {
+    text-align: center;
+}
+
+.redemption-confirmation .confirmation-icon {
+    font-size: 4rem;
+    color: #28a745;
+    margin-bottom: 20px;
+}
+
+/* Animations */
+@keyframes pointsCountUp {
+    from { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    to { transform: scale(1); }
+}
+
+.points-animation {
+    animation: pointsCountUp 0.6s ease;
+}
+
+/* Responsive Design for Fidelity */
+@media (max-width: 768px) {
+    .redemption-card {
+        margin-bottom: 15px;
+    }
+    
+    .stat-item {
+        margin-bottom: 10px;
+    }
+    
+    .fidelity-points h2 {
+        font-size: 2rem;
+    }
+}
