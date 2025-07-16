@@ -49,7 +49,7 @@ import lombok.Data;
  */
 
 @Entity
-@Table(name = "rooms")
+@Table(name = "room")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
