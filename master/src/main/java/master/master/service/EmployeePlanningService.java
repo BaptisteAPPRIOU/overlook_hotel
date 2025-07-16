@@ -166,7 +166,7 @@ public class EmployeePlanningService {
                 .collect(Collectors.toMap(
                     w -> w.getId().getWeekday(),
                     w -> w,
-                    (existing, replacement) -> existing
+                    (existing, _) -> existing
                 ));
         
         List<EmployeePlanningDto.WorkDayPlanningDto> workDays = new ArrayList<>();
@@ -474,21 +474,6 @@ public class EmployeePlanningService {
         };
     }
 
-    // Employee Information Methods
-    public List<Map<String, Object>> getAllEmployees() {
-        return employeeRepository.findAll().stream()
-                .filter(Employee::hasValidUser)
-                .map(emp -> {
-                    Map<String, Object> empMap = new HashMap<>();
-                    empMap.put("userId", emp.getUserId());
-                    empMap.put("firstName", emp.getFirstName());
-                    empMap.put("lastName", emp.getLastName());
-                    empMap.put("email", emp.getEmail());
-                    return empMap;
-                })
-                .collect(Collectors.toList());
-    }
-
     // Shift Management Methods for Planning Interface
 
     /**
@@ -519,8 +504,8 @@ public class EmployeePlanningService {
             // Determine the shift type using the weekday value
             String shiftType = determineShiftTypeFromWeekday(workday.getId().getWeekday());
             
-            schedule.computeIfAbsent(employeeId, k -> new HashMap<>())
-                    .computeIfAbsent(dateStr, k -> new ArrayList<>())
+            schedule.computeIfAbsent(employeeId, _ -> new HashMap<>())
+                    .computeIfAbsent(dateStr, _ -> new ArrayList<>())
                     .add(Map.of(
                             "id", shiftId,
                             "type", shiftType,
@@ -644,41 +629,6 @@ public class EmployeePlanningService {
     }
 
     /**
-     * Update an existing shift from map data.
-     */
-    @Transactional
-    public Map<String, Object> updateShiftFromMap(Long id, Map<String, Object> shiftData) {
-        try {
-            // For EmployeeWorkday, we need employee ID and date as composite key
-            Long employeeId = Long.valueOf(shiftData.get("employeeId").toString());
-            LocalDate date = LocalDate.parse(shiftData.get("date").toString());
-            
-            WorkdayId workdayId = new WorkdayId();
-            workdayId.setEmployeeId(employeeId);
-            workdayId.setWorkDate(date);
-            
-            EmployeeWorkday workday = workdayRepository.findById(workdayId)
-                    .orElseThrow(() -> new RuntimeException("Workday not found"));
-
-            LocalTime startTime = LocalTime.parse(shiftData.get("startTime").toString());
-            LocalTime endTime = LocalTime.parse(shiftData.get("endTime").toString());
-            
-            workday.setPlannedStartTime(startTime);
-            workday.setPlannedEndTime(endTime);
-
-            EmployeeWorkday savedWorkday = workdayRepository.save(workday);
-            
-            return Map.of(
-                    "success", true,
-                    "id", savedWorkday.getId().toString(),
-                    "message", "Shift updated successfully"
-            );
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to update shift: " + e.getMessage(), e);
-        }
-    }
-
-    /**
      * Update an existing shift from map data using composite key parameters.
      */
     @Transactional
@@ -719,16 +669,6 @@ public class EmployeePlanningService {
         } catch (Exception e) {
             throw new RuntimeException("Failed to update shift: " + e.getMessage(), e);
         }
-    }
-
-    /**
-     * Delete a shift by ID.
-     */
-    @Transactional
-    public void deleteShiftById(Long id) {
-        // Since we're using EmployeeWorkday with composite key, this method needs adjustment
-        // For now, we'll throw an exception indicating the proper way to delete
-        throw new RuntimeException("Use deleteEmployeeWorkday(employeeId, date) instead");
     }
 
     /**
@@ -793,21 +733,6 @@ public class EmployeePlanningService {
         if (!workdays.isEmpty()) {
             System.out.println("Deleting the first shift found");
             workdayRepository.delete(workdays.get(0));
-        }
-    }
-
-    /**
-     * Publish schedule and notify employees.
-     */
-    public boolean publishScheduleToEmployees() {
-        try {
-            // Logic to publish schedule and notify employees
-            // This could send emails, push notifications, etc.
-            System.out.println("Schedule published and notifications sent to employees");
-            return true;
-        } catch (Exception e) {
-            System.err.println("Failed to publish schedule: " + e.getMessage());
-            return false;
         }
     }
 
