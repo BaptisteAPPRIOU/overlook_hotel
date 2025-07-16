@@ -64,19 +64,35 @@ function setMinDate() {
 }
 
 // Load and display rooms
-function loadRooms() {
+async function loadRooms() {
     showLoading('roomsContainer');
     
-    // Simulate API call - replace with actual API endpoint
-    setTimeout(() => {
-        const rooms = getSampleRooms();
+    try {
+        const response = await fetch('/api/client/rooms/all', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to load rooms');
+        }
+
+        const rooms = await response.json();
         displayRooms(rooms);
         currentRooms = rooms;
-    }, 1000);
+    } catch (error) {
+        console.error('Error loading rooms:', error);
+        // Show fallback message
+        document.getElementById('roomsContainer').innerHTML = 
+            '<div class="col-12 text-center"><p class="text-muted">Erreur lors du chargement des chambres.</p></div>';
+    }
 }
 
 // Search rooms based on criteria
-function searchRooms() {
+async function searchRooms() {
     const checkIn = document.getElementById('checkInDate').value;
     const checkOut = document.getElementById('checkOutDate').value;
     const adults = document.getElementById('adults').value;
@@ -94,13 +110,26 @@ function searchRooms() {
 
     showLoading('roomsContainer');
 
-    // Simulate API search - replace with actual API call
-    setTimeout(() => {
-        const filteredRooms = currentRooms.filter(room => {
-            return room.maxOccupancy >= (parseInt(adults) + parseInt(children));
+    try {
+        const response = await fetch(`/api/client/rooms/available?checkIn=${checkIn}&checkOut=${checkOut}&adults=${adults}&children=${children}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`,
+                'Content-Type': 'application/json'
+            }
         });
+
+        if (!response.ok) {
+            throw new Error('Failed to search rooms');
+        }
+
+        const filteredRooms = await response.json();
         displayRooms(filteredRooms);
-    }, 800);
+    } catch (error) {
+        console.error('Error searching rooms:', error);
+        document.getElementById('roomsContainer').innerHTML = 
+            '<div class="col-12 text-center"><p class="text-muted">Erreur lors de la recherche des chambres.</p></div>';
+    }
 }
 
 // Display rooms in the container
@@ -122,20 +151,24 @@ function displayRooms(rooms) {
     container.innerHTML = rooms.map(room => `
         <div class="col-lg-4 col-md-6">
             <div class="card room-card">
-                <div class="room-image" style="background-image: url('${room.image}')">
-                    <span class="room-badge">${room.type}</span>
+                <div class="room-image" style="background-image: url('${room.image || '/image/logo.png'}')">
+                    <span class="room-badge">${room.name}</span>
                 </div>
                 <div class="card-body">
                     <h5 class="card-title">${room.name}</h5>
                     <p class="card-text">${room.description}</p>
                     
                     <ul class="room-features">
-                        <li><i class="fas fa-users"></i> ${room.maxOccupancy} personnes max</li>
-                        <li><i class="fas fa-bed"></i> ${room.bedType}</li>
-                        <li><i class="fas fa-expand"></i> ${room.size} m²</li>
-                        <li><i class="fas fa-wifi"></i> WiFi gratuit</li>
-                        ${room.hasBalcony ? '<li><i class="fas fa-leaf"></i> Balcon</li>' : ''}
-                        ${room.hasJacuzzi ? '<li><i class="fas fa-hot-tub"></i> Jacuzzi</li>' : ''}
+                        <li><i class="fas fa-users"></i> ${room.capacity} personnes max</li>
+                        ${room.amenities && room.amenities.length > 0 ? 
+                            room.amenities.slice(0, 4).map(amenity => {
+                                const icon = getAmenityIcon(amenity);
+                                return `<li><i class="${icon}"></i> ${amenity}</li>`;
+                            }).join('') 
+                            : 
+                            `<li><i class="fas fa-wifi"></i> WiFi gratuit</li>
+                             <li><i class="fas fa-tv"></i> Télévision</li>`
+                        }
                     </ul>
                     
                     <div class="d-flex justify-content-between align-items-center mt-3">
@@ -143,22 +176,48 @@ function displayRooms(rooms) {
                             €${room.price}
                             <small>/nuit</small>
                         </div>
-                        <span class="availability-status ${room.availability}">
-                            ${getAvailabilityText(room.availability)}
+                        <span class="availability-status ${room.status === 'Disponible' ? 'available' : 'unavailable'}">
+                            ${room.status}
                         </span>
                     </div>
                     
                     <div class="mt-3">
                         <button class="btn btn-primary w-100" onclick="openReservationModal(${room.id})" 
-                                ${room.availability === 'unavailable' ? 'disabled' : ''}>
+                                ${room.status !== 'Disponible' ? 'disabled' : ''}>
                             <i class="fas fa-calendar-check"></i> 
-                            ${room.availability === 'unavailable' ? 'Non disponible' : 'Réserver'}
+                            ${room.status !== 'Disponible' ? 'Non disponible' : 'Réserver'}
                         </button>
                     </div>
                 </div>
             </div>
         </div>
     `).join('');
+}
+
+// Get appropriate icon for amenity
+function getAmenityIcon(amenity) {
+    const amenityLower = amenity.toLowerCase();
+    
+    if (amenityLower.includes('wifi')) return 'fas fa-wifi';
+    if (amenityLower.includes('balcon')) return 'fas fa-leaf';
+    if (amenityLower.includes('jacuzzi')) return 'fas fa-hot-tub';
+    if (amenityLower.includes('vue')) return 'fas fa-mountain';
+    if (amenityLower.includes('mini-bar') || amenityLower.includes('minibar')) return 'fas fa-wine-glass';
+    if (amenityLower.includes('télévision') || amenityLower.includes('tv')) return 'fas fa-tv';
+    if (amenityLower.includes('room service')) return 'fas fa-bell';
+    if (amenityLower.includes('coffre')) return 'fas fa-lock';
+    if (amenityLower.includes('sèche') || amenityLower.includes('cheveux')) return 'fas fa-wind';
+    if (amenityLower.includes('peignoir')) return 'fas fa-tshirt';
+    if (amenityLower.includes('café') || amenityLower.includes('nespresso')) return 'fas fa-coffee';
+    if (amenityLower.includes('champagne') || amenityLower.includes('bouteille')) return 'fas fa-champagne-glasses';
+    if (amenityLower.includes('spa')) return 'fas fa-spa';
+    if (amenityLower.includes('salon')) return 'fas fa-couch';
+    if (amenityLower.includes('frigo')) return 'fas fa-snowflake';
+    if (amenityLower.includes('jeux') || amenityLower.includes('enfant')) return 'fas fa-gamepad';
+    if (amenityLower.includes('bureau')) return 'fas fa-desk';
+    
+    // Default icon
+    return 'fas fa-star';
 }
 
 // Get availability text
@@ -172,28 +231,62 @@ function getAvailabilityText(availability) {
 }
 
 // Load and display reviews
-function loadReviews() {
+async function loadReviews() {
     showLoading('reviewsContainer');
     
-    // Simulate API call - replace with actual API endpoint
-    setTimeout(() => {
-        const reviews = getSampleReviews();
+    try {
+        const response = await fetch('/api/client/reviews/latest?limit=6', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to load reviews');
+        }
+
+        const reviews = await response.json();
         displayReviews(reviews);
         currentReviews = reviews;
-    }, 800);
+    } catch (error) {
+        console.error('Error loading reviews:', error);
+        document.getElementById('reviewsContainer').innerHTML = 
+            '<div class="col-12 text-center"><p class="text-muted">Erreur lors du chargement des avis.</p></div>';
+    }
 }
 
 // Load more reviews
-function loadMoreReviews() {
+async function loadMoreReviews() {
     reviewsOffset += reviewsLimit;
     
-    // Simulate loading more reviews
-    setTimeout(() => {
-        const moreReviews = getSampleReviews(reviewsOffset);
+    try {
+        const response = await fetch(`/api/client/reviews?offset=${reviewsOffset}&limit=${reviewsLimit}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to load more reviews');
+        }
+
+        const moreReviews = await response.json();
         if (moreReviews.length > 0) {
             appendReviews(moreReviews);
+        } else {
+            // Hide the "Load More" button if no more reviews
+            const loadMoreBtn = document.querySelector('button[onclick="loadMoreReviews()"]');
+            if (loadMoreBtn) {
+                loadMoreBtn.style.display = 'none';
+            }
         }
-    }, 500);
+    } catch (error) {
+        console.error('Error loading more reviews:', error);
+    }
 }
 
 // Display reviews
