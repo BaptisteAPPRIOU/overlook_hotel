@@ -6,7 +6,7 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background-image: url("../image/home_bg_login_choice.png");
   background-size: cover;
   background-position: center;
@@ -74,7 +74,9 @@ input {
   border-radius: 10px;
   font-size: 1rem;
   background-color: #f4f4f4;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 input:focus {
@@ -93,7 +95,9 @@ button {
   font-weight: bold;
   font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease;
 }
 
 button:hover {
@@ -112,12 +116,12 @@ button:hover {
     font-size: 1.6rem;
   }
 
-  input, button {
+  input,
+  button {
     font-size: 1rem;
     padding: 0.8rem;
   }
 }
-
 
 .email-wrapper {
   display: flex;
@@ -150,7 +154,6 @@ button:hover {
   border-left: 1px solid #ccc;
 }
 
-
 @media (max-width: 480px) {
   .main-card {
     padding: 1.5rem;
@@ -160,7 +163,8 @@ button:hover {
     font-size: 1.4rem;
   }
 
-  input, button {
+  input,
+  button {
     font-size: 0.95rem;
     padding: 0.7rem;
   }
