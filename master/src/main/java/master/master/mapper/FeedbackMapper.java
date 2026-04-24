@@ -7,11 +7,11 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface FeedbackMapper {
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "user", ignore = true)
-    @Mapping(target = "date", ignore = true)
-    Feedback toEntity(FeedbackDto.Create dto);
+  @Mapping(target = "id", ignore = true)
+  @Mapping(target = "user", ignore = true)
+  @Mapping(target = "date", ignore = true)
+  Feedback toEntity(FeedbackDto.Create dto);
 
-    @Mapping(source = "user.id", target = "userId")
-    FeedbackDto.Info toDto(Feedback entity);
+  @Mapping(source = "user.id", target = "userId")
+  FeedbackDto.Info toDto(Feedback entity);
 }
