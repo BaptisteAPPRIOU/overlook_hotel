@@ -1,33 +1,30 @@
 package master.master.domain;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import lombok.*;
 
-import java.time.LocalDate;
-
 /**
- * Entity representing a reservation made by a user for a specific room.
- * Utilizes a composite primary key (ReservationId) consisting of user and room identifiers.
+ * Entity representing a reservation made by a user for a specific room. Utilizes a composite
+ * primary key (ReservationId) consisting of user and room identifiers.
  *
- * <p>
- * Fields:
- * <ul>
- *   <li>{@code id} - Composite primary key for the reservation, embedding user and room IDs.</li>
- *   <li>{@code user} - The user who made the reservation.</li>
- *   <li>{@code room} - The room that is reserved.</li>
- *   <li>{@code reservationDateStart} - The start date of the reservation period.</li>
- *   <li>{@code reservationDateEnd} - The end date of the reservation period.</li>
- *   <li>{@code isPayed} - Indicates whether the reservation has been paid for.</li>
- * </ul>
- * </p>
+ * <p>Fields:
  *
- * <p>
- * Relationships:
  * <ul>
- *   <li>{@code @ManyToOne} with {@code User} and {@code Room} entities.</li>
- *   <li>{@code @EmbeddedId} for composite key management.</li>
+ *   <li>{@code id} - Composite primary key for the reservation, embedding user and room IDs.
+ *   <li>{@code user} - The user who made the reservation.
+ *   <li>{@code room} - The room that is reserved.
+ *   <li>{@code reservationDateStart} - The start date of the reservation period.
+ *   <li>{@code reservationDateEnd} - The end date of the reservation period.
+ *   <li>{@code isPayed} - Indicates whether the reservation has been paid for.
  * </ul>
- * </p>
+ *
+ * <p>Relationships:
+ *
+ * <ul>
+ *   <li>{@code @ManyToOne} with {@code User} and {@code Room} entities.
+ *   <li>{@code @EmbeddedId} for composite key management.
+ * </ul>
  */
 @Getter
 @Setter
@@ -38,41 +35,41 @@ import java.time.LocalDate;
 @Table(name = "user_reservation")
 public class UserReservation {
 
-    @EmbeddedId
-    @AttributeOverrides({
-            @AttributeOverride(name = "userId", column = @Column(name = "user_id")),
-            @AttributeOverride(name = "roomId", column = @Column(name = "room_id"))
-    })
-    private ReservationId id;
+  @EmbeddedId
+  @AttributeOverrides({
+    @AttributeOverride(name = "userId", column = @Column(name = "user_id")),
+    @AttributeOverride(name = "roomId", column = @Column(name = "room_id"))
+  })
+  private ReservationId id;
 
-    @MapsId("userId")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+  @MapsId("userId")
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", nullable = false)
+  private User user;
 
-    @MapsId("roomId")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id", nullable = false)
-    private Room room;
+  @MapsId("roomId")
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "room_id", nullable = false)
+  private Room room;
 
-    @Column(name = "reservation_date_start", nullable = false)
-    private LocalDate reservationDateStart;
+  @Column(name = "reservation_date_start", nullable = false)
+  private LocalDate reservationDateStart;
 
-    @Column(name = "reservation_date_end", nullable = false)
-    private LocalDate reservationDateEnd;
+  @Column(name = "reservation_date_end", nullable = false)
+  private LocalDate reservationDateEnd;
 
-    @Column(name = "payed", nullable = false)
-    private boolean payed;
+  @Column(name = "payed", nullable = false)
+  private boolean payed;
 
-    // Helper methods
-    public int getReservationDurationDays() {
-        if (reservationDateStart != null && reservationDateEnd != null) {
-            return (int) (reservationDateEnd.toEpochDay() - reservationDateStart.toEpochDay()) + 1;
-        }
-        return 0;
+  // Helper methods
+  public int getReservationDurationDays() {
+    if (reservationDateStart != null && reservationDateEnd != null) {
+      return (int) (reservationDateEnd.toEpochDay() - reservationDateStart.toEpochDay()) + 1;
     }
+    return 0;
+  }
 
-    public boolean isActive() {
-        return reservationDateEnd != null && reservationDateEnd.isAfter(LocalDate.now());
-    }
+  public boolean isActive() {
+    return reservationDateEnd != null && reservationDateEnd.isAfter(LocalDate.now());
+  }
 }
