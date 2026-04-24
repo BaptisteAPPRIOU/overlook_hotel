@@ -6,11 +6,10 @@ import lombok.Setter;
 @Getter
 @Setter
 public class EmployeeWorkTimeDto {
-    private String name;
-    private String team;
-    private String workTime;
-    private String clockIn;
-    private String clockOut;
-    private String idleTime;
-
+  private String name;
+  private String team;
+  private String workTime;
+  private String clockIn;
+  private String clockOut;
+  private String idleTime;
 }
