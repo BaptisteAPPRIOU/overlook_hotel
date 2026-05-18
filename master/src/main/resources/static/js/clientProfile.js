@@ -57,7 +57,7 @@ async function loadUserProfile() {
     };
 
     displayUserProfile(currentUser);
-    showErrorMessage("Utilisation de données de démonstration");
+    showErrorMessage("Using demo data");
   }
 }
 
@@ -83,7 +83,7 @@ async function loadReservations() {
       {
         id: 1,
         roomNumber: "301",
-        roomType: "Suite Présidentielle",
+        roomType: "Presidential Suite",
         roomImage:
           "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
         checkIn: "2024-12-15",
@@ -97,7 +97,7 @@ async function loadReservations() {
       {
         id: 2,
         roomNumber: "201",
-        roomType: "Chambre Deluxe",
+        roomType: "Deluxe Room",
         roomImage:
           "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
         checkIn: "2024-10-20",
@@ -111,7 +111,7 @@ async function loadReservations() {
       {
         id: 3,
         roomNumber: "401",
-        roomType: "Chambre Familiale",
+        roomType: "Family Room",
         roomImage:
           "https://images.unsplash.com/photo-1560472355-536de3962603?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
         checkIn: "2025-08-15",
@@ -125,7 +125,7 @@ async function loadReservations() {
       {
         id: 4,
         roomNumber: "102",
-        roomType: "Chambre Standard",
+        roomType: "Standard Room",
         roomImage:
           "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
         checkIn: "2024-07-10",
@@ -141,7 +141,7 @@ async function loadReservations() {
     displayReservations(userReservations);
   } catch (error) {
     console.error("Error loading reservations:", error);
-    showErrorMessage("Erreur lors du chargement des réservations");
+    showErrorMessage("Error loading reservations");
   }
 }
 
@@ -153,10 +153,10 @@ function displayReservations(reservations) {
     container.innerHTML = `
             <div class="empty-state">
                 <i class="fas fa-calendar-times"></i>
-                <h5>Aucune réservation</h5>
-                <p>Vous n'avez pas encore de réservations.</p>
+                <h5>No reservations</h5>
+                <p>You do not have any reservations yet.</p>
                 <a href="/clientHomePage" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Faire une réservation
+                    <i class="fas fa-plus"></i> Make a reservation
                 </a>
             </div>
         `;
@@ -178,7 +178,7 @@ function displayReservations(reservations) {
                         ${formatDate(reservation.checkIn)} - ${formatDate(reservation.checkOut)}
                     </p>
                     <p class="text-muted mb-0">
-                        <i class="fas fa-users"></i> ${reservation.guests} personne(s)
+                        <i class="fas fa-users"></i> ${reservation.guests} guest(s)
                     </p>
                 </div>
                 <div class="col-md-2 text-center">
@@ -188,19 +188,19 @@ function displayReservations(reservations) {
                 </div>
                 <div class="col-md-2 text-end">
                     <div class="mb-2">
-                        <strong>€${reservation.totalPrice}</strong>
+                        <strong>EUR ${reservation.totalPrice}</strong>
                     </div>
                     <div class="review-actions">
                         ${
                           reservation.canReview && !reservation.hasReview
                             ? `<button class="btn btn-sm btn-warning" onclick="openReviewModal(${reservation.id})">
-                                <i class="fas fa-star"></i> Donner un avis
+                                <i class="fas fa-star"></i> Leave a review
                             </button>`
                             : ""
                         }
                         ${
                           reservation.hasReview
-                            ? `<span class="text-success"><i class="fas fa-check-circle"></i> Avis donné</span>`
+                            ? `<span class="text-success"><i class="fas fa-check-circle"></i> Review submitted</span>`
                             : ""
                         }
                     </div>
@@ -221,10 +221,10 @@ async function loadReviews() {
         id: 1,
         reservationId: 2,
         roomNumber: "201",
-        roomType: "Chambre Deluxe",
+        roomType: "Deluxe Room",
         rating: 5,
         comment:
-          "Séjour absolument fantastique ! La chambre était magnifique avec une vue imprenable sur les ocres. Le service était exceptionnel et le personnel très attentionné. Je recommande vivement !",
+          "An absolutely fantastic stay! The room was beautiful with a stunning view over the ochre cliffs. The service was exceptional and the staff was very attentive. I highly recommend it!",
         cleanliness: 5,
         service: 5,
         comfort: 5,
@@ -240,7 +240,7 @@ async function loadReviews() {
     displayReviews(userReviews);
   } catch (error) {
     console.error("Error loading reviews:", error);
-    showErrorMessage("Erreur lors du chargement des avis");
+    showErrorMessage("Error loading reviews");
   }
 }
 
@@ -252,8 +252,8 @@ function displayReviews(reviews) {
     container.innerHTML = `
             <div class="empty-state">
                 <i class="fas fa-star"></i>
-                <h5>Aucun avis</h5>
-                <p>Vous n'avez pas encore laissé d'avis. Après un séjour, vous pourrez partager votre expérience.</p>
+                <h5>No reviews</h5>
+                <p>You have not left any reviews yet. After a stay, you will be able to share your experience.</p>
             </div>
         `;
     return;
@@ -267,7 +267,7 @@ function displayReviews(reviews) {
                 <div>
                     <h6 class="mb-1">${review.roomNumber} - ${review.roomType}</h6>
                     <small class="text-muted">
-                        Séjour du ${formatDate(review.checkIn)} au ${formatDate(review.checkOut)}
+                        Stay from ${formatDate(review.checkIn)} to ${formatDate(review.checkOut)}
                     </small>
                 </div>
                 <div class="text-end">
@@ -281,7 +281,7 @@ function displayReviews(reviews) {
             <div class="review-details mb-3">
                 <div class="row">
                     <div class="col-md-3">
-                        <small class="text-muted">Propreté:</small>
+                        <small class="text-muted">Cleanliness:</small>
                         <div>${generateStarDisplay(review.cleanliness)}</div>
                     </div>
                     <div class="col-md-3">
@@ -289,11 +289,11 @@ function displayReviews(reviews) {
                         <div>${generateStarDisplay(review.service)}</div>
                     </div>
                     <div class="col-md-3">
-                        <small class="text-muted">Confort:</small>
+                        <small class="text-muted">Comfort:</small>
                         <div>${generateStarDisplay(review.comfort)}</div>
                     </div>
                     <div class="col-md-3">
-                        <small class="text-muted">Rapport Q/P:</small>
+                        <small class="text-muted">Value:</small>
                         <div>${generateStarDisplay(review.valueForMoney)}</div>
                     </div>
                 </div>
@@ -305,17 +305,17 @@ function displayReviews(reviews) {
                 <div>
                     ${
                       review.recommend
-                        ? '<span class="badge bg-success"><i class="fas fa-thumbs-up"></i> Recommande</span>'
-                        : '<span class="badge bg-secondary"><i class="fas fa-thumbs-down"></i> Ne recommande pas</span>'
+                        ? '<span class="badge bg-success"><i class="fas fa-thumbs-up"></i> Recommended</span>'
+                        : '<span class="badge bg-secondary"><i class="fas fa-thumbs-down"></i> Not recommended</span>'
                     }
                     ${
                       review.anonymous
-                        ? '<span class="badge bg-info ms-2"><i class="fas fa-user-secret"></i> Anonyme</span>'
+                        ? '<span class="badge bg-info ms-2"><i class="fas fa-user-secret"></i> Anonymous</span>'
                         : ""
                     }
                 </div>
                 <button class="btn btn-sm btn-outline-primary" onclick="editReview(${review.id})">
-                    <i class="fas fa-edit"></i> Modifier
+                    <i class="fas fa-edit"></i> Edit
                 </button>
             </div>
         </div>
@@ -436,12 +436,12 @@ function submitReview() {
 
   // Validation
   if (!reviewData.rating) {
-    showErrorMessage("Veuillez donner une note globale");
+    showErrorMessage("Please provide an overall rating");
     return;
   }
 
   if (!reviewData.comment || reviewData.comment.length < 10) {
-    showErrorMessage("Le commentaire doit contenir au moins 10 caractères");
+    showErrorMessage("The comment must contain at least 10 characters");
     return;
   }
 
@@ -482,7 +482,7 @@ function submitReview() {
 
     // Close modal and show success
     bootstrap.Modal.getInstance(document.getElementById("reviewModal")).hide();
-    showSuccessMessage("Votre avis a été publié avec succès !");
+    showSuccessMessage("Your review was posted successfully!");
   }, 1000);
 }
 
@@ -504,7 +504,7 @@ function updateProfile() {
     document.getElementById("userFullName").textContent =
       `${formData.firstName} ${formData.lastName}`;
 
-    showSuccessMessage("Profil mis à jour avec succès !");
+    showSuccessMessage("Profile updated successfully!");
   }, 1000);
 }
 
@@ -559,9 +559,9 @@ function formatDate(dateString) {
 
 function getStatusText(status) {
   const statusTexts = {
-    confirmed: "Confirmée",
-    past: "Terminée",
-    cancelled: "Annulée",
+    confirmed: "Confirmed",
+    past: "Completed",
+    cancelled: "Cancelled",
     pending: "En attente",
   };
   return statusTexts[status] || status;
@@ -626,7 +626,7 @@ async function loadFidelityData() {
     await Promise.all([loadFidelitySummary(), loadRedemptionOptions()]);
   } catch (error) {
     console.error("Error loading fidelity data:", error);
-    showErrorMessage("Erreur lors du chargement des données de fidélité");
+    showErrorMessage("Error loading loyalty data");
   }
 }
 
@@ -649,7 +649,7 @@ async function loadFidelitySummary() {
     calculateFidelityStats();
   } catch (error) {
     console.error("Error loading fidelity summary:", error);
-    showErrorMessage("Erreur lors du chargement des données de fidélité");
+    showErrorMessage("Error loading loyalty data");
   }
 }
 
@@ -665,12 +665,12 @@ function displayFidelitySummary(data) {
   // Set level icon and styling
   icon.className = `fas fa-medal fa-3x ${data.level.toLowerCase()}`;
 
-  // Set level name with French translation
+  // Set level display name
   const levelNames = {
     BRONZE: "Bronze",
-    SILVER: "Argent",
-    GOLD: "Or",
-    DIAMOND: "Diamant",
+    SILVER: "Silver",
+    GOLD: "Gold",
+    DIAMOND: "Diamond",
   };
   levelName.textContent = levelNames[data.level] || data.level;
 
@@ -688,14 +688,14 @@ function displayFidelitySummary(data) {
 
   // Set points to next level
   if (data.pointsToNextLevel > 0) {
-    pointsToNext.textContent = `Points jusqu'au niveau suivant: ${data.pointsToNextLevel}`;
+    pointsToNext.textContent = `Points to next level: ${data.pointsToNextLevel}`;
   } else {
-    pointsToNext.textContent = "Niveau maximum atteint !";
+    pointsToNext.textContent = "Maximum level reached!";
   }
 
   // Set discount badge
   const discountPercent = Math.round(data.discountPercentage * 100);
-  discountBadge.textContent = `Réduction: ${discountPercent}%`;
+  discountBadge.textContent = `Discount: ${discountPercent}%`;
   discountBadge.className = `badge fs-6 ${discountPercent > 0 ? "bg-success" : "bg-secondary"}`;
 }
 
@@ -829,10 +829,10 @@ async function loadRedemptionOptions() {
             <div class="col-12">
                 <div class="empty-state">
                     <i class="fas fa-exclamation-triangle text-warning"></i>
-                    <h5>Erreur de chargement</h5>
-                    <p>Impossible de charger les options d'échange.</p>
+                    <h5>Loading Error</h5>
+                    <p>Unable to load redemption options.</p>
                     <button class="btn btn-outline-primary" onclick="loadRedemptionOptions()">
-                        <i class="fas fa-refresh"></i> Réessayer
+                        <i class="fas fa-refresh"></i> Try Again
                     </button>
                 </div>
             </div>
@@ -849,8 +849,8 @@ function displayRedemptionOptions(options) {
             <div class="col-12">
                 <div class="empty-state">
                     <i class="fas fa-gift"></i>
-                    <h5>Aucune option d'échange disponible</h5>
-                    <p>Gagnez plus de points en effectuant des réservations.</p>
+                    <h5>No redemption options available</h5>
+                    <p>Earn more points by making reservations.</p>
                 </div>
             </div>
         `;
@@ -868,7 +868,7 @@ function displayRedemptionOptions(options) {
                     <div class="points-cost">${option.pointsCost} points</div>
                     <h6 class="fw-bold">${option.title}</h6>
                     <p class="text-muted small">${option.description}</p>
-                    ${!option.available ? '<p class="text-danger small"><i class="fas fa-lock"></i> Points insuffisants</p>' : ""}
+                    ${!option.available ? '<p class="text-danger small"><i class="fas fa-lock"></i> Not enough points</p>' : ""}
                 </div>
             </div>
         </div>
@@ -891,7 +891,7 @@ function getTypeIcon(type) {
 // Redeem a fidelity option
 async function redeemOption(optionId, pointsCost) {
   const confirmed = confirm(
-    `Êtes-vous sûr de vouloir échanger ${pointsCost} points contre cette récompense ?`,
+    `Are you sure you want to redeem ${pointsCost} points for this reward?`,
   );
 
   if (!confirmed) return;
@@ -911,7 +911,7 @@ async function redeemOption(optionId, pointsCost) {
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(
-        errorData.message || "Erreur lors de l'échange des points",
+        errorData.message || "Error redeeming points",
       );
     }
 
@@ -927,7 +927,7 @@ async function redeemOption(optionId, pointsCost) {
 
       showSuccessMessage(
         result.message ||
-          `Échange réussi ! Il vous reste ${result.remainingPoints} points.`,
+          `Redemption successful! You have ${result.remainingPoints} points remaining.`,
       );
 
       // Reload data to update everything
@@ -936,13 +936,13 @@ async function redeemOption(optionId, pointsCost) {
         loadFidelitySummary();
       }, 1000);
     } else {
-      showErrorMessage(result.message || "Erreur lors de l'échange des points");
+      showErrorMessage(result.message || "Error redeeming points");
     }
   } catch (error) {
     console.error("Error redeeming points:", error);
     showErrorMessage(
       error.message ||
-        "Erreur lors de l'échange des points. Veuillez réessayer.",
+        "Error redeeming points. Please try again.",
     );
   }
 }
@@ -954,7 +954,7 @@ async function recalculatePoints() {
     const originalContent = button.innerHTML;
 
     // Show loading state
-    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recalcul...';
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recalculating...';
     button.disabled = true;
 
     const response = await fetch("/api/v1/fidelity/recalculate", {
@@ -965,7 +965,7 @@ async function recalculatePoints() {
     });
 
     if (!response.ok) {
-      throw new Error("Erreur lors du recalcul des points");
+      throw new Error("Error recalculating points");
     }
 
     const result = await response.json();
@@ -979,7 +979,7 @@ async function recalculatePoints() {
 
       showSuccessMessage(
         result.message ||
-          `Points recalculés ! Nouveau total: ${result.newTotal} points.`,
+          `Points recalculated! New total: ${result.newTotal} points.`,
       );
 
       // Reload fidelity data
@@ -988,15 +988,15 @@ async function recalculatePoints() {
         calculateFidelityStats();
       }, 1000);
     } else {
-      showErrorMessage(result.message || "Erreur lors du recalcul des points");
+      showErrorMessage(result.message || "Error recalculating points");
     }
   } catch (error) {
     console.error("Error recalculating points:", error);
-    showErrorMessage("Erreur lors du recalcul des points.");
+    showErrorMessage("Error recalculating points.");
   } finally {
     // Restore button
     const button = event.target;
-    button.innerHTML = '<i class="fas fa-sync-alt"></i> Recalculer les points';
+    button.innerHTML = '<i class="fas fa-sync-alt"></i> Recalculate Points';
     button.disabled = false;
   }
 }

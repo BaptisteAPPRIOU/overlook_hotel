@@ -208,7 +208,7 @@ public class FidelityPointService {
   private Client getClient(Long userId) {
     return clientRepository
         .findByUserIdAndUserRole(userId, RoleType.CLIENT)
-        .orElseThrow(() -> new RuntimeException("Client introuvable"));
+            .orElseThrow(() -> new RuntimeException("Client not found"));
   }
 
   // DTO Classes
@@ -245,9 +245,9 @@ public class FidelityPointService {
 
   public enum FidelityLevel {
     BRONZE("Bronze", 0, 0.0),
-    SILVER("Argent", 200, 0.05),
-    GOLD("Or", 500, 0.10),
-    DIAMOND("Diamant", 1000, 0.15);
+    SILVER("Silver", 200, 0.05),
+    GOLD("Gold", 500, 0.10),
+    DIAMOND("Diamond", 1000, 0.15);
 
     private final String displayName;
     private final int requiredPoints;

@@ -250,127 +250,127 @@ public class UserDataInitializationService implements ApplicationRunner {
         "101",
         Room.RoomType.STANDARD,
         2,
-        "Chambre Standard confortable avec vue sur jardin",
+        "Comfortable Standard Room with garden view",
         129.0,
         1,
         "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        Arrays.asList("WiFi gratuit", "Climatisation", "TV écran plat"));
+        Arrays.asList("Free WiFi", "Air conditioning", "Flat-screen TV"));
 
     createRoom(
         "102",
         Room.RoomType.STANDARD,
         2,
-        "Chambre Standard élégante avec balcon",
+        "Elegant Standard Room with balcony",
         129.0,
         1,
         "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        Arrays.asList("WiFi gratuit", "Balcon", "TV écran plat"));
+        Arrays.asList("Free WiFi", "Balcony", "Flat-screen TV"));
 
     // Superior rooms
     createRoom(
         "201",
         Room.RoomType.SUPERIOR,
         2,
-        "Chambre Superior avec décoration raffinée",
+        "Superior Room with refined decor",
         159.0,
         2,
         "https://images.unsplash.com/photo-1566665797739-1674de7a421a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        Arrays.asList("WiFi gratuit", "Minibar", "Climatisation", "Vue montagne"));
+        Arrays.asList("Free WiFi", "Minibar", "Air conditioning", "Mountain view"));
 
     createRoom(
         "202",
         Room.RoomType.SUPERIOR,
         2,
-        "Chambre Superior avec terrasse privée",
+        "Superior Room with private terrace",
         159.0,
         2,
         "https://images.unsplash.com/photo-1590490360182-c33d57733427?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        Arrays.asList("WiFi gratuit", "Terrasse privée", "Climatisation"));
+        Arrays.asList("Free WiFi", "Private terrace", "Air conditioning"));
 
     // Deluxe rooms
     createRoom(
         "301",
         Room.RoomType.DELUXE,
         2,
-        "Chambre Deluxe spacieuse avec vue panoramique",
+        "Spacious Deluxe Room with panoramic view",
         189.0,
         3,
         "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        Arrays.asList("WiFi gratuit", "Vue panoramique", "Espace salon", "Minibar"));
+        Arrays.asList("Free WiFi", "Panoramic view", "Lounge area", "Minibar"));
 
     createRoom(
         "302",
         Room.RoomType.DELUXE,
         2,
-        "Chambre Deluxe romantique avec cheminée",
+        "Romantic Deluxe Room with fireplace",
         189.0,
         3,
         "https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        Arrays.asList("WiFi gratuit", "Cheminée", "Balcon", "Vue ocres"));
+        Arrays.asList("Free WiFi", "Fireplace", "Balcony", "Ochre view"));
 
     // Family rooms
     createRoom(
         "401",
         Room.RoomType.FAMILY_ROOM,
         6,
-        "Chambre Familiale spacieuse avec lits superposés",
+        "Spacious Family Room with bunk beds",
         229.0,
         4,
         "https://images.unsplash.com/photo-1560472355-536de3962603?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        Arrays.asList("WiFi gratuit", "Lits superposés", "Espace jeux", "Balcon familial"));
+        Arrays.asList("Free WiFi", "Bunk beds", "Play area", "Family balcony"));
 
     createRoom(
         "402",
         Room.RoomType.FAMILY_ROOM,
         4,
-        "Chambre Familiale avec chambres communicantes",
+        "Family Room with connecting rooms",
         229.0,
         4,
         "https://images.unsplash.com/photo-1543329628-3b535d1208b0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        Arrays.asList("WiFi gratuit", "Chambres communicantes", "Kitchenette"));
+        Arrays.asList("Free WiFi", "Connecting rooms", "Kitchenette"));
 
     // Junior Suites
     createRoom(
         "501",
         Room.RoomType.JUNIOR_SUITE,
         3,
-        "Suite Junior avec salon séparé",
+        "Junior Suite with separate living room",
         289.0,
         5,
         "https://images.unsplash.com/photo-1587985064135-0366536eab42?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        Arrays.asList("WiFi gratuit", "Salon séparé", "Vue vallée", "Minibar"));
+        Arrays.asList("Free WiFi", "Separate living room", "Valley view", "Minibar"));
 
     createRoom(
         "502",
         Room.RoomType.JUNIOR_SUITE,
         3,
-        "Suite Junior avec jacuzzi privé",
+        "Junior Suite with private jacuzzi",
         289.0,
         5,
         "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        Arrays.asList("WiFi gratuit", "Jacuzzi privé", "Terrasse", "Vue panoramique"));
+        Arrays.asList("Free WiFi", "Private jacuzzi", "Terrasse", "Panoramic view"));
 
     // Executive Suites
     createRoom(
         "601",
         Room.RoomType.SUITE,
         4,
-        "Suite Présidentielle avec vue panoramique",
+        "Presidential Suite with panoramic view",
         450.0,
         6,
         "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
         Arrays.asList(
-            "WiFi gratuit", "Salon de luxe", "Jacuzzi", "Vue panoramique", "Service conciergerie"));
+            "Free WiFi", "Luxury lounge", "Jacuzzi", "Panoramic view", "Concierge service"));
 
     createRoom(
         "602",
         Room.RoomType.SUITE,
         4,
-        "Suite Executive avec terrasse privée",
+        "Executive Suite with private terrace",
         450.0,
         6,
         "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        Arrays.asList("WiFi gratuit", "Terrasse privée", "Cheminée", "Bureau", "Kitchenette"));
+        Arrays.asList("Free WiFi", "Private terrace", "Fireplace", "Desk", "Kitchenette"));
   }
 
   private void createRoom(
@@ -429,38 +429,38 @@ public class UserDataInitializationService implements ApplicationRunner {
         clients.get(0).getId(),
         rooms.get(0).getId(),
         5,
-        "Séjour absolument parfait ! L'hôtel est magnifique, la vue sur les ocres du Colorado"
-            + " Provençal est à couper le souffle. Le service est impeccable et le personnel aux"
-            + " petits soins.");
+        "An absolutely perfect stay! The hotel is beautiful, the view over the ochre cliffs"
+            + " of Colorado Provencal is breathtaking. Service is flawless and the staff is"
+            + " very attentive.");
 
     createValidatedReview(
         clients.get(1).getId(),
         rooms.get(1).getId(),
         4,
-        "Très belle expérience. Chambre spacieuse et confortable, excellent petit-déjeuner."
-            + " L'emplacement est idéal pour visiter la région de Rustrel.");
+        "A very lovely experience. Spacious and comfortable room, excellent breakfast."
+            + " The location is ideal for visiting the Rustrel region.");
 
     createValidatedReview(
         clients.get(0).getId(),
         rooms.get(2).getId(),
         5,
-        "Un week-end de rêve ! L'hôtel respire le luxe et l'élégance. La piscine avec vue sur les"
-            + " falaises d'ocre est un véritable plus. Je recommande vivement !");
+        "A dream weekend! The hotel radiates luxury and elegance. The pool overlooking the"
+            + " ochre cliffs is a real highlight. I highly recommend it!");
 
     if (clients.size() > 2) {
       createValidatedReview(
           clients.get(2).getId(),
           rooms.get(0).getId(),
           4,
-          "Hôtel de standing avec un service de qualité. Les chambres sont bien décorées et très"
-              + " propres. Parfait pour un séjour romantique en Provence.");
+          "Upscale hotel with quality service. The rooms are beautifully decorated and very"
+              + " clean. Perfect for a romantic stay in Provence.");
 
       createValidatedReview(
           clients.get(2).getId(),
           rooms.get(3).getId(),
           5,
-          "Accueil chaleureux, cadre exceptionnel, cuisine raffinée... Tout était parfait !"
-              + " L'Overlook Hotel mérite vraiment ses 5 étoiles.");
+          "Warm welcome, exceptional setting, refined cuisine... Everything was perfect!"
+              + " The Overlook Hotel truly deserves its 5 stars.");
     }
 
     if (clients.size() > 3 && rooms.size() > 4) {
@@ -468,8 +468,8 @@ public class UserDataInitializationService implements ApplicationRunner {
           clients.get(3).getId(),
           rooms.get(4).getId(),
           4,
-          "Excellent hôtel familial. Les enfants ont adoré la piscine et nous avons apprécié le"
-              + " calme et la beauté des paysages environnants.");
+          "Excellent family hotel. The children loved the pool and we appreciated the"
+              + " calm and beauty of the surrounding scenery.");
     }
 
     System.out.println("Default validated reviews created successfully");

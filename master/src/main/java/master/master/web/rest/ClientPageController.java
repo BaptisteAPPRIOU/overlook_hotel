@@ -22,11 +22,11 @@ public class ClientPageController {
   @GetMapping("/clientHomePage")
   public String clientHomePage(Model model) {
     // Add any model attributes needed for the home page
-    model.addAttribute("pageTitle", "Overlook Hotel - Accueil");
+    model.addAttribute("pageTitle", "Overlook Hotel - Home");
     model.addAttribute(
         "metaDescription",
-        "Découvrez l'Overlook Hotel, un établissement de luxe niché dans les montagnes du Colorado."
-            + " Réservez votre séjour dès maintenant.");
+        "Discover the Overlook Hotel, a luxury property nestled in the Colorado mountains."
+            + " Book your stay now.");
 
     return "clientHomePage";
   }
@@ -66,7 +66,7 @@ public class ClientPageController {
     // Add any model attributes needed for the profile page
     model.addAttribute("pageTitle", "Mon Profil - Overlook Hotel");
     model.addAttribute(
-        "metaDescription", "Gérez votre profil et consultez vos réservations à l'Overlook Hotel.");
+        "metaDescription", "Manage your profile and view your reservations at the Overlook Hotel.");
 
     return "clientProfile";
   }

@@ -202,16 +202,16 @@ public class Room {
 
   /** Enum for hotel room types. */
   public enum RoomType {
-    STANDARD("Chambre Standard"),
-    SUPERIOR("Chambre Supérieure"),
-    DELUXE("Chambre Deluxe"),
+    STANDARD("Standard Room"),
+    SUPERIOR("Superior Room"),
+    DELUXE("Deluxe Room"),
     JUNIOR_SUITE("Junior Suite"),
     SUITE("Suite"),
-    PRESIDENTIAL_SUITE("Suite Présidentielle"),
-    FAMILY_ROOM("Chambre Familiale"),
-    TWIN("Chambre Twin"),
-    DOUBLE("Chambre Double"),
-    SINGLE("Chambre Simple"),
+    PRESIDENTIAL_SUITE("Presidential Suite"),
+    FAMILY_ROOM("Family Room"),
+    TWIN("Twin Room"),
+    DOUBLE("Double Room"),
+    SINGLE("Single Room"),
     PENTHOUSE("Penthouse"),
 
     // Keep some meeting room types for backward compatibility during migration

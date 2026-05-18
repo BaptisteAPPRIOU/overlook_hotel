@@ -104,14 +104,14 @@ public class ClientReservationController {
   private Long getCurrentUserId() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || !authentication.isAuthenticated()) {
-      throw new RuntimeException("Utilisateur non authentifié");
+      throw new RuntimeException("Unauthenticated user");
     }
 
     String email = authentication.getName();
     User user = userRepository.findByEmail(email);
 
     if (user == null) {
-      throw new RuntimeException("Utilisateur non trouvé: " + email);
+      throw new RuntimeException("User not found: " + email);
     }
 
     return user.getId();

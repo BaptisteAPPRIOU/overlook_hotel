@@ -42,7 +42,7 @@ body {
   flex-wrap: wrap;
 }
 
-/* Cartes stylisées */
+/* Styled cards */
 .card {
   background: rgba(156, 121, 69, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -89,7 +89,7 @@ body {
   background-color: rgba(156, 121, 69);
 }
 
-/* Icônes dans les cartes */
+/* Card icons */
 .card img {
   width: 128px;
   height: 128px;

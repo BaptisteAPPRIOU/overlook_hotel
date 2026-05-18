@@ -204,7 +204,7 @@ function displayRooms(rooms) {
                     
                     <div class="d-flex justify-content-between align-items-center mt-3">
                         <div class="room-price">
-                            €${room.price || 129}
+                            EUR ${room.price || 129}
                             <small>/night</small>
                         </div>
                         <span class="availability-status ${room.status === "AVAILABLE" ? "available" : "unavailable"}">
@@ -232,7 +232,7 @@ function getRoomDisplayName(room) {
   if (room.name && room.name.trim()) {
     return `${room.number} - ${room.name}`;
   }
-  // Convert enum type to French display name
+  // Convert enum type to display name
   const typeNames = {
     STANDARD: "Standard Room",
     SUPERIOR: "Superior Room",
@@ -248,7 +248,7 @@ function getRoomDisplayName(room) {
   return `${room.number} - ${typeNames[room.type] || room.type}`;
 }
 
-// Get room status in French
+// Get room status text
 function getRoomStatusText(status) {
   switch (status) {
     case "AVAILABLE":
@@ -269,28 +269,28 @@ function getAmenityIcon(amenity) {
   const amenityLower = amenity.toLowerCase();
 
   if (amenityLower.includes("wifi")) return "fas fa-wifi";
-  if (amenityLower.includes("balcon")) return "fas fa-leaf";
+  if (amenityLower.includes("balcony")) return "fas fa-leaf";
   if (amenityLower.includes("jacuzzi")) return "fas fa-hot-tub";
-  if (amenityLower.includes("vue")) return "fas fa-mountain";
+  if (amenityLower.includes("view")) return "fas fa-mountain";
   if (amenityLower.includes("mini-bar") || amenityLower.includes("minibar"))
     return "fas fa-wine-glass";
-  if (amenityLower.includes("télévision") || amenityLower.includes("tv"))
+  if (amenityLower.includes("television") || amenityLower.includes("tv"))
     return "fas fa-tv";
   if (amenityLower.includes("room service")) return "fas fa-bell";
-  if (amenityLower.includes("coffre")) return "fas fa-lock";
-  if (amenityLower.includes("sèche") || amenityLower.includes("cheveux"))
+  if (amenityLower.includes("safe")) return "fas fa-lock";
+  if (amenityLower.includes("dryer") || amenityLower.includes("hair"))
     return "fas fa-wind";
-  if (amenityLower.includes("peignoir")) return "fas fa-tshirt";
-  if (amenityLower.includes("café") || amenityLower.includes("nespresso"))
+  if (amenityLower.includes("bathrobe")) return "fas fa-tshirt";
+  if (amenityLower.includes("coffee") || amenityLower.includes("nespresso"))
     return "fas fa-coffee";
-  if (amenityLower.includes("champagne") || amenityLower.includes("bouteille"))
+  if (amenityLower.includes("champagne") || amenityLower.includes("bottle"))
     return "fas fa-champagne-glasses";
   if (amenityLower.includes("spa")) return "fas fa-spa";
-  if (amenityLower.includes("salon")) return "fas fa-couch";
-  if (amenityLower.includes("frigo")) return "fas fa-snowflake";
-  if (amenityLower.includes("jeux") || amenityLower.includes("enfant"))
+  if (amenityLower.includes("living")) return "fas fa-couch";
+  if (amenityLower.includes("fridge")) return "fas fa-snowflake";
+  if (amenityLower.includes("games") || amenityLower.includes("child"))
     return "fas fa-gamepad";
-  if (amenityLower.includes("bureau")) return "fas fa-desk";
+  if (amenityLower.includes("desk")) return "fas fa-desk";
 
   // Default icon
   return "fas fa-star";
@@ -493,48 +493,48 @@ function openReservationModal(roomId) {
                 
                 <div class="reservation-details">
                     <div class="row mb-2">
-                        <div class="col-6"><strong>Arrivée:</strong></div>
+                        <div class="col-6"><strong>Check-in:</strong></div>
                         <div class="col-6">${formatDate(checkIn)}</div>
                     </div>
                     <div class="row mb-2">
-                        <div class="col-6"><strong>Départ:</strong></div>
+                        <div class="col-6"><strong>Check-out:</strong></div>
                         <div class="col-6">${formatDate(checkOut)}</div>
                     </div>
                     <div class="row mb-2">
-                        <div class="col-6"><strong>Durée:</strong></div>
-                        <div class="col-6">${nights} nuit${nights > 1 ? "s" : ""}</div>
+                        <div class="col-6"><strong>Length:</strong></div>
+                        <div class="col-6">${nights} night${nights > 1 ? "s" : ""}</div>
                     </div>
                     <div class="row mb-2">
                         <div class="col-6"><strong>Occupants:</strong></div>
-                        <div class="col-6">${adults} adulte${adults > 1 ? "s" : ""}${children > 0 ? `, ${children} enfant${children > 1 ? "s" : ""}` : ""}</div>
+                        <div class="col-6">${adults} adult${adults > 1 ? "s" : ""}${children > 0 ? `, ${children} child${children > 1 ? "ren" : ""}` : ""}</div>
                     </div>
                     <div class="row mb-3">
-                        <div class="col-6"><strong>Prix par nuit:</strong></div>
-                        <div class="col-6">€${room.price}</div>
+                        <div class="col-6"><strong>Price per night:</strong></div>
+                        <div class="col-6">EUR ${room.price}</div>
                     </div>
                     <hr>
                     <div class="row mb-3">
                         <div class="col-6"><strong>Total:</strong></div>
-                        <div class="col-6"><strong class="text-primary">€${totalPrice}</strong></div>
+                        <div class="col-6"><strong class="text-primary">EUR ${totalPrice}</strong></div>
                     </div>
                 </div>
 
                 <div class="payment-options">
                     <div class="payment-option" onclick="selectPaymentOption('now')">
                         <i class="fas fa-credit-card"></i>
-                        <div><strong>Payer maintenant</strong></div>
-                        <small>Paiement sécurisé immédiat</small>
+                        <div><strong>Pay now</strong></div>
+                        <small>Immediate secure payment</small>
                     </div>
                     <div class="payment-option" onclick="selectPaymentOption('later')">
                         <i class="fas fa-clock"></i>
-                        <div><strong>Payer plus tard</strong></div>
-                        <small>Réservation sans paiement</small>
+                        <div><strong>Pay later</strong></div>
+                        <small>Reservation without immediate payment</small>
                     </div>
                 </div>
 
                 <div class="mt-3">
                     <button class="btn btn-primary w-100" onclick="processReservation(${roomId}, '${checkIn}', '${checkOut}', ${adults}, ${children}, ${totalPrice})">
-                        <i class="fas fa-check"></i> Confirmer la réservation
+                        <i class="fas fa-check"></i> Confirm reservation
                     </button>
                 </div>
             </div>
@@ -762,7 +762,7 @@ function getSampleReviews(offset = 0) {
       comment:
         "Excellent hotel with an exceptional setting. The spa is fantastic and the restaurant offers refined cuisine. We will definitely come back!",
       date: "2024-12-10",
-      stayDuration: "5 nuits",
+      stayDuration: "5 nights",
       status: "VALIDATED",
     },
     {
@@ -772,7 +772,7 @@ function getSampleReviews(offset = 0) {
       comment:
         "A perfect weekend in an idyllic setting. The welcome was warm and our suite was magnificent. Thank you for these unforgettable moments.",
       date: "2024-12-08",
-      stayDuration: "2 nuits",
+      stayDuration: "2 nights",
       status: "VALIDATED",
     },
     {
@@ -782,7 +782,7 @@ function getSampleReviews(offset = 0) {
       comment:
         "A very beautiful hotel with impressive architecture. The rooms are spacious and well equipped. The only downside: the wifi was a bit slow.",
       date: "2024-12-05",
-      stayDuration: "4 nuits",
+      stayDuration: "4 nights",
       status: "VALIDATED",
     },
     {
@@ -802,7 +802,7 @@ function getSampleReviews(offset = 0) {
       comment:
         "A high-class hotel in an exceptional environment. Breakfast was delicious and the staff very attentive.",
       date: "2024-11-28",
-      stayDuration: "3 nuits",
+      stayDuration: "3 nights",
       status: "VALIDATED",
     },
   ];

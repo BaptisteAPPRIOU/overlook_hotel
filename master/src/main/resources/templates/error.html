@@ -49,8 +49,7 @@
         <h1 class="text-danger" th:text="${errorTitle ?: 'Error'}">Error</h1>
         <p
           class="lead"
-          th:text="${errorDescription ?: 'An unexpected error occurred'}"
-        >
+          th:text="${errorDescription ?: 'An unexpected error occurred'}">
           An unexpected error occurred
         </p>
 
@@ -71,8 +70,7 @@
           <div th:if="${exception != 'No exception details'}">
             <p><strong>Exception:</strong></p>
             <pre class="text-muted small" th:text="${exception}">
-No exception details</pre
-            >
+              No exception details</pre>
           </div>
         </div>
 

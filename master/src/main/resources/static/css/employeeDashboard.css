@@ -6,7 +6,7 @@
 }
 
 /*--------------------------------------------------------
-  Themes potentiels ajoutés
+  Potential themes added
 --------------------------------------------------------*/
 
 body {
@@ -473,7 +473,7 @@ body {
 }
 
 /*--------------------------------------------------------
-  Overrides pour boutons primaires
+  Overrides for primary buttons
 --------------------------------------------------------*/
 .btn-primary {
   background-color: var(--primary-bg);

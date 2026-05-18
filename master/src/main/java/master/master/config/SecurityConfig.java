@@ -97,7 +97,7 @@ public class SecurityConfig {
                     .requestMatchers("/clientHomePage", "/home", "/client/home", "/clientProfile")
                     .hasAuthority("CLIENT")
 
-                    // toute autre requête doit être authentifiée
+                    // Any other request must be authenticated
                     .anyRequest()
                     .authenticated())
         .exceptionHandling(

@@ -59,8 +59,7 @@
         <main class="col-md-10 content">
           <!-- User Header -->
           <div
-            class="user-header d-flex justify-content-between align-items-center"
-          >
+            class="user-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Employee Dashboard</h4>
             <div class="d-flex align-items-center gap-3">
               <!-- <input class="form-control form-control-sm" placeholder="Search..." style="width: 200px;"
@@ -68,8 +67,7 @@
               <span
                 class="fw-bold"
                 th:text="${currentUser != null ? currentUser.firstName + ' ' + currentUser.lastName : 'Admin User'}"
-                >Admin User</span
-              >
+                >Admin User</span>
               <img
                 alt="Admin"
                 class="user-avatar"
@@ -83,7 +81,7 @@
             <div class="card">
               <h4>Rooms Management</h4>
 
-              <!-- Tableau dynamique -->
+              <!-- Dynamic table -->
               <div class="table-responsive mb-4">
                 <table class="table table-striped align-middle">
                   <thead>
@@ -98,20 +96,20 @@
                     </tr>
                   </thead>
                   <tbody id="roomsTableBody">
-                    <!-- rempli par employeeRooms.js -->
+                    <!-- Populated by employeeRooms.js -->
                   </tbody>
                 </table>
               </div>
 
-              <!-- Formulaire de création / mise à jour -->
+              <!-- Create/update form -->
               <form id="roomForm" class="row g-2 align-items-end">
                 <div class="col-auto">
-                  <label for="roomNumber" class="visually-hidden">Nº</label>
+                  <label for="roomNumber" class="visually-hidden">No.</label>
                   <input
                     id="roomNumber"
                     type="text"
                     class="form-control form-control-sm"
-                    placeholder="Nº"
+                    placeholder="No."
                     required
                   />
                 </div>
@@ -121,8 +119,7 @@
                   <select
                     id="roomType"
                     class="form-select form-select-sm"
-                    required
-                  >
+                    required>
                     <option value="">Type</option>
                     <option value="STANDARD">Standard Room</option>
                     <option value="SUPERIOR">Superior Room</option>
@@ -142,8 +139,7 @@
 
                 <div class="col-auto">
                   <label for="roomCapacity" class="visually-hidden"
-                    >Capacity</label
-                  >
+                    >Capacity</label>
                   <input
                     id="roomCapacity"
                     type="number"
@@ -162,7 +158,7 @@
                     min="0"
                     step="0.01"
                     class="form-control form-control-sm"
-                    placeholder="Prix"
+                    placeholder="Price"
                     required
                   />
                 </div>
@@ -175,8 +171,7 @@
                       type="checkbox"
                     />
                     <label class="form-check-label small" for="hasProjector"
-                      >Projector</label
-                    >
+                      >Projector</label>
                   </div>
                   <div class="form-check form-check-inline">
                     <input
@@ -185,8 +180,7 @@
                       type="checkbox"
                     />
                     <label class="form-check-label small" for="hasWhiteboard"
-                      >Whiteboard</label
-                    >
+                      >Whiteboard</label>
                   </div>
                   <div class="form-check form-check-inline">
                     <input
@@ -197,8 +191,7 @@
                     <label
                       class="form-check-label small"
                       for="hasVideoConference"
-                      >Video</label
-                    >
+                      >Video</label>
                   </div>
                   <div class="form-check form-check-inline">
                     <input
@@ -209,8 +202,7 @@
                     <label
                       class="form-check-label small"
                       for="hasAirConditioning"
-                      >A/C</label
-                    >
+                      >A/C</label>
                   </div>
                 </div>
 
@@ -222,8 +214,7 @@
                       type="checkbox"
                     />
                     <label class="form-check-label small" for="isOccupied"
-                      >Occupied</label
-                    >
+                      >Occupied</label>
                   </div>
                 </div>
 
@@ -245,13 +236,11 @@
               <form
                 id="leaveRequestForm"
                 method="post"
-                th:action="@{/leave/request}"
-              >
+                th:action="@{/leave/request}">
                 <div class="row">
                   <div class="col-md-6">
                     <label class="form-label" for="leaveStartDate"
-                      >Start Date</label
-                    >
+                      >Start Date</label>
                     <input
                       class="form-control"
                       id="leaveStartDate"
@@ -262,8 +251,7 @@
                   </div>
                   <div class="col-md-6">
                     <label class="form-label" for="leaveEndDate"
-                      >End Date</label
-                    >
+                      >End Date</label>
                     <input
                       class="form-control"
                       id="leaveEndDate"
@@ -279,8 +267,7 @@
                     class="form-control"
                     id="leaveType"
                     name="type"
-                    required
-                  >
+                    required>
                     <option value="">Select leave type</option>
                     <option value="VACATION">Vacation</option>
                     <option value="SICK">Sick Leave</option>
@@ -309,8 +296,7 @@
                 <button
                   class="btn btn-primary"
                   type="submit"
-                  id="submitLeaveRequestBtn"
-                >
+                  id="submitLeaveRequestBtn">
                   Submit Leave Request
                 </button>
               </form>
@@ -353,8 +339,7 @@
           <section class="main-card hidden" data-cat="attendance">
             <div class="card">
               <div
-                class="card-header d-flex justify-content-between align-items-center"
-              >
+                class="card-header d-flex justify-content-between align-items-center">
                 <span>Employee Planning Management</span>
                 <div>
                   <!-- <button class="btn btn-success btn-sm" id="publishScheduleBtn">
@@ -363,8 +348,7 @@
                   <button
                     class="btn btn-primary btn-sm"
                     data-bs-target="#addShiftModal"
-                    data-bs-toggle="modal"
-                  >
+                    data-bs-toggle="modal">
                     <i class="fas fa-plus"></i> Add Shift
                   </button>
                   <!-- <button class="btn btn-orange btn-sm">
@@ -378,12 +362,10 @@
                 class="schedule-container"
                 id="planningInterface"
                 x-data="planningData()"
-                x-init="loadEmployees(); loadSchedule(); setupShiftModalHandlers()"
-              >
+                x-init="loadEmployees(); loadSchedule(); setupShiftModalHandlers()">
                 <!-- Schedule Header -->
                 <div
-                  class="schedule-header d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded"
-                >
+                  class="schedule-header d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded">
                   <div class="d-flex align-items-center gap-3">
                     <h5 class="mb-0">Schedule</h5>
                   </div>
@@ -391,15 +373,13 @@
                   <div class="d-flex align-items-center gap-2">
                     <button
                       class="btn btn-outline-secondary btn-sm"
-                      @click="previousWeek()"
-                    >
+                      @click="previousWeek()">
                       <i class="fas fa-chevron-left"></i>
                     </button>
                     <span class="fw-bold" x-text="formatWeekRange()"></span>
                     <button
                       class="btn btn-outline-secondary btn-sm"
-                      @click="nextWeek()"
-                    >
+                      @click="nextWeek()">
                       <i class="fas fa-chevron-right"></i>
                     </button>
                     <button class="btn btn-primary btn-sm" @click="goToToday()">
@@ -419,8 +399,7 @@
                   <div class="d-flex flex-wrap gap-2">
                     <template x-for="(shift, key) in shifts" :key="key">
                       <div
-                        class="position-legend d-flex align-items-center me-3 mb-1"
-                      >
+                        class="position-legend d-flex align-items-center me-3 mb-1">
                         <span
                           class="position-color me-2"
                           :style="'background-color: ' + shift.color + '; width: 12px; height: 12px; border-radius: 2px;'"
@@ -440,8 +419,7 @@
                         width: 100%;
                         border-collapse: separate;
                         border-spacing: 1px;
-                      "
-                    >
+                      ">
                       <thead>
                         <tr>
                           <!-- Employee Column Header -->
@@ -452,24 +430,21 @@
                               color: white;
                               padding: 10px;
                               border-radius: 4px 0 0 0;
-                            "
-                          >
+                            ">
                             <div class="text-center">EMPLOYEES</div>
                           </th>
 
                           <!-- Days Headers -->
                           <template
                             x-for="day in getWeekDays()"
-                            :key="day.getTime()"
-                          >
+                            :key="day.getTime()">
                             <th
                               style="
                                 background-color: #2c5aa0;
                                 color: white;
                                 padding: 10px;
                                 text-align: center;
-                              "
-                            >
+                              ">
                               <div
                                 class="fw-bold"
                                 x-text="formatDate(day)"
@@ -481,12 +456,10 @@
                       <tbody>
                         <template
                           x-for="employee in employees.filter(e => selectedEmployees.length === 0 || selectedEmployees.includes(e.userId || e.employeeId))"
-                          :key="employee.userId || employee.employeeId"
-                        >
+                          :key="employee.userId || employee.employeeId">
                           <tr
                             :class="isEmployeeSelected(employee.employeeId || employee.userId) ? 'bg-light' : ''"
-                            style="border-bottom: 2px solid #dee2e6"
-                          >
+                            style="border-bottom: 2px solid #dee2e6">
                             <!-- Employee Column -->
                             <td
                               class="employee-cell"
@@ -494,13 +467,11 @@
                                 background-color: #f8f9fa;
                                 padding: 10px;
                                 border-right: 2px solid #dee2e6;
-                              "
-                            >
+                              ">
                               <div
                                 class="d-flex align-items-center"
                                 @click="toggleEmployee(employee.employeeId || employee.userId)"
-                                style="cursor: pointer"
-                              >
+                                style="cursor: pointer">
                                 <div
                                   class="employee-avatar me-2 bg-secondary rounded-circle d-flex align-items-center justify-content-center"
                                   style="
@@ -508,8 +479,7 @@
                                     height: 28px;
                                     font-size: 12px;
                                     color: white;
-                                  "
-                                >
+                                  ">
                                   <span
                                     x-text="getEmployeeInitials(employee)"
                                   ></span>
@@ -532,8 +502,7 @@
                             <!-- Schedule Cells -->
                             <template
                               x-for="day in getWeekDays()"
-                              :key="day.getTime()"
-                            >
+                              :key="day.getTime()">
                               <td
                                 class="day-cell position-relative"
                                 style="
@@ -544,19 +513,16 @@
                                   vertical-align: top;
                                 "
                                 @dragover.prevent
-                                @drop="addShift((employee.userId || employee.employeeId), day, 'EMPLOYEE', '09:00', '17:00')"
-                              >
+                                @drop="addShift((employee.userId || employee.employeeId), day, 'EMPLOYEE', '09:00', '17:00')">
                                 <!-- Shifts for this day -->
                                 <template
                                   x-for="shift in getEmployeeSchedule((employee.userId || employee.employeeId), day)"
-                                  :key="shift.id"
-                                >
+                                  :key="shift.id">
                                   <div
                                     class="shift-block position-relative mb-1 px-2 py-1 rounded text-white small"
                                     :style="'background-color: ' + (shifts[shift.type]?.color || shifts.default.color) + '; cursor: pointer; box-shadow: 0 3px 6px rgba(0,0,0,0.4); border: 1px solid rgba(0,0,0,0.2);'"
                                     @click="openEditShiftModal(shift, employee, day)"
-                                    draggable="true"
-                                  >
+                                    draggable="true">
                                     <div
                                       class="shift-time fw-bold"
                                       x-text="shift.startTime + ' - ' + shift.endTime"
@@ -602,8 +568,7 @@
                         <span
                           class="badge bg-warning"
                           th:text="${rev.rating} + '/5'"
-                          >4/5</span
-                        >
+                          >4/5</span>
                       </td>
                       <td th:text="${rev.comment}">Great room!</td>
                       <td th:text="${rev.reviewDate}">2023-12-01</td>
@@ -672,14 +637,12 @@
               <h4>Edit Employee</h4>
               <form method="post" th:action="@{/employees/update}">
                 <label class="form-label" for="editEmployeeId"
-                  >Select Employee</label
-                >
+                  >Select Employee</label>
                 <select
                   class="form-select"
                   id="editEmployeeId"
                   name="id"
-                  required
-                >
+                  required>
                   <option value="">Select employee to edit</option>
                   <option
                     th:each="e : ${employees}"
@@ -690,8 +653,7 @@
                 <div class="row">
                   <div class="col-md-6">
                     <label class="form-label" for="newFirstName"
-                      >New First Name</label
-                    >
+                      >New First Name</label>
                     <input
                       class="form-control"
                       id="newFirstName"
@@ -701,8 +663,7 @@
                   </div>
                   <div class="col-md-6">
                     <label class="form-label" for="newLastName"
-                      >New Last Name</label
-                    >
+                      >New Last Name</label>
                     <input
                       class="form-control"
                       id="newLastName"
@@ -721,14 +682,12 @@
               <h4>Delete Employee</h4>
               <form method="post" th:action="@{/employees/delete}">
                 <label class="form-label" for="deleteEmployeeId"
-                  >Select Employee</label
-                >
+                  >Select Employee</label>
                 <select
                   class="form-select"
                   id="deleteEmployeeId"
                   name="id"
-                  required
-                >
+                  required>
                   <option value="">Select employee to delete</option>
                   <option
                     th:each="e : ${employees}"
@@ -743,8 +702,7 @@
                       'Are you sure you want to delete this employee?',
                     );
                   "
-                  type="submit"
-                >
+                  type="submit">
                   Delete Employee
                 </button>
               </form>
@@ -758,8 +716,7 @@
               <div class="table-responsive">
                 <table
                   class="table table-striped"
-                  id="pendingLeaveRequestsTable"
-                >
+                  id="pendingLeaveRequestsTable">
                   <thead>
                     <tr>
                       <th>Employee</th>

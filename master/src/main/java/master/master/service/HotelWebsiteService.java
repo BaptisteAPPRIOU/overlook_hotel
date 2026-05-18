@@ -110,14 +110,14 @@ public class HotelWebsiteService {
       Optional<Room> roomOpt = roomRepository.findById(roomId);
       if (!roomOpt.isPresent()) {
         result.put("success", false);
-        result.put("message", "Chambre non trouvée");
+        result.put("message", "Room not found");
         return result;
       }
 
       Room room = roomOpt.get();
       if (room.getStatus() != Room.RoomStatus.AVAILABLE) {
         result.put("success", false);
-        result.put("message", "Chambre non disponible");
+        result.put("message", "Room is not available");
         return result;
       }
 
@@ -141,13 +141,13 @@ public class HotelWebsiteService {
       roomRepository.save(room);
 
       result.put("success", true);
-      result.put("message", "Réservation créée avec succès");
+      result.put("message", "Reservation created successfully");
       result.put("reservationId", reservationId);
       result.put("totalPrice", calculateTotalPrice(room.getPrice(), checkIn, checkOut));
 
     } catch (Exception e) {
       result.put("success", false);
-      result.put("message", "Erreur lors de la création de la réservation: " + e.getMessage());
+      result.put("message", "Error while creating the reservation: " + e.getMessage());
     }
 
     return result;
@@ -159,7 +159,7 @@ public class HotelWebsiteService {
 
     // Basic hotel information
     hotelInfo.put("name", "Overlook Hotel");
-    hotelInfo.put("description", "Un établissement de luxe niché dans les montagnes du Colorado");
+    hotelInfo.put("description", "A luxury property nestled in the Colorado mountains");
     hotelInfo.put("established", 1907);
 
     // Statistics from database
@@ -191,14 +191,14 @@ public class HotelWebsiteService {
     Map<String, Object> roomMap = new HashMap<>();
     roomMap.put("id", room.getId());
     roomMap.put("number", room.getNumber());
-    roomMap.put("name", room.getName() != null ? room.getName() : "Chambre " + room.getNumber());
+    roomMap.put("name", room.getName() != null ? room.getName() : "Room " + room.getNumber());
     roomMap.put("type", room.getType().toString());
     roomMap.put("capacity", room.getCapacity());
     roomMap.put(
         "description",
         room.getDescription() != null
             ? room.getDescription()
-            : "Chambre confortable avec toutes les commodités");
+            : "Comfortable room with all amenities");
     roomMap.put("price", room.getPrice() != null ? room.getPrice() : 150.0);
     roomMap.put("status", room.getStatus().getDisplayName());
     roomMap.put("floorNumber", room.getFloorNumber());
@@ -224,7 +224,7 @@ public class HotelWebsiteService {
       // Fallback amenities if none are set
       roomMap.put(
           "amenities",
-          Arrays.asList("WiFi gratuit", "Télévision écran plat", "Coffre-fort", "Sèche-cheveux"));
+          Arrays.asList("Free WiFi", "Flat-screen TV", "Safe", "Hair dryer"));
     }
 
     // Get average rating for this room
@@ -255,7 +255,7 @@ public class HotelWebsiteService {
       Room room = roomOpt.get();
       reviewMap.put("roomNumber", room.getNumber());
       reviewMap.put(
-          "roomName", room.getName() != null ? room.getName() : "Chambre " + room.getNumber());
+          "roomName", room.getName() != null ? room.getName() : "Room " + room.getNumber());
     }
 
     // Get author information (if not anonymous)

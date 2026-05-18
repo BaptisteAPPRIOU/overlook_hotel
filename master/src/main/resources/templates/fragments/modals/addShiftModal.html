@@ -8,8 +8,7 @@
         aria-labelledby="addShiftModalLabel"
         class="modal fade"
         id="addShiftModal"
-        tabindex="-1"
-      >
+        tabindex="-1">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
@@ -29,8 +28,7 @@
                     class="form-select"
                     id="shiftEmployee"
                     name="employeeId"
-                    required
-                  >
+                    required>
                     <option value="">Select Employee</option>
                     <option
                       th:each="e : ${employees}"
@@ -55,8 +53,7 @@
                     class="form-select"
                     id="shiftPosition"
                     name="position"
-                    required
-                  >
+                    required>
                     <option value="">Select Position</option>
                     <option value="EMPLOYEE">Employee</option>
                     <option value="MANAGER">Manager</option>
@@ -65,8 +62,7 @@
                 <div class="row">
                   <div class="col-6">
                     <label class="form-label" for="shiftStartTime"
-                      >Start Time</label
-                    >
+                      >Start Time</label>
                     <input
                       class="form-control"
                       id="shiftStartTime"
@@ -79,8 +75,7 @@
                   </div>
                   <div class="col-6">
                     <label class="form-label" for="shiftEndTime"
-                      >End Time</label
-                    >
+                      >End Time</label>
                     <input
                       class="form-control"
                       id="shiftEndTime"
@@ -102,8 +97,7 @@
                     color: red;
                     margin-top: -10px;
                     margin-bottom: 10px;
-                  "
-                >
+                  ">
                   Start time cannot be later than end time.
                 </div>
               </form>
@@ -112,8 +106,7 @@
               <button
                 class="btn btn-secondary"
                 data-bs-dismiss="modal"
-                type="button"
-              >
+                type="button">
                 Cancel
               </button>
               <button class="btn btn-primary" id="addShiftBtn" type="button">

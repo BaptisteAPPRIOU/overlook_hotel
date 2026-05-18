@@ -30,7 +30,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "\"user\"") // Attention : nom réservé en SQL, donc les guillemets
+@Table(name = "\"user\"") // Reserved SQL name, so quotes are required
 public class User implements Serializable {
 
   @Id

@@ -90,7 +90,7 @@ public class FidelityPointController {
       pointsToRedeem = Integer.parseInt((String) pointsObj);
     } else {
       return ResponseEntity.badRequest()
-          .body(Map.of("success", false, "message", "Points invalides"));
+          .body(Map.of("success", false, "message", "Invalid points"));
     }
 
     boolean success = fidelityPointService.redeemPoints(userId, pointsToRedeem);
@@ -102,12 +102,12 @@ public class FidelityPointController {
               "success",
               true,
               "message",
-              "Points échangés avec succès",
+              "Points redeemed successfully",
               "remainingPoints",
               remainingPoints));
     } else {
       return ResponseEntity.badRequest()
-          .body(Map.of("success", false, "message", "Points insuffisants"));
+          .body(Map.of("success", false, "message", "Not enough points"));
     }
   }
 
@@ -122,43 +122,43 @@ public class FidelityPointController {
           java.util.List.of(
               Map.of(
                   "id", "discount_5",
-                  "title", "Réduction de 5€",
-                  "description", "Réduction de 5€ sur votre prochaine réservation",
+                  "title", "EUR 5 discount",
+                  "description", "EUR 5 discount on your next reservation",
                   "pointsCost", 100,
                   "available", currentPoints >= 100,
                   "type", "discount"),
               Map.of(
                   "id", "discount_15",
-                  "title", "Réduction de 15€",
-                  "description", "Réduction de 15€ sur votre prochaine réservation",
+                  "title", "EUR 15 discount",
+                  "description", "EUR 15 discount on your next reservation",
                   "pointsCost", 250,
                   "available", currentPoints >= 250,
                   "type", "discount"),
               Map.of(
                   "id", "discount_50",
-                  "title", "Réduction de 50€",
-                  "description", "Réduction de 50€ sur votre prochaine réservation",
+                  "title", "EUR 50 discount",
+                  "description", "EUR 50 discount on your next reservation",
                   "pointsCost", 500,
                   "available", currentPoints >= 500,
                   "type", "discount"),
               Map.of(
                   "id", "free_upgrade",
-                  "title", "Surclassement gratuit",
-                  "description", "Surclassement gratuit vers la catégorie supérieure",
+                  "title", "Free upgrade",
+                  "description", "Free upgrade to the next room category",
                   "pointsCost", 300,
                   "available", currentPoints >= 300,
                   "type", "upgrade"),
               Map.of(
                   "id", "late_checkout",
-                  "title", "Départ tardif",
-                  "description", "Départ tardif gratuit jusqu'à 16h",
+                  "title", "Late checkout",
+                  "description", "Free late checkout until 4:00 PM",
                   "pointsCost", 150,
                   "available", currentPoints >= 150,
                   "type", "service"),
               Map.of(
                   "id", "welcome_package",
-                  "title", "Package de bienvenue",
-                  "description", "Bouteille de champagne et fruits frais dans votre chambre",
+                  "title", "Welcome package",
+                  "description", "Bottle of champagne and fresh fruit in your room",
                   "pointsCost", 200,
                   "available", currentPoints >= 200,
                   "type", "amenity"));
@@ -179,14 +179,14 @@ public class FidelityPointController {
     int newTotal = fidelityPointService.recalculateAllPoints(userId);
 
     return ResponseEntity.ok(
-        Map.of("success", true, "message", "Points recalculés avec succès", "newTotal", newTotal));
+        Map.of("success", true, "message", "Points recalculated successfully", "newTotal", newTotal));
   }
 
   /** Get the current authenticated user's ID */
   private Long getCurrentUserId() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || !authentication.isAuthenticated()) {
-      throw new RuntimeException("Utilisateur non authentifié");
+      throw new RuntimeException("Unauthenticated user");
     }
 
     String email = authentication.getName();
@@ -195,7 +195,7 @@ public class FidelityPointController {
     User user = userRepository.findByEmail(email);
 
     if (user == null) {
-      throw new RuntimeException("Utilisateur non trouvé: " + email);
+      throw new RuntimeException("User not found: " + email);
     }
 
     System.out.println(

@@ -67,7 +67,7 @@ public class ClientService {
   public void delete(Long userId) {
     Client c =
         repo.findByUserIdAndUserRole(userId, RoleType.CLIENT)
-            .orElseThrow(() -> new RuntimeException("Client introuvable"));
+            .orElseThrow(() -> new RuntimeException("Client not found"));
     repo.delete(c);
   }
 
@@ -79,7 +79,7 @@ public class ClientService {
   public int getFidelityPoints(Long userId) {
     Client client =
         repo.findByUserIdAndUserRole(userId, RoleType.CLIENT)
-            .orElseThrow(() -> new RuntimeException("Client introuvable"));
+            .orElseThrow(() -> new RuntimeException("Client not found"));
     return client.getFidelityPoint();
   }
 
@@ -93,7 +93,7 @@ public class ClientService {
   public int addFidelityPoints(Long userId, int points) {
     Client client =
         repo.findByUserIdAndUserRole(userId, RoleType.CLIENT)
-            .orElseThrow(() -> new RuntimeException("Client introuvable"));
+            .orElseThrow(() -> new RuntimeException("Client not found"));
 
     int newTotal =
         Math.max(0, client.getFidelityPoint() + points); // Ensure points don't go below 0
@@ -140,7 +140,7 @@ public class ClientService {
   public boolean redeemFidelityPoints(Long userId, int pointsToRedeem) {
     Client client =
         repo.findByUserIdAndUserRole(userId, RoleType.CLIENT)
-            .orElseThrow(() -> new RuntimeException("Client introuvable"));
+            .orElseThrow(() -> new RuntimeException("Client not found"));
 
     if (client.getFidelityPoint() >= pointsToRedeem) {
       client.setFidelityPoint(client.getFidelityPoint() - pointsToRedeem);

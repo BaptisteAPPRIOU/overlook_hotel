@@ -26,8 +26,7 @@
           <div
             th:if="${message}"
             class="alert alert-success alert-dismissible fade show"
-            role="alert"
-          >
+            role="alert">
             <strong>Success!</strong> <span th:text="${message}"></span>
             <button
               type="button"
@@ -39,8 +38,7 @@
           <div
             th:if="${error}"
             class="alert alert-danger alert-dismissible fade show"
-            role="alert"
-          >
+            role="alert">
             <strong>Error!</strong> <span th:text="${error}"></span>
             <button
               type="button"
@@ -61,8 +59,7 @@
                   <form
                     method="post"
                     th:action="@{/planning/create-default}"
-                    class="d-flex gap-2"
-                  >
+                    class="d-flex gap-2">
                     <select name="employeeId" class="form-select" required>
                       <option value="">Select Employee</option>
                       <option
@@ -88,8 +85,7 @@
             <div class="card-body">
               <div
                 th:if="${#lists.isEmpty(plannings)}"
-                class="text-center text-muted py-4"
-              >
+                class="text-center text-muted py-4">
                 <i class="fas fa-calendar-times fa-3x mb-3"></i>
                 <p>
                   No employee plannings found. Create default plannings to get
@@ -99,8 +95,7 @@
 
               <div
                 class="table-responsive"
-                th:if="${!#lists.isEmpty(plannings)}"
-              >
+                th:if="${!#lists.isEmpty(plannings)}">
                 <table class="table table-striped table-hover">
                   <thead class="table-dark">
                     <tr>
@@ -119,8 +114,7 @@
                         <span
                           class="badge bg-info"
                           th:text="${planning.weeklyHours + 'h'}"
-                          >35h</span
-                        >
+                          >35h</span>
                       </td>
                       <td>
                         <span
@@ -128,44 +122,38 @@
                           th:classappend="${planning.contractType == 'FULL_TIME'} ? 'bg-success' : 
                                                                   (${planning.contractType == 'PART_TIME'} ? 'bg-warning' : 'bg-secondary')"
                           th:text="${planning.contractType}"
-                          >FULL_TIME</span
-                        >
+                          >FULL_TIME</span>
                       </td>
                       <td>
                         <span
                           class="badge"
                           th:classappend="${planning.status == 'ACTIVE'} ? 'bg-success' : 'bg-danger'"
                           th:text="${planning.status}"
-                          >ACTIVE</span
-                        >
+                          >ACTIVE</span>
                       </td>
                       <td>
                         <small
                           th:text="${#lists.size(planning.workDays)} + ' days configured'"
-                          >5 days configured</small
-                        >
+                          >5 days configured</small>
                       </td>
                       <td>
                         <div class="btn-group" role="group">
                           <button
                             type="button"
                             class="btn btn-sm btn-outline-primary"
-                            title="Edit"
-                          >
+                            title="Edit">
                             <i class="fas fa-edit"></i>
                           </button>
                           <button
                             type="button"
                             class="btn btn-sm btn-outline-info"
-                            title="View Details"
-                          >
+                            title="View Details">
                             <i class="fas fa-eye"></i>
                           </button>
                           <button
                             type="button"
                             class="btn btn-sm btn-outline-danger"
-                            title="Delete"
-                          >
+                            title="Delete">
                             <i class="fas fa-trash"></i>
                           </button>
                         </div>
