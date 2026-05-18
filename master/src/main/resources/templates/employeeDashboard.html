@@ -555,7 +555,8 @@
                                     class="shift-block position-relative mb-1 px-2 py-1 rounded text-white small"
                                     :style="'background-color: ' + (shifts[shift.type]?.color || shifts.default.color) + '; cursor: pointer; box-shadow: 0 3px 6px rgba(0,0,0,0.4); border: 1px solid rgba(0,0,0,0.2);'"
                                     @click="openEditShiftModal(shift, employee, day)"
-                                    draggable="true">
+                                    draggable="true"
+                                  >
                                     <div
                                       class="shift-time fw-bold"
                                       x-text="shift.startTime + ' - ' + shift.endTime"
@@ -601,7 +602,8 @@
                         <span
                           class="badge bg-warning"
                           th:text="${rev.rating} + '/5'"
-                          >4/5</span>
+                          >4/5</span
+                        >
                       </td>
                       <td th:text="${rev.comment}">Great room!</td>
                       <td th:text="${rev.reviewDate}">2023-12-01</td>

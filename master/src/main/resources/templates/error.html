@@ -70,7 +70,9 @@
           </p>
           <div th:if="${exception != 'No exception details'}">
             <p><strong>Exception:</strong></p>
-            <pre class="text-muted small" th:text="${exception}">No exception details</pre>
+            <pre class="text-muted small" th:text="${exception}">
+No exception details</pre
+            >
           </div>
         </div>
 
@@ -92,7 +94,8 @@
 
         <div class="mt-3">
           <small class="text-muted">
-            If this error persists, please check the server logs for more details.
+            If this error persists, please check the server logs for more
+            details.
           </small>
         </div>
       </div>
