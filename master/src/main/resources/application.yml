@@ -6,10 +6,12 @@ server:
     include-binding-errors: always
 
 spring:
+  config:
+    import: optional:classpath:application-local.properties
   datasource:
-    url: jdbc:postgresql://100.127.131.70:5432/overlookhoteldb
-    username: dev
-    password: _GB7rG-@*d649Pab
+    url: ${spring.datasource.url}
+    username: ${spring.datasource.username}
+    password: ${spring.datasource.password}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -29,8 +31,13 @@ spring:
 
   security:
     user:
-      name: admin
-      password: admin
+      name: ${spring.security.user.name}
+      password: ${spring.security.user.password}
+
+app:
+  jwt:
+    secret: ${app.jwt.secret}
+    expiration-ms: ${app.jwt.expiration-ms:86400000}
 
 logging:
   level:

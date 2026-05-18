@@ -1,25 +1,34 @@
 package master.master.security;
 
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
+import java.util.Date;
+import java.util.function.Function;
+
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import java.security.Key;
-import java.util.Date;
-import java.util.function.Function;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
+import master.master.config.JwtProperties;
 
 @Component
 public class JwtUtil {
 
-  private final String SECRET_KEY = "mon_super_secret_jwt_key_123456789123456789";
-  private final long EXPIRATION_TIME = 86_400_000;
+  private final Key signingKey;
+  private final long expirationTime;
+
+  public JwtUtil(JwtProperties jwtProperties) {
+    this.signingKey = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
+    this.expirationTime = jwtProperties.getExpirationMs();
+  }
 
   // This method retrieves the signing key used for JWT.
   private Key getSigningKey() {
-    return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+    return signingKey;
   }
 
   // This method generates a JWT token for the given email.
@@ -28,7 +37,7 @@ public class JwtUtil {
     return Jwts.builder()
         .setSubject(email)
         .setIssuedAt(now)
-        .setExpiration(new Date(now.getTime() + EXPIRATION_TIME))
+        .setExpiration(new Date(now.getTime() + expirationTime))
         .signWith(getSigningKey(), SignatureAlgorithm.HS256)
         .compact();
   }

@@ -1,0 +1,13 @@
+# Copier ce fichier en application-local.properties (dans le même dossier).
+# Ce fichier est ignoré par git.
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/overlookhoteldb
+spring.datasource.username=postgres
+spring.datasource.password=ton_mot_de_passe_db
+
+spring.security.user.name=admin
+spring.security.user.password=ton_mot_de_passe_admin
+
+# Minimum 32 caractères pour HS256
+app.jwt.secret=remplace_par_une_cle_secrete_dau_moins_32_caracteres
+app.jwt.expiration-ms=86400000
