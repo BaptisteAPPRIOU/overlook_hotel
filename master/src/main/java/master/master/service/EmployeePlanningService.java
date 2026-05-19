@@ -11,6 +11,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
 import master.master.domain.Employee;
 import master.master.domain.EmployeeWorkday;
 import master.master.domain.WorkdayId;
@@ -19,9 +24,6 @@ import master.master.repository.EmployeeWorkdayRepository;
 import master.master.web.rest.dto.CreatePlanningRequestDto;
 import master.master.web.rest.dto.EmployeePlanningDto;
 import master.master.web.rest.dto.HourlyPlanningRequestDto;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Service for managing employee planning and schedules. Handles creation and management of work
@@ -558,8 +560,8 @@ public class EmployeePlanningService {
       String shiftType = determineShiftTypeFromWeekday(workday.getId().getWeekday());
 
       schedule
-          .computeIfAbsent(employeeId, _ -> new HashMap<>())
-          .computeIfAbsent(dateStr, _ -> new ArrayList<>())
+          .computeIfAbsent(employeeId, ignoredEmployeeId -> new HashMap<>())
+          .computeIfAbsent(dateStr, ignoredDate -> new ArrayList<>())
           .add(
               Map.of(
                   "id",

@@ -51,7 +51,7 @@ Welcome to **Overlook Hotel**, a Spring Boot–based hotel management applicatio
 
 - **Java 17+** (JDK)
 - **Maven 3.6+** _or_ **Gradle 7+**
-- **MySQL 8+** (or another JDBC‑compatible relational DB)
+- **PostgreSQL 17.10** (target runtime database)
 - **Git** for version control
 
 ---
