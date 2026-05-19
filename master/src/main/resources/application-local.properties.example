@@ -1,13 +1,13 @@
-# Copier ce fichier en application-local.properties (dans le même dossier).
-# Ce fichier est ignoré par git.
+# Copy this file to application-local.properties (in the same directory).
+# This file is ignored by Git.
 
 spring.datasource.url=jdbc:postgresql://localhost:5432/overlookhoteldb
 spring.datasource.username=postgres
-spring.datasource.password=ton_mot_de_passe_db
+spring.datasource.password=your_db_password
 
 spring.security.user.name=admin
-spring.security.user.password=ton_mot_de_passe_admin
+spring.security.user.password=your_admin_password
 
-# Minimum 32 caractères pour HS256
-app.jwt.secret=remplace_par_une_cle_secrete_dau_moins_32_caracteres
+# Minimum 32 characters for HS256
+app.jwt.secret=replace_with_a_secret_key_of_at_least_32_characters
 app.jwt.expiration-ms=86400000

@@ -32,5 +32,5 @@ build/
 ### VS Code ###
 .vscode/
 
-### Secrets locaux (ne jamais commiter) ###
+### Local secrets (never commit) ###
 src/main/resources/application-local.properties
