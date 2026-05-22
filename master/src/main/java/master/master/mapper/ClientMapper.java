@@ -12,10 +12,10 @@ public interface ClientMapper {
   @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
   void updateFromDto(ClientDto.Update dto, @MappingTarget Client entity);
 
-  @Mapping(target = "userId", source = "userId")
+  @Mapping(target = "userId", source = "id")
   @Mapping(target = "firstName", source = "user.firstName")
   @Mapping(target = "lastName", source = "user.lastName")
   @Mapping(target = "email", source = "user.email")
-  @Mapping(target = "fidelityPoint", source = "fidelityPoint")
+  @Mapping(target = "fidelityPoint", source = "fidelityPoints")
   ClientDto.Info toDto(Client entity);
 }

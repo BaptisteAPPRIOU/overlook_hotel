@@ -1,6 +1,6 @@
 package master.master.mapper;
 
-import master.master.domain.Feedback;
+import master.master.domain.HotelFeedback;
 import master.master.web.rest.dto.FeedbackDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -9,9 +9,14 @@ import org.mapstruct.Mapping;
 public interface FeedbackMapper {
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "user", ignore = true)
-  @Mapping(target = "date", ignore = true)
-  Feedback toEntity(FeedbackDto.Create dto);
+  @Mapping(target = "createdAt", ignore = true)
+  @Mapping(target = "displayed", constant = "false")
+  @Mapping(target = "responseDate", ignore = true)
+  @Mapping(target = "responseContent", ignore = true)
+  HotelFeedback toEntity(FeedbackDto.Create dto);
 
   @Mapping(source = "user.id", target = "userId")
-  FeedbackDto.Info toDto(Feedback entity);
+  @Mapping(source = "createdAt", target = "date")
+  @Mapping(source = "responseContent", target = "answer")
+  FeedbackDto.Info toDto(HotelFeedback entity);
 }
