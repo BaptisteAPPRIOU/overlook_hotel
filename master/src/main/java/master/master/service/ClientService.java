@@ -31,6 +31,9 @@ public class ClientService {
   // This method creates a new client from a User entity.
   @Transactional
   public void createFromUser(User user) {
+    if (user == null || user.getId() == null || repo.existsById(user.getId())) {
+      return;
+    }
     if (user.getRoles().stream().anyMatch(role -> role.getRoleCode() == RoleCode.CLIENT)) {
       Client c = new Client();
       c.setUser(user);
