@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import master.master.domain.Client;
 import master.master.domain.Employee;
+import master.master.domain.EmployeeStatus;
 import master.master.domain.RoleCode;
 import master.master.domain.RoomStatus;
 import master.master.domain.RoomType;
@@ -37,6 +38,7 @@ public class UserDataInitializationService implements ApplicationRunner {
   private final RoomRepository roomRepository;
   private final ReviewRepository reviewRepository;
   private final PasswordEncoder passwordEncoder;
+  private final UserRoleService userRoleService;
 
   public UserDataInitializationService(
       UserRepository userRepository,
@@ -44,13 +46,15 @@ public class UserDataInitializationService implements ApplicationRunner {
       EmployeeRepository employeeRepository,
       RoomRepository roomRepository,
       ReviewRepository reviewRepository,
-      PasswordEncoder passwordEncoder) {
+      PasswordEncoder passwordEncoder,
+      UserRoleService userRoleService) {
     this.userRepository = userRepository;
     this.clientRepository = clientRepository;
     this.employeeRepository = employeeRepository;
     this.roomRepository = roomRepository;
     this.reviewRepository = reviewRepository;
     this.passwordEncoder = passwordEncoder;
+    this.userRoleService = userRoleService;
   }
 
   @Override
@@ -163,7 +167,7 @@ public class UserDataInitializationService implements ApplicationRunner {
     admin.setLastName("Administrator");
     admin.setEmail("Admin@dev.com");
     admin.setPassword(passwordEncoder.encode("admin123"));
-    admin.setRole(RoleCode.ADMIN);
+    userRoleService.assignRole(admin, RoleCode.ADMIN);
     userRepository.save(admin);
     System.out.println("Created admin user: Admin@dev.com / admin123");
   }
@@ -174,12 +178,15 @@ public class UserDataInitializationService implements ApplicationRunner {
     employee.setLastName("Doe");
     employee.setEmail("john.doe@olh.fr");
     employee.setPassword(passwordEncoder.encode("employee123"));
-    employee.setRole(RoleCode.EMPLOYEE);
+    userRoleService.assignRole(employee, RoleCode.EMPLOYEE);
     User savedEmployee = userRepository.save(employee);
 
     // Create corresponding Employee record
     Employee employeeRecord = new Employee();
     employeeRecord.setUser(savedEmployee); // Only set the user - @MapsId will handle the userId
+    employeeRecord.setMatricule("EMP-" + savedEmployee.getId());
+    employeeRecord.setEmployeeStatus(EmployeeStatus.ACTIVE);
+    employeeRecord.setHireDate(LocalDate.now());
     employeeRepository.save(employeeRecord);
 
     System.out.println("Created employee user: john.doe@olh.fr / employee123");
@@ -191,7 +198,7 @@ public class UserDataInitializationService implements ApplicationRunner {
     client.setLastName("Smith");
     client.setEmail("jane.smith@olh.fr");
     client.setPassword(passwordEncoder.encode("client123"));
-    client.setRole(RoleCode.CLIENT);
+    userRoleService.assignRole(client, RoleCode.CLIENT);
     User savedClient = userRepository.save(client);
 
     // Create corresponding Client record
@@ -224,7 +231,7 @@ public class UserDataInitializationService implements ApplicationRunner {
     client.setLastName(lastName);
     client.setEmail(email);
     client.setPassword(passwordEncoder.encode(password));
-    client.setRole(RoleCode.CLIENT);
+    userRoleService.assignRole(client, RoleCode.CLIENT);
     User savedClient = userRepository.save(client);
 
     // Create corresponding Client record
