@@ -1,6 +1,6 @@
 CREATE TABLE rooms_amenities (
-    id_room INTEGER NOT NULL,
-    id_amenity INTEGER NOT NULL,
+    id_room BIGINT NOT NULL,
+    id_amenity BIGINT NOT NULL,
 
     PRIMARY KEY (id_room, id_amenity),
 

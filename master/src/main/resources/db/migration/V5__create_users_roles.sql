@@ -1,6 +1,6 @@
 CREATE TABLE users_roles (
-    id_user INTEGER NOT NULL,
-    id_role INTEGER NOT NULL,
+    id_user BIGINT NOT NULL,
+    id_role BIGINT NOT NULL,
 
     PRIMARY KEY (id_user, id_role),
 

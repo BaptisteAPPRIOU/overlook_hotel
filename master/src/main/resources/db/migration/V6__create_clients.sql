@@ -1,5 +1,5 @@
 CREATE TABLE clients (
-    id_user INTEGER PRIMARY KEY,
+    id_user BIGINT PRIMARY KEY,
     fidelity_points INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT fk_client_user

@@ -1,5 +1,5 @@
 CREATE TABLE employees (
-    id_user INTEGER PRIMARY KEY,
+    id_user BIGINT PRIMARY KEY,
     matricule VARCHAR(50) NOT NULL UNIQUE,
     team VARCHAR(100),
     employee_status VARCHAR(30) NOT NULL,
