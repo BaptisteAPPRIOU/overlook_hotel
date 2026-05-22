@@ -10,7 +10,7 @@ CREATE TABLE leave_requests (
 
     CONSTRAINT fk_leave_request_employee_requester
         FOREIGN KEY (id_employee_requester)
-        REFERENCES employee (id_user)
+        REFERENCES employees (id_user)
         ON DELETE CASCADE,
 
     CONSTRAINT chk_leave_request_dates

@@ -8,7 +8,7 @@ CREATE TABLE rooms_unavailabilities (
 
     CONSTRAINT fk_room_unavailability_room
         FOREIGN KEY (id_room)
-        REFERENCES room (id_room)
+        REFERENCES rooms (id_room)
         ON DELETE CASCADE,
 
     CONSTRAINT chk_room_unavailability_dates

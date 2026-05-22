@@ -9,12 +9,12 @@ CREATE TABLE leave_requests_validation (
 
     CONSTRAINT fk_leave_request_validation_request
         FOREIGN KEY (id_leave_request)
-        REFERENCES leave_request (id_leave_request)
+        REFERENCES leave_requests (id_leave_request)
         ON DELETE CASCADE,
 
     CONSTRAINT fk_leave_request_validation_employee_validator
         FOREIGN KEY (id_employee_validator)
-        REFERENCES employee (id_user)
+        REFERENCES employees (id_user)
         ON DELETE RESTRICT,
 
     CONSTRAINT uq_leave_request_validation_step

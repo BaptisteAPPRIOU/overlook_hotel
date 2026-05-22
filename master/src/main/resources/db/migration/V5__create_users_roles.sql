@@ -11,6 +11,6 @@ CREATE TABLE users_roles (
 
     CONSTRAINT fk_user_role_role
         FOREIGN KEY (id_role)
-        REFERENCES role (id_role)
+        REFERENCES roles (id_role)
         ON DELETE RESTRICT
 );

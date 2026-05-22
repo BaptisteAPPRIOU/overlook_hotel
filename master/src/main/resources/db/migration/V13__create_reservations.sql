@@ -12,12 +12,12 @@ CREATE TABLE reservations (
 
     CONSTRAINT fk_reservation_client
         FOREIGN KEY (id_user)
-        REFERENCES client (id_user)
+        REFERENCES clients (id_user)
         ON DELETE CASCADE,
 
     CONSTRAINT fk_reservation_room
         FOREIGN KEY (id_room)
-        REFERENCES room (id_room)
+        REFERENCES rooms (id_room)
         ON DELETE RESTRICT,
 
     CONSTRAINT chk_reservation_dates

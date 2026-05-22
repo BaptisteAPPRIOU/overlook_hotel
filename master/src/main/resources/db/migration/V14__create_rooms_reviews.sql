@@ -12,7 +12,7 @@ CREATE TABLE rooms_reviews (
 
     CONSTRAINT fk_room_review_reservation
         FOREIGN KEY (id_reservation)
-        REFERENCES reservation (id_reservation)
+        REFERENCES reservations (id_reservation)
         ON DELETE CASCADE,
 
     CONSTRAINT uq_room_review_reservation

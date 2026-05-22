@@ -13,12 +13,12 @@ CREATE TABLE work_shifts (
 
     CONSTRAINT fk_work_shift_employee
         FOREIGN KEY (id_user)
-        REFERENCES employee (id_user)
+        REFERENCES employees (id_user)
         ON DELETE CASCADE,
 
     CONSTRAINT fk_work_shift_monthly_schedule
         FOREIGN KEY (id_monthly_schedule)
-        REFERENCES monthly_schedule (id_monthly_schedule)
+        REFERENCES monthly_schedules (id_monthly_schedule)
         ON DELETE CASCADE,
 
     CONSTRAINT chk_work_shift_break

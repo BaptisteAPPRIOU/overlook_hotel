@@ -8,7 +8,7 @@ CREATE TABLE employees_times_entry (
 
     CONSTRAINT fk_employee_time_entry_work_shift
         FOREIGN KEY (id_work_shift)
-        REFERENCES work_shift (id_work_shift)
+        REFERENCES work_shifts (id_work_shift)
         ON DELETE CASCADE,
 
     CONSTRAINT chk_employee_time_entry_times
