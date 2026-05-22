@@ -78,15 +78,20 @@ public class User implements Serializable {
     return roles.stream().findFirst().map(Role::getRoleCode).orElse(null);
   }
 
-  public void setRole(RoleCode roleCode) {
-    roles.clear();
-    if (roleCode != null) {
-      Role role = new Role();
-      role.setRoleCode(roleCode);
-      role.setLabel(roleCode.name());
-      roles.add(role);
-    }
-  }
+  /*
+   * Do not use this implementation for persisted users.
+   * It creates a new transient Role that is not loaded from roles table, which can break
+   * the users_roles join table. Use UserRoleService.assignRole(...) instead.
+   */
+  // public void setRole(RoleCode roleCode) {
+  //   roles.clear();
+  //   if (roleCode != null) {
+  //     Role role = new Role();
+  //     role.setRoleCode(roleCode);
+  //     role.setLabel(roleCode.name());
+  //     roles.add(role);
+  //   }
+  // }
 
   @Override
   public boolean equals(Object o) {
