@@ -3,9 +3,9 @@ package master.master.service;
 import java.time.LocalDate;
 import java.util.List;
 import master.master.domain.Client;
-import master.master.domain.RoleType;
+import master.master.domain.Reservation;
+import master.master.domain.RoleCode;
 import master.master.domain.User;
-import master.master.domain.UserReservation;
 import master.master.mapper.ClientMapper;
 import master.master.repository.ClientRepository;
 import master.master.repository.ReservationRepository;
@@ -31,23 +31,23 @@ public class ClientService {
   // This method creates a new client from a User entity.
   @Transactional
   public void createFromUser(User user) {
-    if (user.getRole() == RoleType.CLIENT) {
+    if (user.getRoles().stream().anyMatch(role -> role.getRoleCode() == RoleCode.CLIENT)) {
       Client c = new Client();
       c.setUser(user);
-      c.setFidelityPoint(0);
+      c.setFidelityPoints(0);
       repo.save(c);
     }
   }
 
   // This method retrieves all clients in the system.
   public List<ClientDto.Info> findAllClients() {
-    return repo.findAllByUserRole(RoleType.CLIENT).stream().map(mapper::toDto).toList();
+    return repo.findAllByUserRoleCode(RoleCode.CLIENT).stream().map(mapper::toDto).toList();
   }
 
   // This method retrieves a specific client by their user ID.
   public ClientDto.Info findOneClient(Long userId) {
     Client c =
-        repo.findByUserIdAndUserRole(userId, RoleType.CLIENT)
+        repo.findByUserIdAndUserRoleCode(userId, RoleCode.CLIENT)
             .orElseThrow(() -> new RuntimeException("Not found"));
     return mapper.toDto(c);
   }
@@ -56,7 +56,7 @@ public class ClientService {
   @Transactional
   public ClientDto.Info update(ClientDto.Update dto) {
     Client c =
-        repo.findByUserIdAndUserRole(dto.getUserId(), RoleType.CLIENT)
+        repo.findByUserIdAndUserRoleCode(dto.getUserId(), RoleCode.CLIENT)
             .orElseThrow(() -> new RuntimeException("Not found"));
     mapper.updateFromDto(dto, c);
     return mapper.toDto(c);
@@ -66,7 +66,7 @@ public class ClientService {
   @Transactional
   public void delete(Long userId) {
     Client c =
-        repo.findByUserIdAndUserRole(userId, RoleType.CLIENT)
+        repo.findByUserIdAndUserRoleCode(userId, RoleCode.CLIENT)
             .orElseThrow(() -> new RuntimeException("Client not found"));
     repo.delete(c);
   }
@@ -78,9 +78,9 @@ public class ClientService {
   /** Get fidelity points for a specific client */
   public int getFidelityPoints(Long userId) {
     Client client =
-        repo.findByUserIdAndUserRole(userId, RoleType.CLIENT)
+        repo.findByUserIdAndUserRoleCode(userId, RoleCode.CLIENT)
             .orElseThrow(() -> new RuntimeException("Client not found"));
-    return client.getFidelityPoint();
+    return client.getFidelityPoints();
   }
 
   /**
@@ -92,12 +92,12 @@ public class ClientService {
   @Transactional
   public int addFidelityPoints(Long userId, int points) {
     Client client =
-        repo.findByUserIdAndUserRole(userId, RoleType.CLIENT)
+        repo.findByUserIdAndUserRoleCode(userId, RoleCode.CLIENT)
             .orElseThrow(() -> new RuntimeException("Client not found"));
 
     int newTotal =
-        Math.max(0, client.getFidelityPoint() + points); // Ensure points don't go below 0
-    client.setFidelityPoint(newTotal);
+        Math.max(0, client.getFidelityPoints() + points); // Ensure points don't go below 0
+    client.setFidelityPoints(newTotal);
     repo.save(client);
 
     return newTotal;
@@ -108,12 +108,18 @@ public class ClientService {
    * bonus points if reservation is > 7 nights
    */
   @Transactional
-  public int awardPointsForReservation(Long userId, UserReservation reservation) {
-    if (!reservation.isPayed()) {
+  public int awardPointsForReservation(Long userId, Reservation reservation) {
+    if (!Boolean.TRUE.equals(reservation.getPaid())) {
       return 0; // Only award points for paid reservations
     }
 
-    int nights = reservation.getReservationDurationDays();
+    int nights =
+        reservation.getStartDatetime() != null && reservation.getEndDatetime() != null
+            ? (int)
+                java.time.Duration.between(
+                        reservation.getStartDatetime(), reservation.getEndDatetime())
+                    .toDays()
+            : 0;
     int pointsToAward = nights * 10; // 10 points per night
 
     // Bonus for long stays
@@ -122,7 +128,8 @@ public class ClientService {
     }
 
     // Bonus for early check-in (reservation made more than 30 days in advance)
-    if (reservation.getReservationDateStart().isAfter(LocalDate.now().plusDays(30))) {
+    if (reservation.getStartDatetime() != null
+        && reservation.getStartDatetime().toLocalDate().isAfter(LocalDate.now().plusDays(30))) {
       pointsToAward += 25;
     }
 
@@ -139,11 +146,11 @@ public class ClientService {
   @Transactional
   public boolean redeemFidelityPoints(Long userId, int pointsToRedeem) {
     Client client =
-        repo.findByUserIdAndUserRole(userId, RoleType.CLIENT)
+        repo.findByUserIdAndUserRoleCode(userId, RoleCode.CLIENT)
             .orElseThrow(() -> new RuntimeException("Client not found"));
 
-    if (client.getFidelityPoint() >= pointsToRedeem) {
-      client.setFidelityPoint(client.getFidelityPoint() - pointsToRedeem);
+    if (client.getFidelityPoints() >= pointsToRedeem) {
+      client.setFidelityPoints(client.getFidelityPoints() - pointsToRedeem);
       repo.save(client);
       return true;
     }
@@ -179,7 +186,7 @@ public class ClientService {
   }
 
   /** Get all reservations for a client (for fidelity calculation) */
-  public List<UserReservation> getClientReservations(Long userId) {
-    return reservationRepository.findByIdUserId(userId);
+  public List<Reservation> getClientReservations(Long userId) {
+    return reservationRepository.findByClientId(userId);
   }
 }

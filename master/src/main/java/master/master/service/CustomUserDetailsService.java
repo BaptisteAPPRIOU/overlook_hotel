@@ -1,6 +1,6 @@
 package master.master.service;
 
-import java.util.Collections;
+import java.util.List;
 import master.master.domain.User;
 import master.master.repository.UserRepository;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -41,7 +41,10 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
     return new org.springframework.security.core.userdetails.User(
         user.getEmail(),
-        user.getPassword(),
-        Collections.singletonList(new SimpleGrantedAuthority(user.getRole().name())));
+        user.getPasswordHash(),
+        user.getRoles().stream()
+            .map(role -> new SimpleGrantedAuthority(role.getRoleCode().name()))
+            .map(SimpleGrantedAuthority.class::cast)
+            .collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new)));
   }
 }
