@@ -8,6 +8,7 @@ import master.master.domain.User;
 import master.master.repository.UserRepository;
 import master.master.security.JwtUtil;
 import master.master.security.TokenBlacklistService;
+import master.master.service.ClientService;
 import master.master.service.UserRoleService;
 import master.master.web.rest.dto.AuthResponseDto;
 import master.master.web.rest.dto.LoginRequestDto;
@@ -58,6 +59,7 @@ public class AuthController {
   private final JwtUtil jwtUtil;
   private final TokenBlacklistService tokenBlacklistService;
   private final UserRoleService userRoleService;
+  private final ClientService clientService;
 
   public AuthController(
       UserRepository userRepository,
@@ -65,13 +67,15 @@ public class AuthController {
       AuthenticationManager authenticationManager,
       JwtUtil jwtUtil,
       TokenBlacklistService tokenBlacklistService,
-      UserRoleService userRoleService) {
+      UserRoleService userRoleService,
+      ClientService clientService) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
     this.authenticationManager = authenticationManager;
     this.jwtUtil = jwtUtil;
     this.tokenBlacklistService = tokenBlacklistService;
     this.userRoleService = userRoleService;
+    this.clientService = clientService;
   }
 
   // Handle user registration requests
@@ -90,8 +94,9 @@ public class AuthController {
     user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
     userRoleService.assignRole(user, RoleCode.CLIENT); // Default role is CLIENT
 
-    // Save new user in the database
-    userRepository.save(user);
+    // Save new user in the database and create the matching client profile
+    User savedUser = userRepository.save(user);
+    clientService.createFromUser(savedUser);
     return ResponseEntity.ok("User registered successfully");
   }
 
