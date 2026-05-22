@@ -21,18 +21,21 @@ public class UserServiceImpl implements UserService {
   private final AuthenticationManager authManager;
   private final JwtUtil jwtUtil;
   private final UserRoleService userRoleService;
+  private final ClientService clientService;
 
   public UserServiceImpl(
       UserRepository userRepo,
       PasswordEncoder encoder,
       @Lazy AuthenticationManager authManager,
       JwtUtil jwtUtil,
-      UserRoleService userRoleService) {
+      UserRoleService userRoleService,
+      ClientService clientService) {
     this.userRepo = userRepo;
     this.encoder = encoder;
     this.authManager = authManager;
     this.jwtUtil = jwtUtil;
     this.userRoleService = userRoleService;
+    this.clientService = clientService;
   }
 
   // This method registers a new user with the provided details.
@@ -45,7 +48,9 @@ public class UserServiceImpl implements UserService {
     user.setLastName(dto.getLastName());
     user.setPasswordHash(encoder.encode(dto.getPassword()));
     userRoleService.assignRole(user, RoleCode.CLIENT);
-    return userRepo.save(user);
+    User savedUser = userRepo.save(user);
+    clientService.createFromUser(savedUser);
+    return savedUser;
   }
 
   // This method authenticates a user and returns a JWT token.
