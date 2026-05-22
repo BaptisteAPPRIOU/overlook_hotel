@@ -1,204 +1,186 @@
 package master.master.service;
 
-import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
-import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import master.master.domain.AttendanceStatus;
 import master.master.domain.Employee;
-import master.master.domain.EmployeeWorkday;
-import master.master.domain.WorkdayId;
+import master.master.domain.EmployeeTimeEntry;
+import master.master.domain.MonthlySchedule;
+import master.master.domain.ScheduleStatus;
+import master.master.domain.ShiftStatus;
+import master.master.domain.ShiftType;
+import master.master.domain.WorkShift;
 import master.master.repository.EmployeeRepository;
-import master.master.repository.EmployeeWorkdayRepository;
+import master.master.repository.EmployeeTimeEntryRepository;
+import master.master.repository.MonthlyScheduleRepository;
+import master.master.repository.WorkShiftRepository;
 import master.master.web.rest.dto.TimeTrackingDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-/**
- * Service for managing employee time tracking (clock-in/clock-out). Handles actual time recording
- * and comparison with planned schedules.
- */
 @Service
 @Transactional
 public class TimeTrackingService {
 
-  private final EmployeeWorkdayRepository workdayRepository;
+  private final WorkShiftRepository workShiftRepository;
+  private final EmployeeTimeEntryRepository timeEntryRepository;
   private final EmployeeRepository employeeRepository;
+  private final MonthlyScheduleRepository monthlyScheduleRepository;
 
   public TimeTrackingService(
-      EmployeeWorkdayRepository workdayRepository, EmployeeRepository employeeRepository) {
-    this.workdayRepository = workdayRepository;
+      WorkShiftRepository workShiftRepository,
+      EmployeeTimeEntryRepository timeEntryRepository,
+      EmployeeRepository employeeRepository,
+      MonthlyScheduleRepository monthlyScheduleRepository) {
+    this.workShiftRepository = workShiftRepository;
+    this.timeEntryRepository = timeEntryRepository;
     this.employeeRepository = employeeRepository;
+    this.monthlyScheduleRepository = monthlyScheduleRepository;
   }
 
-  /** Record clock-in time for an employee. */
   public TimeTrackingDto clockIn(Long employeeId, LocalDate workDate, LocalTime clockInTime) {
-    Employee employee = getEmployeeById(employeeId);
-
-    // Find or create workday record
-    EmployeeWorkday workday = findOrCreateWorkday(employeeId, workDate);
-    workday.setClockIn(clockInTime);
-    workdayRepository.save(workday);
-
-    return buildTimeTrackingDto(employee, workday, workDate);
+    WorkShift shift = findOrCreateShift(employeeId, workDate);
+    EmployeeTimeEntry entry = findOrCreateEntry(shift);
+    entry.setActualArrivalTime(LocalDateTime.of(workDate, clockInTime));
+    entry.setAttendanceStatus(AttendanceStatus.PRESENT);
+    timeEntryRepository.save(entry);
+    return toDto(shift, entry);
   }
 
-  /** Record clock-out time for an employee. */
   public TimeTrackingDto clockOut(Long employeeId, LocalDate workDate, LocalTime clockOutTime) {
-    Employee employee = getEmployeeById(employeeId);
-
-    // Find or create workday record
-    EmployeeWorkday workday = findOrCreateWorkday(employeeId, workDate);
-    workday.setClockOut(clockOutTime);
-    workdayRepository.save(workday);
-
-    return buildTimeTrackingDto(employee, workday, workDate);
+    WorkShift shift = findOrCreateShift(employeeId, workDate);
+    EmployeeTimeEntry entry = findOrCreateEntry(shift);
+    entry.setActualDepartureTime(LocalDateTime.of(workDate, clockOutTime));
+    if (entry.getAttendanceStatus() == null) {
+      entry.setAttendanceStatus(AttendanceStatus.PRESENT);
+    }
+    timeEntryRepository.save(entry);
+    return toDto(shift, entry);
   }
 
-  /** Get time tracking for a specific employee and date. */
   public TimeTrackingDto getTimeTracking(Long employeeId, LocalDate workDate) {
-    Employee employee = getEmployeeById(employeeId);
-    EmployeeWorkday workday = findOrCreateWorkday(employeeId, workDate);
-
-    return buildTimeTrackingDto(employee, workday, workDate);
+    WorkShift shift = findOrCreateShift(employeeId, workDate);
+    return toDto(shift, findOrCreateEntry(shift));
   }
 
-  /** Get time tracking for all employees for a specific date. */
   public List<TimeTrackingDto> getDailyTimeTracking(LocalDate workDate) {
-    List<Employee> employees = employeeRepository.findAll();
-    return employees.stream()
-        .map(
-            employee -> {
-              EmployeeWorkday workday = findOrCreateWorkday(employee.getUserId(), workDate);
-              return buildTimeTrackingDto(employee, workday, workDate);
-            })
-        .collect(Collectors.toList());
+    List<TimeTrackingDto> result = new ArrayList<>();
+    for (Employee employee : employeeRepository.findAll()) {
+      result.add(getTimeTracking(employee.getId(), workDate));
+    }
+    return result;
   }
 
-  /** Get time tracking for an employee over a date range. */
   public List<TimeTrackingDto> getTimeTrackingRange(
       Long employeeId, LocalDate startDate, LocalDate endDate) {
-    Employee employee = getEmployeeById(employeeId);
-    List<TimeTrackingDto> trackings = new ArrayList<>();
-
-    LocalDate currentDate = startDate;
-    while (!currentDate.isAfter(endDate)) {
-      EmployeeWorkday workday = findOrCreateWorkday(employeeId, currentDate);
-      trackings.add(buildTimeTrackingDto(employee, workday, currentDate));
-      currentDate = currentDate.plusDays(1);
+    List<TimeTrackingDto> result = new ArrayList<>();
+    for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+      result.add(getTimeTracking(employeeId, date));
     }
-
-    return trackings;
+    return result;
   }
 
-  /** Update break duration for a specific work day. */
   public TimeTrackingDto updateBreakDuration(
       Long employeeId, LocalDate workDate, Integer breakMinutes) {
-    Employee employee = getEmployeeById(employeeId);
-    EmployeeWorkday workday = findOrCreateWorkday(employeeId, workDate);
-
-    if (breakMinutes != null && breakMinutes >= 0) {
-      workday.setIdleTime(Duration.ofMinutes(breakMinutes));
-      workdayRepository.save(workday);
-    }
-
-    return buildTimeTrackingDto(employee, workday, workDate);
+    WorkShift shift = findOrCreateShift(employeeId, workDate);
+    EmployeeTimeEntry entry = findOrCreateEntry(shift);
+    entry.setActualBreakDuration(breakMinutes == null ? 0 : breakMinutes);
+    timeEntryRepository.save(entry);
+    return toDto(shift, entry);
   }
 
-  /** Get attendance summary for all employees. */
   public List<TimeTrackingDto> getAttendanceSummary(LocalDate workDate) {
     return getDailyTimeTracking(workDate);
   }
 
-  // =============================================================================
-  // HELPER METHODS
-  // =============================================================================
-
-  private Employee getEmployeeById(Long employeeId) {
-    return employeeRepository
-        .findById(employeeId)
-        .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Employee not found"));
-  }
-
-  // Find or create a workday record for the employee on the specified date
-  private EmployeeWorkday findOrCreateWorkday(Long employeeId, LocalDate workDate) {
-    int weekday = workDate.getDayOfWeek().getValue(); // 1=Monday, 7=Sunday
-    WorkdayId workdayId = new WorkdayId(employeeId, weekday, workDate);
-
-    return workdayRepository
-        .findById(workdayId)
+  private WorkShift findOrCreateShift(Long employeeId, LocalDate workDate) {
+    return workShiftRepository.findByEmployeeIdAndWorkDate(employeeId, workDate).stream()
+        .findFirst()
         .orElseGet(
             () -> {
-              EmployeeWorkday newWorkday = new EmployeeWorkday();
-              newWorkday.setId(workdayId);
-              newWorkday.setEmployee(getEmployeeById(employeeId));
-              return newWorkday;
+              Employee employee =
+                  employeeRepository
+                      .findById(employeeId)
+                      .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Employee not found"));
+              WorkShift shift = new WorkShift();
+              shift.setEmployee(employee);
+              shift.setMonthlySchedule(scheduleFor(workDate));
+              shift.setWorkDate(workDate);
+              shift.setPlannedStartTime(LocalTime.of(9, 0));
+              shift.setPlannedEndTime(LocalTime.of(17, 0));
+              shift.setShiftType(ShiftType.FULL_DAY);
+              shift.setShiftStatus(ShiftStatus.PLANNED);
+              return workShiftRepository.save(shift);
             });
   }
 
-  // Build a DTO for time tracking information
-  private TimeTrackingDto buildTimeTrackingDto(
-      Employee employee, EmployeeWorkday workday, LocalDate workDate) {
-    String status = determineStatus(workday);
+  private EmployeeTimeEntry findOrCreateEntry(WorkShift shift) {
+    return timeEntryRepository
+        .findByWorkShiftId(shift.getId())
+        .orElseGet(
+            () -> {
+              EmployeeTimeEntry entry = new EmployeeTimeEntry();
+              entry.setWorkShift(shift);
+              entry.setActualBreakDuration(0);
+              entry.setAttendanceStatus(AttendanceStatus.ABSENT);
+              return entry;
+            });
+  }
 
+  private TimeTrackingDto toDto(WorkShift shift, EmployeeTimeEntry entry) {
+    LocalTime arrival =
+        entry.getActualArrivalTime() == null ? null : entry.getActualArrivalTime().toLocalTime();
+    LocalTime departure =
+        entry.getActualDepartureTime() == null ? null : entry.getActualDepartureTime().toLocalTime();
     return TimeTrackingDto.builder()
-        .employeeId(employee.getUserId())
-        .employeeName(employee.getFullName())
-        .workDate(workDate)
-        .dayOfWeek(workDate.getDayOfWeek().name())
-        .plannedStartTime(workday.getPlannedStartTime())
-        .plannedEndTime(workday.getPlannedEndTime())
-        .plannedHours(workday.getPlannedHours())
-        .actualClockIn(workday.getClockIn())
-        .actualClockOut(workday.getClockOut())
-        .actualHours(workday.getActualHours())
-        .breakDurationMinutes(
-            workday.getIdleTime() != null ? (int) workday.getIdleTime().toMinutes() : null)
-        .status(status)
-        .isLate(workday.isLate())
-        .isEarlyLeave(workday.isEarlyLeave())
-        .minutesLate(calculateMinutesLate(workday))
-        .minutesEarly(calculateMinutesEarly(workday))
-        .overtime(workday.getOvertimeHours())
+        .employeeId(shift.getEmployee().getId())
+        .employeeName(shift.getEmployee().getFullName())
+        .workDate(shift.getWorkDate())
+        .dayOfWeek(shift.getWorkDate().getDayOfWeek().name())
+        .plannedStartTime(shift.getPlannedStartTime())
+        .plannedEndTime(shift.getPlannedEndTime())
+        .plannedHours(
+            Math.max(
+                    0,
+                    java.time.Duration.between(
+                            shift.getPlannedStartTime(), shift.getPlannedEndTime())
+                        .toMinutes())
+                / 60.0)
+        .actualClockIn(arrival)
+        .actualClockOut(departure)
+        .actualHours(entry.getWorkDuration().toMinutes() / 60.0)
+        .breakDurationMinutes(entry.getActualBreakDuration())
+        .status(entry.getAttendanceStatus() == null ? "ABSENT" : entry.getAttendanceStatus().name())
+        .isLate(arrival != null && arrival.isAfter(shift.getPlannedStartTime()))
+        .isEarlyLeave(departure != null && departure.isBefore(shift.getPlannedEndTime()))
+        .minutesLate(
+            arrival != null && arrival.isAfter(shift.getPlannedStartTime())
+                ? (int) java.time.Duration.between(shift.getPlannedStartTime(), arrival).toMinutes()
+                : 0)
+        .minutesEarly(
+            departure != null && departure.isBefore(shift.getPlannedEndTime())
+                ? (int) java.time.Duration.between(departure, shift.getPlannedEndTime()).toMinutes()
+                : 0)
+        .overtime(0.0)
         .build();
   }
 
-  // Determine the status of the workday based on clock-in/clock-out times
-  private String determineStatus(EmployeeWorkday workday) {
-    if (workday.getClockIn() == null && workday.getClockOut() == null) {
-      return workday.getPlannedStartTime() != null ? "SCHEDULED" : "NO_SCHEDULE";
-    } else if (workday.getClockIn() != null && workday.getClockOut() == null) {
-      return "CHECKED_IN";
-    } else if (workday.getClockIn() != null && workday.getClockOut() != null) {
-      if (workday.isLate() || workday.isEarlyLeave()) {
-        return workday.isLate() ? "LATE" : "EARLY_LEAVE";
-      }
-      return "CHECKED_OUT";
-    } else {
-      return "ABSENT";
-    }
-  }
-
-  // Calculate minutes late if the employee clocked in after the planned start time
-  private Integer calculateMinutesLate(EmployeeWorkday workday) {
-    if (workday.getClockIn() != null && workday.getPlannedStartTime() != null && workday.isLate()) {
-      return (int)
-          Duration.between(workday.getPlannedStartTime(), workday.getClockIn()).toMinutes();
-    }
-    return 0;
-  }
-
-  // Calculate minutes early if the employee left early
-  private Integer calculateMinutesEarly(EmployeeWorkday workday) {
-    if (workday.getClockOut() != null
-        && workday.getPlannedEndTime() != null
-        && workday.isEarlyLeave()) {
-      return (int) Duration.between(workday.getClockOut(), workday.getPlannedEndTime()).toMinutes();
-    }
-    return 0;
+  private MonthlySchedule scheduleFor(LocalDate date) {
+    return monthlyScheduleRepository
+        .findByScheduleMonthAndScheduleYear((short) date.getMonthValue(), (short) date.getYear())
+        .orElseGet(
+            () -> {
+              MonthlySchedule schedule = new MonthlySchedule();
+              schedule.setScheduleMonth((short) date.getMonthValue());
+              schedule.setScheduleYear((short) date.getYear());
+              schedule.setScheduleStatus(ScheduleStatus.DRAFT);
+              return monthlyScheduleRepository.save(schedule);
+            });
   }
 }

@@ -7,11 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import master.master.domain.ReservationId;
-import master.master.domain.Review;
+import master.master.domain.Reservation;
+import master.master.domain.ReservationStatus;
+import master.master.domain.RoomReview;
 import master.master.domain.Room;
+import master.master.domain.RoomStatus;
 import master.master.domain.User;
-import master.master.domain.UserReservation;
 import master.master.repository.ReservationRepository;
 import master.master.repository.ReviewRepository;
 import master.master.repository.RoomRepository;
@@ -54,7 +55,7 @@ public class HotelWebsiteService {
     // Get all available rooms that can accommodate the guests
     List<Room> availableRooms =
         roomRepository.findAll().stream()
-            .filter(room -> room.getStatus() == Room.RoomStatus.AVAILABLE)
+            .filter(room -> room.getStatus() == RoomStatus.AVAILABLE)
             .filter(room -> room.getType().isHotelRoom()) // Hotel rooms
             .filter(room -> room.getCapacity() != null && room.getCapacity() >= totalGuests)
             .collect(Collectors.toList());
@@ -77,9 +78,9 @@ public class HotelWebsiteService {
    * by an admin.
    */
   public List<Map<String, Object>> getValidatedReviews(int offset, int limit) {
-    List<Review> verifiedReviews =
+    List<RoomReview> verifiedReviews =
         reviewRepository.findAll().stream()
-            .filter(Review::getIsVerified)
+            .filter(review -> Boolean.TRUE.equals(review.getVerified()))
             .sorted((r1, r2) -> r2.getCreatedAt().compareTo(r1.getCreatedAt()))
             .skip(offset)
             .limit(limit)
@@ -115,34 +116,35 @@ public class HotelWebsiteService {
       }
 
       Room room = roomOpt.get();
-      if (room.getStatus() != Room.RoomStatus.AVAILABLE) {
+      if (room.getStatus() != RoomStatus.AVAILABLE) {
         result.put("success", false);
         result.put("message", "Room is not available");
         return result;
       }
 
-      // Create reservation
-      ReservationId reservationId = new ReservationId();
-      reservationId.setUserId(userId);
-      reservationId.setRoomId(roomId);
-
-      UserReservation reservation =
-          UserReservation.builder()
-              .id(reservationId)
-              .reservationDateStart(checkIn)
-              .reservationDateEnd(checkOut)
-              .payed(payNow)
-              .build();
+      Reservation reservation = new Reservation();
+      reservation.setClient(
+          userRepository
+              .findById(userId)
+              .flatMap(user -> Optional.ofNullable(user.getClientProfile()))
+              .orElseThrow(() -> new IllegalArgumentException("Client not found")));
+      reservation.setRoom(room);
+      reservation.setStartDatetime(checkIn.atStartOfDay());
+      reservation.setEndDatetime(checkOut.atTime(23, 59, 59));
+      reservation.setPaid(payNow);
+      reservation.setReservationStatus(ReservationStatus.PENDING);
+      reservation.setTotalAmount(
+          java.math.BigDecimal.valueOf(calculateTotalPrice(room.getPrice(), checkIn, checkOut)));
 
       reservationRepository.save(reservation);
 
       // Update room status to reserved
-      room.setStatus(Room.RoomStatus.RESERVED);
+      room.setStatus(RoomStatus.RESERVED);
       roomRepository.save(room);
 
       result.put("success", true);
       result.put("message", "Reservation created successfully");
-      result.put("reservationId", reservationId);
+      result.put("reservationId", reservation.getId());
       result.put("totalPrice", calculateTotalPrice(room.getPrice(), checkIn, checkOut));
 
     } catch (Exception e) {
@@ -166,13 +168,13 @@ public class HotelWebsiteService {
     long totalRooms = roomRepository.count();
     long availableRooms =
         roomRepository.findAll().stream()
-            .filter(room -> room.getStatus() == Room.RoomStatus.AVAILABLE)
+            .filter(room -> room.getStatus() == RoomStatus.AVAILABLE)
             .filter(room -> room.getType().isHotelRoom())
             .count();
 
     long totalReviews = reviewRepository.count();
     long verifiedReviews =
-        reviewRepository.findAll().stream().filter(Review::getIsVerified).count();
+        reviewRepository.findAll().stream().filter(review -> Boolean.TRUE.equals(review.getVerified())).count();
 
     Double averageRating = reviewRepository.getAverageRating();
 
@@ -201,23 +203,19 @@ public class HotelWebsiteService {
             : "Comfortable room with all amenities");
     roomMap.put("price", room.getPrice() != null ? room.getPrice() : 150.0);
     roomMap.put("status", room.getStatus().getDisplayName());
-    roomMap.put("floorNumber", room.getFloorNumber());
+    roomMap.put("floorNumber", null);
 
     // Features
     Map<String, Boolean> features = new HashMap<>();
-    features.put("hasProjector", room.getHasProjector() != null ? room.getHasProjector() : false);
-    features.put(
-        "hasWhiteboard", room.getHasWhiteboard() != null ? room.getHasWhiteboard() : false);
-    features.put(
-        "hasVideoConference",
-        room.getHasVideoConference() != null ? room.getHasVideoConference() : false);
-    features.put(
-        "hasAirConditioning",
-        room.getHasAirConditioning() != null ? room.getHasAirConditioning() : true);
+    features.put("hasProjector", false);
+    features.put("hasWhiteboard", false);
+    features.put("hasVideoConference", false);
+    features.put("hasAirConditioning", true);
     roomMap.put("features", features);
 
     // Amenities from database
-    List<String> amenities = room.getAmenities();
+    List<String> amenities =
+        room.getAmenities().stream().map(amenity -> amenity.getLabel()).toList();
     if (amenities != null && !amenities.isEmpty()) {
       roomMap.put("amenities", amenities);
     } else {
@@ -232,37 +230,35 @@ public class HotelWebsiteService {
     roomMap.put("rating", avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0);
 
     // Get review count for this room
-    Long reviewCount = reviewRepository.countByRoomId(room.getId());
+    Long reviewCount = reviewRepository.countByReservationRoomId(room.getId());
     roomMap.put("reviewCount", reviewCount != null ? reviewCount : 0);
 
     return roomMap;
   }
 
-  /** Convert Review entity to Map for API response. */
-  private Map<String, Object> convertReviewToMap(Review review) {
+  /** Convert RoomReview entity to Map for API response. */
+  private Map<String, Object> convertReviewToMap(RoomReview review) {
     Map<String, Object> reviewMap = new HashMap<>();
     reviewMap.put("id", review.getId());
     reviewMap.put("rating", review.getRating());
     reviewMap.put("comment", review.getComment());
-    reviewMap.put("reviewDate", review.getReviewDate().toString());
+    reviewMap.put("reviewDate", review.getCreatedAt().toLocalDate().toString());
     reviewMap.put("createdAt", review.getCreatedAt().toString());
-    reviewMap.put("isAnonymous", review.getIsAnonymous());
-    reviewMap.put("helpfulCount", review.getHelpfulCount());
+    reviewMap.put("isAnonymous", Boolean.TRUE.equals(review.getAnonymous()));
+    reviewMap.put("helpfulCount", 0);
 
     // Get room information
-    Optional<Room> roomOpt = roomRepository.findById(review.getRoomId());
-    if (roomOpt.isPresent()) {
-      Room room = roomOpt.get();
+    if (review.getReservation() != null && review.getReservation().getRoom() != null) {
+      Room room = review.getReservation().getRoom();
       reviewMap.put("roomNumber", room.getNumber());
       reviewMap.put(
           "roomName", room.getName() != null ? room.getName() : "Room " + room.getNumber());
     }
 
     // Get author information (if not anonymous)
-    if (!review.getIsAnonymous()) {
-      Optional<User> userOpt = userRepository.findById(review.getAuthorId());
-      if (userOpt.isPresent()) {
-        User user = userOpt.get();
+    if (!Boolean.TRUE.equals(review.getAnonymous())) {
+      if (review.getReservation() != null && review.getReservation().getClient() != null) {
+        User user = review.getReservation().getClient().getUser();
         // Only show first name for privacy
         String authorName = user.getFirstName() != null ? user.getFirstName() : "Client";
         reviewMap.put("authorName", authorName);

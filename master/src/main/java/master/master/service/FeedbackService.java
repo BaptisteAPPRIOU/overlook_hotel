@@ -1,7 +1,7 @@
 package master.master.service;
 
 import java.util.List;
-import master.master.domain.Feedback;
+import master.master.domain.HotelFeedback;
 import master.master.domain.User;
 import master.master.mapper.FeedbackMapper;
 import master.master.repository.FeedbackRepository;
@@ -32,7 +32,7 @@ public class FeedbackService {
         userRepo
             .findById(userId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found"));
-    Feedback fb = mapper.toEntity(dto);
+    HotelFeedback fb = mapper.toEntity(dto);
     fb.setUser(user);
     return mapper.toDto(repo.save(fb));
   }

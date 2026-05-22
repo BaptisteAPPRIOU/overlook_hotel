@@ -2,7 +2,8 @@ package master.master.service;
 
 import java.util.List;
 import master.master.domain.Employee;
-import master.master.domain.RoleType;
+import master.master.domain.EmployeeStatus;
+import master.master.domain.RoleCode;
 import master.master.domain.User;
 import master.master.repository.EmployeeRepository;
 import master.master.repository.UserRepository;
@@ -26,15 +27,18 @@ public class EmployeeService {
   private final UserRepository userRepository;
   private final EmployeeRepository employeeRepository;
   private final PasswordEncoder passwordEncoder;
+  private final UserRoleService userRoleService;
 
   // Constructor to inject dependencies
   public EmployeeService(
       UserRepository userRepository,
       EmployeeRepository employeeRepository,
-      PasswordEncoder passwordEncoder) {
+      PasswordEncoder passwordEncoder,
+      UserRoleService userRoleService) {
     this.userRepository = userRepository;
     this.employeeRepository = employeeRepository;
     this.passwordEncoder = passwordEncoder;
+    this.userRoleService = userRoleService;
   }
 
   // This method creates a new employee and automatically creates a User account for them.
@@ -43,12 +47,15 @@ public class EmployeeService {
     user.setFirstName(request.getFirstName());
     user.setLastName(request.getLastName());
     user.setEmail(request.getEmail());
-    user.setPassword(passwordEncoder.encode(request.getPassword()));
-    user.setRole(RoleType.EMPLOYEE);
+    user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+    userRoleService.assignRole(user, RoleCode.EMPLOYEE);
     user = userRepository.save(user);
 
     Employee employee = new Employee();
     employee.setUser(user);
+    employee.setMatricule("EMP-" + user.getId());
+    employee.setEmployeeStatus(EmployeeStatus.ACTIVE);
+    employee.setHireDate(java.time.LocalDate.now());
     return employeeRepository.save(employee);
   }
 

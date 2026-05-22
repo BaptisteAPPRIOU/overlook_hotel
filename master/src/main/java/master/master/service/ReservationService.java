@@ -1,6 +1,7 @@
 package master.master.service;
 
 import java.util.List;
+import java.math.BigDecimal;
 import master.master.domain.*;
 import master.master.mapper.ReservationMapper;
 import master.master.repository.ClientRepository;
@@ -37,7 +38,7 @@ public class ReservationService {
   public ReservationDto.Info create(Long userId, ReservationDto.Create dto) {
     Client client =
         clientRepo
-            .findByUserIdAndUserRole(userId, RoleType.CLIENT)
+            .findByUserIdAndUserRoleCode(userId, RoleCode.CLIENT)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found"));
 
     Room room =
@@ -45,19 +46,18 @@ public class ReservationService {
             .findById(dto.getRoomId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found"));
 
-    UserReservation ur = new UserReservation();
-    ur.setId(new ReservationId(userId, dto.getRoomId()));
-    ur.setUser(client.getUser());
+    Reservation ur = mapper.toEntity(dto);
+    ur.setClient(client);
     ur.setRoom(room);
-    ur.setReservationDateStart(dto.getReservationDateStart());
-    ur.setReservationDateEnd(dto.getReservationDateEnd());
-    ur.setPayed(false);
+    ur.setReservationStatus(ReservationStatus.PENDING);
+    ur.setPaid(false);
+    ur.setTotalAmount(room.getBasePrice() != null ? room.getBasePrice() : BigDecimal.ZERO);
 
     return mapper.toDto(repo.save(ur));
   }
 
   // This method retrieves all reservations made by a specific user.
   public List<ReservationDto.Info> findByUser(Long userId) {
-    return repo.findByIdUserId(userId).stream().map(mapper::toDto).toList();
+    return repo.findByClientId(userId).stream().map(mapper::toDto).toList();
   }
 }

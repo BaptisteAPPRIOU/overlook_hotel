@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import master.master.domain.Room;
+import master.master.domain.RoomStatus;
+import master.master.domain.RoomType;
 import master.master.repository.RoomRepository;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -52,12 +54,12 @@ public class HotelDataInitializationService implements ApplicationRunner {
         Room.builder()
             .number("201")
             .name("Deluxe Room")
-            .type(Room.RoomType.DELUXE)
+            .type(RoomType.DELUXE)
             .capacity(2)
             .description(
                 "Spacious room with a mountain view, perfect for a romantic stay.")
             .price(189.0)
-            .status(Room.RoomStatus.AVAILABLE)
+            .status(RoomStatus.AVAILABLE)
             .floorNumber(2)
             .hasAirConditioning(true)
             .hasProjector(false)
@@ -83,12 +85,12 @@ public class HotelDataInitializationService implements ApplicationRunner {
         Room.builder()
             .number("301")
             .name("Presidential Suite")
-            .type(Room.RoomType.PRESIDENTIAL_SUITE)
+            .type(RoomType.PRESIDENTIAL_SUITE)
             .capacity(4)
             .description(
                 "Our most luxurious suite with a separate living room, jacuzzi, and panoramic view.")
             .price(450.0)
-            .status(Room.RoomStatus.AVAILABLE)
+            .status(RoomStatus.AVAILABLE)
             .floorNumber(3)
             .hasAirConditioning(true)
             .hasProjector(false)
@@ -119,12 +121,12 @@ public class HotelDataInitializationService implements ApplicationRunner {
         Room.builder()
             .number("101")
             .name("Standard Room")
-            .type(Room.RoomType.STANDARD)
+            .type(RoomType.STANDARD)
             .capacity(2)
             .description(
                 "Comfortable room with all essential amenities for a pleasant stay.")
             .price(129.0)
-            .status(Room.RoomStatus.AVAILABLE)
+            .status(RoomStatus.AVAILABLE)
             .floorNumber(1)
             .hasAirConditioning(true)
             .hasProjector(false)
@@ -149,12 +151,12 @@ public class HotelDataInitializationService implements ApplicationRunner {
         Room.builder()
             .number("102")
             .name("Family Room")
-            .type(Room.RoomType.FAMILY_ROOM)
+            .type(RoomType.FAMILY_ROOM)
             .capacity(4)
             .description(
                 "Spacious family room with bunk beds, ideal for families.")
             .price(199.0)
-            .status(Room.RoomStatus.AVAILABLE)
+            .status(RoomStatus.AVAILABLE)
             .floorNumber(1)
             .hasAirConditioning(true)
             .hasProjector(false)
@@ -182,11 +184,11 @@ public class HotelDataInitializationService implements ApplicationRunner {
         Room.builder()
             .number("202")
             .name("Superior Room")
-            .type(Room.RoomType.SUPERIOR)
+            .type(RoomType.SUPERIOR)
             .capacity(2)
             .description("Suite with a sitting area and breathtaking valley view.")
             .price(249.0)
-            .status(Room.RoomStatus.AVAILABLE)
+            .status(RoomStatus.AVAILABLE)
             .floorNumber(2)
             .hasAirConditioning(true)
             .hasProjector(false)
@@ -216,14 +218,14 @@ public class HotelDataInitializationService implements ApplicationRunner {
     for (Room room : rooms) {
       // Only update rooms that don't have amenities and are hotel-type rooms
       if ((room.getAmenities() == null || room.getAmenities().isEmpty())
-          && (room.getType() == Room.RoomType.OFFICE || room.getType() == Room.RoomType.ROOM)) {
+          && (room.getType() == RoomType.OFFICE || room.getType() == RoomType.ROOM)) {
 
         List<String> amenities = generateAmenitiesForRoom(room);
         room.setAmenities(amenities);
 
         // Update other hotel-specific fields if needed
         if (room.getPrice() == null) {
-          room.setPrice(calculatePriceBasedOnCapacity(room.getCapacity()));
+          room.setPrice(calculatePriceBasedOnCapacity(room.getCapacity().intValue()));
         }
 
         if (room.getDescription() == null || room.getDescription().trim().isEmpty()) {
@@ -239,7 +241,7 @@ public class HotelDataInitializationService implements ApplicationRunner {
   private List<String> generateAmenitiesForRoom(Room room) {
     // Determine room category based on capacity and name
     String roomName = room.getName() != null ? room.getName().toLowerCase() : "";
-    Integer capacity = room.getCapacity() != null ? room.getCapacity() : 2;
+    Integer capacity = room.getCapacity() != null ? room.getCapacity().intValue() : 2;
 
     if (roomName.contains("suite") || roomName.contains("presidential") || capacity >= 4) {
       return Arrays.asList(
@@ -316,7 +318,7 @@ public class HotelDataInitializationService implements ApplicationRunner {
   /** Generate description based on room characteristics. */
   private String generateDescriptionForRoom(Room room) {
     String roomName = room.getName() != null ? room.getName() : "Room " + room.getNumber();
-    Integer capacity = room.getCapacity() != null ? room.getCapacity() : 2;
+    Integer capacity = room.getCapacity() != null ? room.getCapacity().intValue() : 2;
 
     if (roomName.toLowerCase().contains("suite")) {
       return "Luxury suite with a separate living room, offering comfort and elegance for an"

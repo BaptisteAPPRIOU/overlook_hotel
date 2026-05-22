@@ -3,23 +3,13 @@ package master.master.service;
 import java.time.LocalDate;
 import java.util.List;
 import master.master.domain.Client;
-import master.master.domain.RoleType;
-import master.master.domain.UserReservation;
+import master.master.domain.Reservation;
+import master.master.domain.RoleCode;
 import master.master.repository.ClientRepository;
 import master.master.repository.ReservationRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Service dedicated to managing fidelity points for hotel clients.
- *
- * <p>Fidelity Point System Rules: - Base points: 10 points per night stayed - Long stay bonus: 50
- * points for stays longer than 7 nights - Early booking bonus: 25 points for reservations made 30+
- * days in advance - Only paid reservations earn points
- *
- * <p>Fidelity Levels: - BRONZE: 0-199 points (no discount) - SILVER: 200-499 points (5% discount) -
- * GOLD: 500-999 points (10% discount) - DIAMOND: 1000+ points (15% discount)
- */
 @Service
 @Transactional(readOnly = true)
 public class FidelityPointService {
@@ -33,185 +23,130 @@ public class FidelityPointService {
     this.reservationRepository = reservationRepository;
   }
 
-  /** Get current fidelity points for a client */
   @Transactional
   public int getCurrentPoints(Long userId) {
     Client client = getClient(userId);
-    // Handle null fidelity points (legacy data or new clients)
-    Integer points = client.getFidelityPoint();
-    if (points == null) {
-      // Initialize to 0 and save
-      client.setFidelityPoint(0);
+    if (client.getFidelityPoints() == null) {
+      client.setFidelityPoints(0);
       clientRepository.save(client);
-      return 0;
     }
-    return points;
+    return client.getFidelityPoints();
   }
 
-  /** Get fidelity level based on current points */
   public FidelityLevel getFidelityLevel(Long userId) {
     int points = getCurrentPoints(userId);
-
-    if (points >= 1000) {
-      return FidelityLevel.DIAMOND;
-    } else if (points >= 500) {
-      return FidelityLevel.GOLD;
-    } else if (points >= 200) {
-      return FidelityLevel.SILVER;
-    } else {
-      return FidelityLevel.BRONZE;
-    }
+    if (points >= 1000) return FidelityLevel.DIAMOND;
+    if (points >= 500) return FidelityLevel.GOLD;
+    if (points >= 200) return FidelityLevel.SILVER;
+    return FidelityLevel.BRONZE;
   }
 
-  /** Get discount percentage based on fidelity level */
   public double getDiscountPercentage(Long userId) {
     return getFidelityLevel(userId).getDiscountPercentage();
   }
 
-  /** Calculate points to be earned for a reservation */
-  public int calculatePointsForReservation(UserReservation reservation) {
-    if (!reservation.isPayed()) {
-      return 0; // Only award points for paid reservations
+  public int calculatePointsForReservation(Reservation reservation) {
+    if (!Boolean.TRUE.equals(reservation.getPaid())) {
+      return 0;
     }
-
-    int nights = reservation.getReservationDurationDays();
-    int points = nights * 10; // Base: 10 points per night
-
-    // Long stay bonus
-    if (nights > 7) {
-      points += 50;
-    }
-
-    // Early booking bonus (reservation made more than 30 days in advance)
-    if (reservation.getReservationDateStart().isAfter(LocalDate.now().plusDays(30))) {
+    int nights =
+        reservation.getStartDatetime() != null && reservation.getEndDatetime() != null
+            ? Math.max(
+                0,
+                (int)
+                    java.time.Duration.between(
+                            reservation.getStartDatetime(), reservation.getEndDatetime())
+                        .toDays())
+            : 0;
+    int points = nights * 10;
+    if (nights > 7) points += 50;
+    if (reservation.getStartDatetime() != null
+        && reservation.getStartDatetime().toLocalDate().isAfter(LocalDate.now().plusDays(30))) {
       points += 25;
     }
-
     return points;
   }
 
-  /** Award points for a completed reservation */
   @Transactional
-  public int awardPointsForReservation(Long userId, UserReservation reservation) {
-    int pointsToAward = calculatePointsForReservation(reservation);
-    return addPoints(userId, pointsToAward);
+  public int awardPointsForReservation(Long userId, Reservation reservation) {
+    return addPoints(userId, calculatePointsForReservation(reservation));
   }
 
-  /** Add points to a client's account */
   @Transactional
   public int addPoints(Long userId, int points) {
     Client client = getClient(userId);
-    // Handle null fidelity points
-    Integer currentPoints = client.getFidelityPoint();
-    if (currentPoints == null) {
-      currentPoints = 0;
-    }
-
-    int newTotal = Math.max(0, currentPoints + points);
-    client.setFidelityPoint(newTotal);
+    int current = client.getFidelityPoints() == null ? 0 : client.getFidelityPoints();
+    int total = Math.max(0, current + points);
+    client.setFidelityPoints(total);
     clientRepository.save(client);
-    return newTotal;
+    return total;
   }
 
-  /** Redeem points (subtract from account) */
   @Transactional
   public boolean redeemPoints(Long userId, int pointsToRedeem) {
     Client client = getClient(userId);
-
-    // Handle null fidelity points
-    Integer currentPoints = client.getFidelityPoint();
-    if (currentPoints == null) {
-      currentPoints = 0;
-    }
-
-    if (currentPoints >= pointsToRedeem) {
-      client.setFidelityPoint(currentPoints - pointsToRedeem);
-      clientRepository.save(client);
-      return true;
-    }
-
-    return false;
+    int current = client.getFidelityPoints() == null ? 0 : client.getFidelityPoints();
+    if (current < pointsToRedeem) return false;
+    client.setFidelityPoints(current - pointsToRedeem);
+    clientRepository.save(client);
+    return true;
   }
 
-  /** Get points needed to reach next level */
   public int getPointsToNextLevel(Long userId) {
-    int currentPoints = getCurrentPoints(userId);
-    FidelityLevel currentLevel = getFidelityLevel(userId);
-
-    return switch (currentLevel) {
-      case BRONZE -> 200 - currentPoints;
-      case SILVER -> 500 - currentPoints;
-      case GOLD -> 1000 - currentPoints;
-      case DIAMOND -> 0; // Already at max level
+    int current = getCurrentPoints(userId);
+    return switch (getFidelityLevel(userId)) {
+      case BRONZE -> 200 - current;
+      case SILVER -> 500 - current;
+      case GOLD -> 1000 - current;
+      case DIAMOND -> 0;
     };
   }
 
-  /** Get client reservation history for point calculation */
-  public List<UserReservation> getClientReservations(Long userId) {
-    return reservationRepository.findByIdUserId(userId);
+  public List<Reservation> getClientReservations(Long userId) {
+    return reservationRepository.findByClientId(userId);
   }
 
-  /**
-   * Recalculate all points for a client based on their reservation history This method can be used
-   * for data migration or correction purposes
-   */
   @Transactional
   public int recalculateAllPoints(Long userId) {
-    List<UserReservation> reservations = getClientReservations(userId);
-
-    int totalPoints =
-        reservations.stream()
+    int total =
+        getClientReservations(userId).stream()
             .filter(
                 reservation ->
-                    reservation.isPayed()
-                        && reservation.getReservationDateEnd().isBefore(LocalDate.now()))
+                    Boolean.TRUE.equals(reservation.getPaid())
+                        && reservation.getEndDatetime() != null
+                        && reservation.getEndDatetime().toLocalDate().isBefore(LocalDate.now()))
             .mapToInt(this::calculatePointsForReservation)
             .sum();
-
     Client client = getClient(userId);
-    client.setFidelityPoint(totalPoints);
+    client.setFidelityPoints(total);
     clientRepository.save(client);
-
-    return totalPoints;
+    return total;
   }
 
-  /** Get summary of fidelity status */
   public FidelitySummary getFidelitySummary(Long userId) {
     int currentPoints = getCurrentPoints(userId);
-    FidelityLevel level = getFidelityLevel(userId);
-    int pointsToNext = getPointsToNextLevel(userId);
-    double discountPercentage = getDiscountPercentage(userId);
-
-    return new FidelitySummary(currentPoints, level, pointsToNext, discountPercentage);
+    return new FidelitySummary(
+        currentPoints, getFidelityLevel(userId), getPointsToNextLevel(userId), getDiscountPercentage(userId));
   }
 
-  /**
-   * Process all completed reservations and award points automatically This should be called
-   * periodically or when reservations are marked as completed
-   */
   @Transactional
   public void processCompletedReservations() {
-    List<UserReservation> allReservations = reservationRepository.findAll();
-
-    for (UserReservation reservation : allReservations) {
-      // Only process paid reservations that have ended
-      if (reservation.isPayed() && reservation.getReservationDateEnd().isBefore(LocalDate.now())) {
-
-        // Check if points were already awarded (we could add a flag to UserReservation in the
-        // future)
-        // For now, we'll assume points are awarded on completion
-        awardPointsForReservation(reservation.getId().getUserId(), reservation);
+    for (Reservation reservation : reservationRepository.findAll()) {
+      if (reservation.getClient() != null
+          && Boolean.TRUE.equals(reservation.getPaid())
+          && reservation.getEndDatetime() != null
+          && reservation.getEndDatetime().toLocalDate().isBefore(LocalDate.now())) {
+        awardPointsForReservation(reservation.getClient().getId(), reservation);
       }
     }
   }
 
   private Client getClient(Long userId) {
     return clientRepository
-        .findByUserIdAndUserRole(userId, RoleType.CLIENT)
-            .orElseThrow(() -> new RuntimeException("Client not found"));
+        .findByUserIdAndUserRoleCode(userId, RoleCode.CLIENT)
+        .orElseThrow(() -> new RuntimeException("Client not found"));
   }
 
-  // DTO Classes
   public static class FidelitySummary {
     private final int currentPoints;
     private final FidelityLevel level;
@@ -226,49 +161,31 @@ public class FidelityPointService {
       this.discountPercentage = discountPercentage;
     }
 
-    public int getCurrentPoints() {
-      return currentPoints;
-    }
+    public int getCurrentPoints() { return currentPoints; }
 
-    public FidelityLevel getLevel() {
-      return level;
-    }
+    public FidelityLevel getLevel() { return level; }
 
-    public int getPointsToNextLevel() {
-      return pointsToNextLevel;
-    }
+    public int getPointsToNextLevel() { return pointsToNextLevel; }
 
-    public double getDiscountPercentage() {
-      return discountPercentage;
-    }
+    public double getDiscountPercentage() { return discountPercentage; }
   }
 
   public enum FidelityLevel {
-    BRONZE("Bronze", 0, 0.0),
-    SILVER("Silver", 200, 0.05),
-    GOLD("Gold", 500, 0.10),
-    DIAMOND("Diamond", 1000, 0.15);
+    BRONZE("Bronze", 0.0),
+    SILVER("Silver", 0.05),
+    GOLD("Gold", 0.10),
+    DIAMOND("Diamond", 0.15);
 
     private final String displayName;
-    private final int requiredPoints;
     private final double discountPercentage;
 
-    FidelityLevel(String displayName, int requiredPoints, double discountPercentage) {
+    FidelityLevel(String displayName, double discountPercentage) {
       this.displayName = displayName;
-      this.requiredPoints = requiredPoints;
       this.discountPercentage = discountPercentage;
     }
 
-    public String getDisplayName() {
-      return displayName;
-    }
+    public String getDisplayName() { return displayName; }
 
-    public int getRequiredPoints() {
-      return requiredPoints;
-    }
-
-    public double getDiscountPercentage() {
-      return discountPercentage;
-    }
+    public double getDiscountPercentage() { return discountPercentage; }
   }
 }
