@@ -1,8 +1,8 @@
 package master.master.domain;
 
-public enum EmployeeStatus {
+public enum AccountStatus {
   ACTIVE,
   INACTIVE,
-  ON_LEAVE,
-  TERMINATED
+  SUSPENDED,
+  DELETED
 }

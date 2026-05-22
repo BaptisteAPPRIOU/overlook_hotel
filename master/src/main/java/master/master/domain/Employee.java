@@ -1,99 +1,77 @@
 package master.master.domain;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * Represents an employee entity in the system.
- *
- * <p>Each Employee is associated with a {@link User} entity via a one-to-one relationship, sharing
- * the same primary key. The Employee entity also maintains relationships with {@link
- * EmployeeVacation} and {@link EmployeeWorkday} entities, representing the vacations and workdays
- * associated with the employee.
- *
- * <ul>
- *   <li><b>userId</b>: The unique identifier for the employee, mapped from the associated User.
- *   <li><b>user</b>: The User entity linked to this employee.
- *   <li><b>vacations</b>: List of vacation records for the employee.
- *   <li><b>workdays</b>: List of workday records for the employee.
- * </ul>
- */
 @Getter
 @Setter
 @Entity
+@Table(name = "employees")
 public class Employee implements Serializable {
 
-  @Id private Long userId;
+  @Id
+  @Column(name = "id_user")
+  private Long id;
 
-  @OneToOne
+  @OneToOne(fetch = FetchType.LAZY, optional = false)
   @MapsId
-  @JoinColumn(name = "user_id")
+  @JoinColumn(name = "id_user")
   private User user;
 
-  @Enumerated(EnumType.STRING)
-  private EmployeeStatus status;
+  @Column(name = "matricule", nullable = false, unique = true, length = 50)
+  private String matricule;
 
-  @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<EmployeeVacation> vacations;
-
-  @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<EmployeeWorkday> workdays;
-
-  /** Optional: department or team info (can be null if unused). */
+  @Column(name = "team", length = 100)
   private String team;
 
-  /** Helper for Thymeleaf: full name display. */
+  @Enumerated(EnumType.STRING)
+  @Column(name = "employee_status", nullable = false, length = 30)
+  private EmployeeStatus employeeStatus;
+
+  @Column(name = "hire_date", nullable = false)
+  private LocalDate hireDate;
+
+  @OneToMany(mappedBy = "employeeRequester", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<LeaveRequest> leaveRequests = new ArrayList<>();
+
+  @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<WorkShift> workShifts = new ArrayList<>();
+
   public String getFullName() {
-    return user != null ? user.getFirstName() + " " + user.getLastName() : "";
+    return user != null ? user.getFullName() : "";
   }
 
-  // equals/hashCode based on userId
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof Employee employee)) return false;
-    return Objects.equals(userId, employee.userId);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(userId);
-  }
-
-  /** Get first name from associated user. */
   public String getFirstName() {
     return user != null ? user.getFirstName() : null;
   }
 
-  /** Get last name from associated user. */
   public String getLastName() {
     return user != null ? user.getLastName() : null;
   }
 
-  /** Get email from associated user. */
   public String getEmail() {
     return user != null ? user.getEmail() : null;
   }
 
-  /** Get role from associated user. */
-  public RoleType getRole() {
-    return user != null ? user.getRole() : null;
+  public Long getUserId() {
+    return id;
   }
 
-  /** Check if employee has a valid user association. */
-  public boolean hasValidUser() {
-    return user != null && user.getFirstName() != null && user.getLastName() != null;
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof Employee employee)) return false;
+    return id != null && Objects.equals(id, employee.id);
+  }
+
+  @Override
+  public int hashCode() {
+    return getClass().hashCode();
   }
 }

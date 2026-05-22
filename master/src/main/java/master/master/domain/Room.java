@@ -1,289 +1,285 @@
-// src/main/java/master/master/domain/Room.java
 package master.master.domain;
 
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
-import java.time.LocalDateTime;
+import jakarta.persistence.*;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.util.Objects;
+import java.util.Set;
+import lombok.Getter;
+import lombok.Setter;
 
-/**
- * JPA Entity for Room. Represents rooms/meeting spaces in the database. import lombok.Data;
- *
- * <p>/** Represents a hotel room entity with a unique room number, type, and occupancy status.
- *
- * <p>Fields:
- *
- * <ul>
- *   <li><b>id</b>: The unique identifier for the room (auto-generated).
- *   <li><b>roomNumber</b>: The unique number assigned to the room.
- *   <li><b>roomType</b>: The type/category of the room (e.g., SINGLE, DOUBLE, SUITE).
- *   <li><b>isOccupied</b>: Indicates whether the room is currently occupied.
- * </ul>
- *
- * Annotations:
- *
- * <ul>
- *   <li><b>@Entity</b>: Marks this class as a JPA entity.
- *   <li><b>@Data</b>: Lombok annotation to generate boilerplate code (getters, setters, etc.).
- *   <li><b>@Id</b>, <b>@GeneratedValue</b>: Specifies the primary key and its generation strategy.
- *   <li><b>@Column(unique = true)</b>: Ensures the room number is unique in the database.
- *   <li><b>@Enumerated(EnumType.STRING)</b>: Stores the enum as a string in the database.
- * </ul>
- */
+@Getter
+@Setter
 @Entity
-@Table(name = "room")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class Room {
+@Table(name = "rooms")
+public class Room implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "id_room")
   private Long id;
 
-  @Column(name = "number", nullable = false, unique = true, length = 255)
-  private String number;
+  @Column(name = "room_number", nullable = false, unique = true, length = 20)
+  private String roomNumber;
 
-  @Column(name = "type", nullable = false, length = 255)
   @Enumerated(EnumType.STRING)
-  private RoomType type;
+  @Column(name = "room_type", nullable = false, length = 50)
+  private RoomType roomType;
 
   @Column(name = "capacity", nullable = false)
-  private Integer capacity;
+  private Short capacity;
 
-  @Column(name = "description", length = 1000)
+  @Column(name = "base_price", nullable = false, precision = 10, scale = 2)
+  private BigDecimal basePrice;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "room_status", nullable = false, length = 30)
+  private RoomStatus roomStatus;
+
+  @Column(name = "description", columnDefinition = "TEXT")
   private String description;
 
-  @Column(name = "floor_number")
-  private Integer floorNumber;
+  @ManyToMany(fetch = FetchType.LAZY)
+  @JoinTable(
+      name = "rooms_amenities",
+      joinColumns = @JoinColumn(name = "id_room"),
+      inverseJoinColumns = @JoinColumn(name = "id_amenity"))
+  private Set<Amenity> amenities = new HashSet<>();
 
-  @Column(name = "has_projector")
-  @Builder.Default
-  private Boolean hasProjector = false;
+  @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<RoomPhoto> photos = new ArrayList<>();
 
-  @Column(name = "has_whiteboard")
-  @Builder.Default
-  private Boolean hasWhiteboard = false;
+  @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<RoomUnavailability> unavailabilities = new ArrayList<>();
 
-  @Column(name = "has_video_conference")
-  @Builder.Default
-  private Boolean hasVideoConference = false;
-
-  @Column(name = "has_air_conditioning")
-  @Builder.Default
-  private Boolean hasAirConditioning = false;
-
-  @Column(name = "last_maintenance_date")
-  private LocalDateTime lastMaintenanceDate;
-
-  @Column(name = "next_maintenance_date")
-  private LocalDateTime nextMaintenanceDate;
-
-  @Column(name = "name", nullable = true, length = 100)
-  private String name;
-
-  @Column(name = "image_url", length = 500)
-  private String imageUrl;
-
-  @Column(name = "price", precision = 10)
-  private Double price;
-
-  @Column(name = "status", nullable = false, length = 100)
-  @Enumerated(EnumType.STRING)
-  private RoomStatus status;
-
-  @Column(name = "created_at", nullable = false)
-  private LocalDateTime createdAt;
-
-  @Column(name = "created_by", length = 100)
-  private String createdBy;
-
-  @Column(name = "updated_at")
-  private LocalDateTime updatedAt;
-
-  @ElementCollection
-  @CollectionTable(name = "room_amenities", joinColumns = @JoinColumn(name = "room_id"))
-  @Column(name = "amenity")
-  private List<String> amenities;
-
-  // JPA lifecycle callbacks
-  @PrePersist
-  protected void onCreate() {
-    if (createdAt == null) {
-      createdAt = LocalDateTime.now();
-    }
-    if (status == null) {
-      status = RoomStatus.AVAILABLE;
-    }
-    if (hasProjector == null) hasProjector = false;
-    if (hasWhiteboard == null) hasWhiteboard = false;
-    if (hasVideoConference == null) hasVideoConference = false;
-    if (hasAirConditioning == null) hasAirConditioning = false;
-  }
-
-  @PreUpdate
-  protected void onUpdate() {
-    updatedAt = LocalDateTime.now();
-  }
-
-  // Helper methods
-  public boolean isAvailable() {
-    return RoomStatus.AVAILABLE.equals(this.status);
-  }
-
-  public boolean isOccupied() {
-    return RoomStatus.OCCUPIED.equals(this.status);
-  }
-
-  public boolean isUnderMaintenance() {
-    return RoomStatus.MAINTENANCE.equals(this.status)
-        || RoomStatus.OUT_OF_ORDER.equals(this.status);
-  }
+  @OneToMany(mappedBy = "room")
+  private List<Reservation> reservations = new ArrayList<>();
 
   public boolean canBeBooked() {
-    return isAvailable();
+    return RoomStatus.AVAILABLE.equals(roomStatus);
   }
 
-  public String getFullName() {
-    if (name != null && !name.trim().isEmpty()) {
-      return number + " - " + name;
+  public String getNumber() {
+    return roomNumber;
+  }
+
+  public void setNumber(String number) {
+    this.roomNumber = number;
+  }
+
+  public RoomType getType() {
+    return roomType;
+  }
+
+  public void setType(RoomType type) {
+    this.roomType = type;
+  }
+
+  public RoomStatus getStatus() {
+    return roomStatus;
+  }
+
+  public void setStatus(RoomStatus status) {
+    this.roomStatus = status;
+  }
+
+  public Double getPrice() {
+    return basePrice == null ? null : basePrice.doubleValue();
+  }
+
+  public void setPrice(Double price) {
+    this.basePrice = price == null ? null : BigDecimal.valueOf(price).setScale(2, RoundingMode.HALF_UP);
+  }
+
+  public void setCapacity(Integer capacity) {
+    this.capacity = capacity == null ? null : capacity.shortValue();
+  }
+
+  public String getName() {
+    return "Room " + roomNumber;
+  }
+
+  public void setName(String ignoredName) {}
+
+  public String getImageUrl() {
+    return photos.isEmpty() ? null : photos.get(0).getImageUrl();
+  }
+
+  public void setImageUrl(String imageUrl) {
+    if (imageUrl == null || imageUrl.isBlank()) {
+      return;
     }
-    return number;
-  }
-
-  public boolean hasAmenity(String amenity) {
-    return amenities != null && amenities.contains(amenity);
-  }
-
-  public int getAmenityCount() {
-    return amenities != null ? amenities.size() : 0;
-  }
-
-  public boolean needsMaintenance() {
-    return nextMaintenanceDate != null && nextMaintenanceDate.isBefore(LocalDateTime.now());
-  }
-
-  public boolean isOverdue() {
-    return needsMaintenance() && !isUnderMaintenance();
-  }
-
-  /** Get a description including key features */
-  public String getFeatureDescription() {
-    StringBuilder desc = new StringBuilder();
-    desc.append("Capacity: ").append(capacity);
-
-    if (Boolean.TRUE.equals(hasProjector)) desc.append(" | Projector");
-    if (Boolean.TRUE.equals(hasWhiteboard)) desc.append(" | Whiteboard");
-    if (Boolean.TRUE.equals(hasVideoConference)) desc.append(" | Video Conference");
-    if (Boolean.TRUE.equals(hasAirConditioning)) desc.append(" | A/C");
-
-    if (amenities != null && !amenities.isEmpty()) {
-      desc.append(" | Amenities: ").append(String.join(", ", amenities));
-    }
-
-    return desc.toString();
-  }
-
-  /** Enum for hotel room types. */
-  public enum RoomType {
-    STANDARD("Standard Room"),
-    SUPERIOR("Superior Room"),
-    DELUXE("Deluxe Room"),
-    JUNIOR_SUITE("Junior Suite"),
-    SUITE("Suite"),
-    PRESIDENTIAL_SUITE("Presidential Suite"),
-    FAMILY_ROOM("Family Room"),
-    TWIN("Twin Room"),
-    DOUBLE("Double Room"),
-    SINGLE("Single Room"),
-    PENTHOUSE("Penthouse"),
-
-    // Keep some meeting room types for backward compatibility during migration
-    @Deprecated
-    CONFERENCE("Conference Room"),
-    @Deprecated
-    MEETING("Meeting Room"),
-    @Deprecated
-    OFFICE("Office"),
-    @Deprecated
-    TRAINING("Training Room"),
-    @Deprecated
-    BOARDROOM("Board Room"),
-    @Deprecated
-    HUDDLE("Huddle Room"),
-    @Deprecated
-    PHONE_BOOTH("Phone Booth"),
-    @Deprecated
-    LOUNGE("Lounge"),
-    @Deprecated
-    COLLABORATION("Collaboration Space"),
-    @Deprecated
-    PRESENTATION("Presentation Room"),
-    @Deprecated
-    ROOM("Room"),
-    @Deprecated
-    EVENT("Event");
-
-    private final String displayName;
-
-    RoomType(String displayName) {
-      this.displayName = displayName;
-    }
-
-    public String getDisplayName() {
-      return displayName;
-    }
-
-    /** Check if this is a hotel room type (not a meeting room type). */
-    public boolean isHotelRoom() {
-      return !this.name().equals("CONFERENCE")
-          && !this.name().equals("MEETING")
-          && !this.name().equals("OFFICE")
-          && !this.name().equals("TRAINING")
-          && !this.name().equals("BOARDROOM")
-          && !this.name().equals("HUDDLE")
-          && !this.name().equals("PHONE_BOOTH")
-          && !this.name().equals("LOUNGE")
-          && !this.name().equals("COLLABORATION")
-          && !this.name().equals("PRESENTATION")
-          && !this.name().equals("ROOM")
-          && !this.name().equals("EVENT");
+    RoomPhoto photo = photos.isEmpty() ? new RoomPhoto() : photos.get(0);
+    photo.setRoom(this);
+    photo.setImageUrl(imageUrl);
+    photo.setDisplayOrder((short) 0);
+    if (photos.isEmpty()) {
+      photos.add(photo);
     }
   }
 
-  /** Enum for room status. */
-  public enum RoomStatus {
-    AVAILABLE("Available"),
-    OCCUPIED("Occupied"),
-    MAINTENANCE("Under Maintenance"),
-    OUT_OF_ORDER("Out of Order"),
-    RESERVED("Reserved"),
-    CLEANING("Being Cleaned");
+  public Integer getFloorNumber() {
+    return null;
+  }
 
-    private final String displayName;
+  public void setFloorNumber(Integer ignoredFloorNumber) {}
 
-    RoomStatus(String displayName) {
-      this.displayName = displayName;
+  public Boolean getHasProjector() {
+    return false;
+  }
+
+  public void setHasProjector(Boolean ignored) {}
+
+  public Boolean getHasWhiteboard() {
+    return false;
+  }
+
+  public void setHasWhiteboard(Boolean ignored) {}
+
+  public Boolean getHasVideoConference() {
+    return false;
+  }
+
+  public void setHasVideoConference(Boolean ignored) {}
+
+  public Boolean getHasAirConditioning() {
+    return true;
+  }
+
+  public void setHasAirConditioning(Boolean ignored) {}
+
+  public void setAmenities(java.util.List<String> ignoredAmenities) {}
+
+  public void setLastMaintenanceDate(java.time.LocalDateTime ignored) {}
+
+  public void setNextMaintenanceDate(java.time.LocalDateTime ignored) {}
+
+  public void setCreatedAt(java.time.LocalDateTime ignored) {}
+
+  public void setCreatedBy(String ignored) {}
+
+  public void setUpdatedAt(java.time.LocalDateTime ignored) {}
+
+  public static RoomBuilder builder() {
+    return new RoomBuilder();
+  }
+
+  public static class RoomBuilder {
+    private final Room room = new Room();
+
+    public RoomBuilder number(String number) {
+      room.setRoomNumber(number);
+      return this;
     }
 
-    public String getDisplayName() {
-      return displayName;
+    public RoomBuilder roomNumber(String number) {
+      return number(number);
     }
+
+    public RoomBuilder name(String ignoredName) {
+      return this;
+    }
+
+    public RoomBuilder type(RoomType type) {
+      room.setRoomType(type);
+      return this;
+    }
+
+    public RoomBuilder roomType(RoomType type) {
+      return type(type);
+    }
+
+    public RoomBuilder capacity(Integer capacity) {
+      room.capacity = capacity == null ? null : capacity.shortValue();
+      return this;
+    }
+
+    public RoomBuilder capacity(Short capacity) {
+      room.capacity = capacity;
+      return this;
+    }
+
+    public RoomBuilder description(String description) {
+      room.setDescription(description);
+      return this;
+    }
+
+    public RoomBuilder price(Double price) {
+      room.setPrice(price);
+      return this;
+    }
+
+    public RoomBuilder basePrice(BigDecimal price) {
+      room.setBasePrice(price);
+      return this;
+    }
+
+    public RoomBuilder status(RoomStatus status) {
+      room.setRoomStatus(status);
+      return this;
+    }
+
+    public RoomBuilder roomStatus(RoomStatus status) {
+      return status(status);
+    }
+
+    public RoomBuilder floorNumber(Integer ignoredFloorNumber) {
+      return this;
+    }
+
+    public RoomBuilder imageUrl(String imageUrl) {
+      room.setImageUrl(imageUrl);
+      return this;
+    }
+
+    public RoomBuilder amenities(java.util.List<String> ignoredAmenities) {
+      return this;
+    }
+
+    public RoomBuilder hasProjector(Boolean ignored) {
+      return this;
+    }
+
+    public RoomBuilder hasVideoConference(Boolean ignored) {
+      return this;
+    }
+
+    public RoomBuilder hasWhiteboard(Boolean ignored) {
+      return this;
+    }
+
+    public RoomBuilder hasAirConditioning(Boolean ignored) {
+      return this;
+    }
+
+    public RoomBuilder createdAt(java.time.LocalDateTime ignored) {
+      return this;
+    }
+
+    public Room build() {
+      if (room.getRoomStatus() == null) {
+        room.setRoomStatus(RoomStatus.AVAILABLE);
+      }
+      if (room.getBasePrice() == null) {
+        room.setBasePrice(BigDecimal.ZERO);
+      }
+      return room;
+    }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof Room room)) return false;
+    return id != null && Objects.equals(id, room.id);
+  }
+
+  @Override
+  public int hashCode() {
+    return getClass().hashCode();
   }
 }

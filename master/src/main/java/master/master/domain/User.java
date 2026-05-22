@@ -2,67 +2,101 @@ package master.master.domain;
 
 import jakarta.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * Represents a user entity in the system.
- *
- * <p>This class is mapped to the "user" table in the database. It contains user-related information
- * such as first name, last name, email, password, and role.
- *
- * <p><b>Note:</b> The table name is quoted because "user" is a reserved keyword in SQL.
- *
- * <ul>
- *   <li><b>id</b>: Unique identifier for the user (auto-generated).
- *   <li><b>firstName</b>: User's first name (required, max 100 characters).
- *   <li><b>lastName</b>: User's last name (required, max 100 characters).
- *   <li><b>email</b>: User's email address (required, unique, max 150 characters).
- *   <li><b>password</b>: User's password (required).
- *   <li><b>role</b>: User's role in the system, represented by the {@link RoleType} enum
- *       (required).
- * </ul>
- *
- * <p>Equality and hash code are based on the {@code id} field.
- *
- * @author
- */
 @Getter
 @Setter
 @Entity
-@Table(name = "\"user\"") // Reserved SQL name, so quotes are required
+@Table(name = "users")
 public class User implements Serializable {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_id_seq")
-  @SequenceGenerator(name = "user_id_seq", sequenceName = "user_id_seq", allocationSize = 1)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "id_user")
   private Long id;
-
-  @Column(name = "first_name", nullable = false, length = 100)
-  private String firstName;
 
   @Column(name = "last_name", nullable = false, length = 100)
   private String lastName;
 
-  @Column(nullable = false, unique = true, length = 150)
+  @Column(name = "first_name", nullable = false, length = 100)
+  private String firstName;
+
+  @Column(name = "email", nullable = false, unique = true, length = 255)
   private String email;
 
-  @Column(nullable = false)
-  private String password;
+  @Column(name = "password_hash", nullable = false, length = 255)
+  private String passwordHash;
+
+  @Column(name = "account_creation_date", nullable = false, updatable = false)
+  private LocalDateTime accountCreationDate;
 
   @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private RoleType role;
+  @Column(name = "account_status", nullable = false, length = 30)
+  private AccountStatus accountStatus;
+
+  @ManyToMany(fetch = FetchType.LAZY)
+  @JoinTable(
+      name = "users_roles",
+      joinColumns = @JoinColumn(name = "id_user"),
+      inverseJoinColumns = @JoinColumn(name = "id_role"))
+  private Set<Role> roles = new HashSet<>();
+
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+  private Client clientProfile;
+
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+  private Employee employeeProfile;
+
+  @PrePersist
+  protected void onCreate() {
+    if (accountCreationDate == null) {
+      accountCreationDate = LocalDateTime.now();
+    }
+    if (accountStatus == null) {
+      accountStatus = AccountStatus.ACTIVE;
+    }
+  }
+
+  public String getFullName() {
+    return firstName + " " + lastName;
+  }
+
+  public String getPassword() {
+    return passwordHash;
+  }
+
+  public void setPassword(String password) {
+    this.passwordHash = password;
+  }
+
+  public RoleCode getRole() {
+    return roles.stream().findFirst().map(Role::getRoleCode).orElse(null);
+  }
+
+  public void setRole(RoleCode roleCode) {
+    roles.clear();
+    if (roleCode != null) {
+      Role role = new Role();
+      role.setRoleCode(roleCode);
+      role.setLabel(roleCode.name());
+      roles.add(role);
+    }
+  }
 
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof User user)) return false;
-    return id != null && id.equals(user.id);
+    return id != null && Objects.equals(id, user.id);
   }
 
   @Override
   public int hashCode() {
-    return 31;
+    return getClass().hashCode();
   }
 }

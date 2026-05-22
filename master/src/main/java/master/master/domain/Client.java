@@ -1,39 +1,59 @@
 package master.master.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * Represents a client entity in the hotel reservation system.
- *
- * <p>Each client is associated with a {@link User} entity via a one-to-one relationship, sharing
- * the same primary key. The client also has a fidelity point balance.
- *
- * <ul>
- *   <li><b>userId</b>: The unique identifier for the client, mapped from the associated user.
- *   <li><b>user</b>: The associated {@link User} entity.
- *   <li><b>fidelityPoint</b>: The number of fidelity points the client has accumulated.
- * </ul>
- *
- * @author YourName
- */
 @Getter
 @Setter
 @Entity
-public class Client {
-  @Id private Long userId;
+@Table(name = "clients")
+public class Client implements Serializable {
 
-  @OneToOne
+  @Id
+  @Column(name = "id_user")
+  private Long id;
+
+  @OneToOne(fetch = FetchType.LAZY, optional = false)
   @MapsId
-  @JoinColumn(name = "user_id")
+  @JoinColumn(name = "id_user")
   private User user;
 
-  @Column(name = "fidelity_point", nullable = false, columnDefinition = "integer default 0")
-  private Integer fidelityPoint;
+  @Column(name = "fidelity_points", nullable = false)
+  private Integer fidelityPoints = 0;
+
+  @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Reservation> reservations = new ArrayList<>();
+
+  public String getFullName() {
+    return user != null ? user.getFullName() : "";
+  }
+
+  public Long getUserId() {
+    return id;
+  }
+
+  public Integer getFidelityPoint() {
+    return fidelityPoints;
+  }
+
+  public void setFidelityPoint(Integer fidelityPoint) {
+    this.fidelityPoints = fidelityPoint;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof Client client)) return false;
+    return id != null && Objects.equals(id, client.id);
+  }
+
+  @Override
+  public int hashCode() {
+    return getClass().hashCode();
+  }
 }
