@@ -7,8 +7,9 @@ import java.util.List;
 import java.util.Map;
 import master.master.domain.Client;
 import master.master.domain.Employee;
-import master.master.domain.Review;
-import master.master.domain.RoleType;
+import master.master.domain.RoleCode;
+import master.master.domain.RoomStatus;
+import master.master.domain.RoomType;
 import master.master.domain.Room;
 import master.master.domain.User;
 import master.master.repository.ClientRepository;
@@ -162,7 +163,7 @@ public class UserDataInitializationService implements ApplicationRunner {
     admin.setLastName("Administrator");
     admin.setEmail("Admin@dev.com");
     admin.setPassword(passwordEncoder.encode("admin123"));
-    admin.setRole(RoleType.ADMIN);
+    admin.setRole(RoleCode.ADMIN);
     userRepository.save(admin);
     System.out.println("Created admin user: Admin@dev.com / admin123");
   }
@@ -173,7 +174,7 @@ public class UserDataInitializationService implements ApplicationRunner {
     employee.setLastName("Doe");
     employee.setEmail("john.doe@olh.fr");
     employee.setPassword(passwordEncoder.encode("employee123"));
-    employee.setRole(RoleType.EMPLOYEE);
+    employee.setRole(RoleCode.EMPLOYEE);
     User savedEmployee = userRepository.save(employee);
 
     // Create corresponding Employee record
@@ -190,7 +191,7 @@ public class UserDataInitializationService implements ApplicationRunner {
     client.setLastName("Smith");
     client.setEmail("jane.smith@olh.fr");
     client.setPassword(passwordEncoder.encode("client123"));
-    client.setRole(RoleType.CLIENT);
+    client.setRole(RoleCode.CLIENT);
     User savedClient = userRepository.save(client);
 
     // Create corresponding Client record
@@ -223,7 +224,7 @@ public class UserDataInitializationService implements ApplicationRunner {
     client.setLastName(lastName);
     client.setEmail(email);
     client.setPassword(passwordEncoder.encode(password));
-    client.setRole(RoleType.CLIENT);
+    client.setRole(RoleCode.CLIENT);
     User savedClient = userRepository.save(client);
 
     // Create corresponding Client record
@@ -248,7 +249,7 @@ public class UserDataInitializationService implements ApplicationRunner {
     // Standard rooms
     createRoom(
         "101",
-        Room.RoomType.STANDARD,
+        RoomType.STANDARD,
         2,
         "Comfortable Standard Room with garden view",
         129.0,
@@ -258,7 +259,7 @@ public class UserDataInitializationService implements ApplicationRunner {
 
     createRoom(
         "102",
-        Room.RoomType.STANDARD,
+        RoomType.STANDARD,
         2,
         "Elegant Standard Room with balcony",
         129.0,
@@ -269,7 +270,7 @@ public class UserDataInitializationService implements ApplicationRunner {
     // Superior rooms
     createRoom(
         "201",
-        Room.RoomType.SUPERIOR,
+        RoomType.SUPERIOR,
         2,
         "Superior Room with refined decor",
         159.0,
@@ -279,7 +280,7 @@ public class UserDataInitializationService implements ApplicationRunner {
 
     createRoom(
         "202",
-        Room.RoomType.SUPERIOR,
+        RoomType.SUPERIOR,
         2,
         "Superior Room with private terrace",
         159.0,
@@ -290,7 +291,7 @@ public class UserDataInitializationService implements ApplicationRunner {
     // Deluxe rooms
     createRoom(
         "301",
-        Room.RoomType.DELUXE,
+        RoomType.DELUXE,
         2,
         "Spacious Deluxe Room with panoramic view",
         189.0,
@@ -300,7 +301,7 @@ public class UserDataInitializationService implements ApplicationRunner {
 
     createRoom(
         "302",
-        Room.RoomType.DELUXE,
+        RoomType.DELUXE,
         2,
         "Romantic Deluxe Room with fireplace",
         189.0,
@@ -311,7 +312,7 @@ public class UserDataInitializationService implements ApplicationRunner {
     // Family rooms
     createRoom(
         "401",
-        Room.RoomType.FAMILY_ROOM,
+        RoomType.FAMILY_ROOM,
         6,
         "Spacious Family Room with bunk beds",
         229.0,
@@ -321,7 +322,7 @@ public class UserDataInitializationService implements ApplicationRunner {
 
     createRoom(
         "402",
-        Room.RoomType.FAMILY_ROOM,
+        RoomType.FAMILY_ROOM,
         4,
         "Family Room with connecting rooms",
         229.0,
@@ -332,7 +333,7 @@ public class UserDataInitializationService implements ApplicationRunner {
     // Junior Suites
     createRoom(
         "501",
-        Room.RoomType.JUNIOR_SUITE,
+        RoomType.JUNIOR_SUITE,
         3,
         "Junior Suite with separate living room",
         289.0,
@@ -342,7 +343,7 @@ public class UserDataInitializationService implements ApplicationRunner {
 
     createRoom(
         "502",
-        Room.RoomType.JUNIOR_SUITE,
+        RoomType.JUNIOR_SUITE,
         3,
         "Junior Suite with private jacuzzi",
         289.0,
@@ -353,7 +354,7 @@ public class UserDataInitializationService implements ApplicationRunner {
     // Executive Suites
     createRoom(
         "601",
-        Room.RoomType.SUITE,
+        RoomType.SUITE,
         4,
         "Presidential Suite with panoramic view",
         450.0,
@@ -364,7 +365,7 @@ public class UserDataInitializationService implements ApplicationRunner {
 
     createRoom(
         "602",
-        Room.RoomType.SUITE,
+        RoomType.SUITE,
         4,
         "Executive Suite with private terrace",
         450.0,
@@ -375,7 +376,7 @@ public class UserDataInitializationService implements ApplicationRunner {
 
   private void createRoom(
       String number,
-      Room.RoomType type,
+      RoomType type,
       Integer capacity,
       String description,
       Double price,
@@ -392,8 +393,8 @@ public class UserDataInitializationService implements ApplicationRunner {
             .floorNumber(floor)
             .imageUrl(imageUrl)
             .amenities(amenities)
-            .hasProjector(type == Room.RoomType.SUITE)
-            .hasVideoConference(type == Room.RoomType.SUITE || type == Room.RoomType.JUNIOR_SUITE)
+            .hasProjector(type == RoomType.SUITE)
+            .hasVideoConference(type == RoomType.SUITE || type == RoomType.JUNIOR_SUITE)
             .hasWhiteboard(false) // Hotel rooms typically don't have whiteboards
             .hasAirConditioning(true) // All rooms have AC in a luxury hotel
             .build();
@@ -404,104 +405,11 @@ public class UserDataInitializationService implements ApplicationRunner {
 
   /** Initialize default validated reviews for demonstration. */
   private void initializeDefaultReviews() {
-    // Check if reviews already exist
-    long reviewCount = reviewRepository.count();
-    if (reviewCount > 0) {
-      System.out.println("Reviews already exist in database, skipping initialization");
-      return;
-    }
-
-    System.out.println("Initializing default validated reviews...");
-
-    // Get some users and rooms for creating reviews
-    List<User> clients =
-        userRepository.findAll().stream().filter(u -> u.getRole() == RoleType.CLIENT).toList();
-
-    List<Room> rooms = roomRepository.findAll();
-
-    if (clients.isEmpty() || rooms.isEmpty()) {
-      System.out.println("No clients or rooms found, skipping review initialization");
-      return;
-    }
-
-    // Create sample validated reviews
-    createValidatedReview(
-        clients.get(0).getId(),
-        rooms.get(0).getId(),
-        5,
-        "An absolutely perfect stay! The hotel is beautiful, the view over the ochre cliffs"
-            + " of Colorado Provencal is breathtaking. Service is flawless and the staff is"
-            + " very attentive.");
-
-    createValidatedReview(
-        clients.get(1).getId(),
-        rooms.get(1).getId(),
-        4,
-        "A very lovely experience. Spacious and comfortable room, excellent breakfast."
-            + " The location is ideal for visiting the Rustrel region.");
-
-    createValidatedReview(
-        clients.get(0).getId(),
-        rooms.get(2).getId(),
-        5,
-        "A dream weekend! The hotel radiates luxury and elegance. The pool overlooking the"
-            + " ochre cliffs is a real highlight. I highly recommend it!");
-
-    if (clients.size() > 2) {
-      createValidatedReview(
-          clients.get(2).getId(),
-          rooms.get(0).getId(),
-          4,
-          "Upscale hotel with quality service. The rooms are beautifully decorated and very"
-              + " clean. Perfect for a romantic stay in Provence.");
-
-      createValidatedReview(
-          clients.get(2).getId(),
-          rooms.get(3).getId(),
-          5,
-          "Warm welcome, exceptional setting, refined cuisine... Everything was perfect!"
-              + " The Overlook Hotel truly deserves its 5 stars.");
-    }
-
-    if (clients.size() > 3 && rooms.size() > 4) {
-      createValidatedReview(
-          clients.get(3).getId(),
-          rooms.get(4).getId(),
-          4,
-          "Excellent family hotel. The children loved the pool and we appreciated the"
-              + " calm and beauty of the surrounding scenery.");
-    }
-
-    System.out.println("Default validated reviews created successfully");
+    System.out.println("Skipping demo review initialization for normalized reservation reviews.");
   }
 
   /** Create a validated review (approved by admin). */
   private void createValidatedReview(Long authorId, Long roomId, int rating, String comment) {
-    Review review =
-        Review.builder()
-            .authorId(authorId)
-            .roomId(roomId)
-            .rating(rating)
-            .comment(comment)
-            .reviewDate(
-                LocalDate.now()
-                    .minusDays((int) (Math.random() * 30))) // Random date within last 30 days
-            .createdAt(LocalDateTime.now().minusDays((int) (Math.random() * 30)))
-            .isVerified(true) // This is the key - reviews are validated by admin
-            .verifiedBy("Admin@dev.com") // Verified by admin
-            .verifiedAt(LocalDateTime.now().minusDays((int) (Math.random() * 25)))
-            .isAnonymous(false)
-            .helpfulCount((int) (Math.random() * 10)) // Random helpful count
-            .build();
-
-    reviewRepository.save(review);
-    System.out.println(
-        "Created validated review for room "
-            + roomId
-            + " by user "
-            + authorId
-            + " (Rating: "
-            + rating
-            + "/5)");
+    // Reviews are now attached to reservations through RoomReview.
   }
 }

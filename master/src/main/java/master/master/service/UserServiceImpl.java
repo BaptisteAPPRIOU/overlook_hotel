@@ -1,6 +1,6 @@
 package master.master.service;
 
-import master.master.domain.RoleType;
+import master.master.domain.RoleCode;
 import master.master.domain.User;
 import master.master.repository.UserRepository;
 import master.master.security.JwtUtil;
@@ -20,16 +20,19 @@ public class UserServiceImpl implements UserService {
   private final PasswordEncoder encoder;
   private final AuthenticationManager authManager;
   private final JwtUtil jwtUtil;
+  private final UserRoleService userRoleService;
 
   public UserServiceImpl(
       UserRepository userRepo,
       PasswordEncoder encoder,
       @Lazy AuthenticationManager authManager,
-      JwtUtil jwtUtil) {
+      JwtUtil jwtUtil,
+      UserRoleService userRoleService) {
     this.userRepo = userRepo;
     this.encoder = encoder;
     this.authManager = authManager;
     this.jwtUtil = jwtUtil;
+    this.userRoleService = userRoleService;
   }
 
   // This method registers a new user with the provided details.
@@ -40,8 +43,8 @@ public class UserServiceImpl implements UserService {
     user.setEmail(dto.getEmail());
     user.setFirstName(dto.getFirstName());
     user.setLastName(dto.getLastName());
-    user.setPassword(encoder.encode(dto.getPassword()));
-    user.setRole(RoleType.CLIENT);
+    user.setPasswordHash(encoder.encode(dto.getPassword()));
+    userRoleService.assignRole(user, RoleCode.CLIENT);
     return userRepo.save(user);
   }
 
