@@ -4,87 +4,67 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import master.master.domain.LeaveRequest;
+import master.master.domain.LeaveStatus;
+import master.master.domain.LeaveType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-/**
- * Repository interface for LeaveRequest entity. Provides CRUD operations and custom queries for
- * leave request management.
- */
 @Repository
 public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long> {
 
-  /** Find all leave requests by status. */
-  List<LeaveRequest> findByStatusOrderByCreatedAtDesc(LeaveRequest.LeaveStatus status);
+  List<LeaveRequest> findByCurrentStatusOrderByRequestDateDesc(LeaveStatus status);
 
-  /** Find all leave requests ordered by creation date (most recent first). */
-  List<LeaveRequest> findAllByOrderByCreatedAtDesc();
+  List<LeaveRequest> findAllByOrderByRequestDateDesc();
 
-  /** Find all leave requests for a specific employee. */
-  List<LeaveRequest> findByEmployeeIdOrderByCreatedAtDesc(Long employeeId);
+  List<LeaveRequest> findByEmployeeRequesterIdOrderByRequestDateDesc(Long employeeId);
 
-  /** Find all leave requests for a specific employee by status. */
-  List<LeaveRequest> findByEmployeeIdAndStatusOrderByCreatedAtDesc(
-      Long employeeId, LeaveRequest.LeaveStatus status);
+  List<LeaveRequest> findByEmployeeRequesterIdAndCurrentStatusOrderByRequestDateDesc(
+      Long employeeId, LeaveStatus status);
 
-  /** Count pending leave requests. */
-  Long countByStatus(LeaveRequest.LeaveStatus status);
+  Long countByCurrentStatus(LeaveStatus status);
 
-  /**
-   * Find overlapping leave requests for an employee within a date range. Used to prevent
-   * conflicting leave requests.
-   */
   @Query(
-      "SELECT lr FROM LeaveRequest lr WHERE lr.employeeId = :employeeId "
-          + "AND lr.status IN ('PENDING', 'APPROVED') "
-          + "AND ((lr.startDate <= :endDate AND lr.endDate >= :startDate))")
+      "SELECT lr FROM LeaveRequest lr WHERE lr.employeeRequester.id = :employeeId "
+          + "AND lr.currentStatus IN (master.master.domain.LeaveStatus.PENDING, master.master.domain.LeaveStatus.APPROVED) "
+          + "AND lr.startDate <= :endDate AND lr.endDate >= :startDate")
   List<LeaveRequest> findOverlappingLeaveRequests(
       @Param("employeeId") Long employeeId,
       @Param("startDate") LocalDate startDate,
       @Param("endDate") LocalDate endDate);
 
-  /** Find all leave requests within a date range. Useful for reporting and calendar views. */
   @Query(
-      "SELECT lr FROM LeaveRequest lr WHERE "
-          + "(lr.startDate <= :endDate AND lr.endDate >= :startDate) "
+      "SELECT lr FROM LeaveRequest lr WHERE lr.startDate <= :endDate AND lr.endDate >= :startDate "
           + "ORDER BY lr.startDate ASC")
   List<LeaveRequest> findLeaveRequestsInDateRange(
       @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
-  /** Find all leave requests by type and status. */
-  List<LeaveRequest> findByTypeAndStatusOrderByCreatedAtDesc(String type, String status);
+  List<LeaveRequest> findByLeaveTypeAndCurrentStatusOrderByRequestDateDesc(
+      LeaveType type, LeaveStatus status);
 
-  /** Find all leave requests by type. */
-  List<LeaveRequest> findByTypeOrderByCreatedAtDesc(String type);
+  List<LeaveRequest> findByLeaveTypeOrderByRequestDateDesc(LeaveType type);
 
-  /** Find leave requests created within a date range. */
-  @Query(
-      "SELECT lr FROM LeaveRequest lr WHERE "
-          + "DATE(lr.createdAt) BETWEEN :startDate AND :endDate "
-          + "ORDER BY lr.createdAt DESC")
-  List<LeaveRequest> findByCreatedAtBetween(
-      @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+  @Query("SELECT lr FROM LeaveRequest lr WHERE lr.requestDate BETWEEN :start AND :end ORDER BY lr.requestDate DESC")
+  List<LeaveRequest> findByRequestDateBetween(
+      @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
-  /** Find all leave requests approved by a specific manager. */
-  List<LeaveRequest> findByApprovedByOrderByUpdatedAtDesc(String approvedBy);
-
-  /** Get leave request statistics by status. */
-  @Query("SELECT lr.status, COUNT(lr) FROM LeaveRequest lr GROUP BY lr.status")
+  @Query("SELECT lr.currentStatus, COUNT(lr) FROM LeaveRequest lr GROUP BY lr.currentStatus")
   List<Object[]> getLeaveRequestStatsByStatus();
 
-  /** Get leave request statistics by type. */
-  @Query("SELECT lr.type, COUNT(lr) FROM LeaveRequest lr GROUP BY lr.type")
+  @Query("SELECT lr.leaveType, COUNT(lr) FROM LeaveRequest lr GROUP BY lr.leaveType")
   List<Object[]> getLeaveRequestStatsByType();
 
-  /**
-   * Find pending leave requests older than specified days. Useful for finding requests that need
-   * attention.
-   */
   @Query(
-      "SELECT lr FROM LeaveRequest lr WHERE lr.status = 'PENDING' "
-          + "AND lr.createdAt < :cutoffDate "
-          + "ORDER BY lr.createdAt ASC")
+      "SELECT lr FROM LeaveRequest lr WHERE lr.currentStatus = master.master.domain.LeaveStatus.PENDING "
+          + "AND lr.requestDate < :cutoffDate ORDER BY lr.requestDate ASC")
   List<LeaveRequest> findPendingRequestsOlderThan(@Param("cutoffDate") LocalDateTime cutoffDate);
+
+  default List<LeaveRequest> findByStatusOrderByCreatedAtDesc(LeaveStatus status) {
+    return findByCurrentStatusOrderByRequestDateDesc(status);
+  }
+
+  default Long countByStatus(LeaveStatus status) {
+    return countByCurrentStatus(status);
+  }
 }
