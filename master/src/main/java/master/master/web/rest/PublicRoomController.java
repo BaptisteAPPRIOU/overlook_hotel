@@ -3,6 +3,7 @@ package master.master.web.rest;
 import java.util.List;
 import java.util.Optional;
 import master.master.domain.Room;
+import master.master.domain.RoomType;
 import master.master.repository.RoomRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -48,7 +49,7 @@ public class PublicRoomController {
   @GetMapping("/type/{type}")
   public List<Room> getRoomsByType(@PathVariable String type) {
     try {
-      Room.RoomType roomType = Room.RoomType.valueOf(type.toUpperCase());
+      RoomType roomType = RoomType.valueOf(type.toUpperCase());
       return roomRepository.findByTypeOrderByNumber(roomType);
     } catch (IllegalArgumentException e) {
       return List.of(); // Return empty list for invalid type

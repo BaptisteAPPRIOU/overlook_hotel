@@ -1,7 +1,7 @@
 package master.master.web.rest.dto;
 
 import lombok.Getter;
-import master.master.domain.RoleType;
+import master.master.domain.RoleCode;
 
 /**
  * Data Transfer Object (DTO) representing a user response.
@@ -16,10 +16,10 @@ public class UserResponseDto {
   private final String firstName;
   private final String lastName;
   private final String email;
-  private final RoleType role;
+  private final RoleCode role;
 
   public UserResponseDto(
-      Integer id, String firstName, String lastName, String email, RoleType role) {
+      Integer id, String firstName, String lastName, String email, RoleCode role) {
     this.id = id;
     this.firstName = firstName;
     this.lastName = lastName;

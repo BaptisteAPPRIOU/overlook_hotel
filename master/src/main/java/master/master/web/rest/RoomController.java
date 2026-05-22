@@ -2,6 +2,8 @@ package master.master.web.rest;
 
 import java.util.List;
 import master.master.domain.Room;
+import master.master.domain.RoomStatus;
+import master.master.domain.RoomType;
 import master.master.repository.RoomRepository;
 import master.master.web.rest.dto.RoomDto;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -58,12 +60,12 @@ public class RoomController {
   public Room create(@RequestBody RoomDto dto) {
     Room room = new Room();
     room.setNumber(dto.getNumber());
-    room.setType(Room.RoomType.valueOf(dto.getType()));
+    room.setType(RoomType.valueOf(dto.getType()));
     room.setCapacity(dto.getCapacity() != null ? dto.getCapacity() : 1);
     if (dto.getStatus() != null) {
-      room.setStatus(Room.RoomStatus.valueOf(dto.getStatus()));
+      room.setStatus(RoomStatus.valueOf(dto.getStatus()));
     } else {
-      room.setStatus(Room.RoomStatus.AVAILABLE);
+      room.setStatus(RoomStatus.AVAILABLE);
     }
     room.setDescription(dto.getDescription());
     room.setFloorNumber(dto.getFloor_number() != null ? dto.getFloor_number() : 0);
@@ -101,10 +103,10 @@ public class RoomController {
         .map(
             existing -> {
               existing.setNumber(dto.getNumber());
-              existing.setType(Room.RoomType.valueOf(dto.getType()));
+              existing.setType(RoomType.valueOf(dto.getType()));
               existing.setCapacity(dto.getCapacity());
               existing.setPrice(dto.getPrice());
-              existing.setStatus(Room.RoomStatus.valueOf(dto.getStatus()));
+              existing.setStatus(RoomStatus.valueOf(dto.getStatus()));
               existing.setHasProjector(dto.isHas_projector());
               existing.setHasWhiteboard(dto.isHas_whiteboard());
               existing.setHasVideoConference(dto.isHas_video_conference());

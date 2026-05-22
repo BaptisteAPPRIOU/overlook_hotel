@@ -3,11 +3,12 @@ package master.master.web.rest;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
-import master.master.domain.RoleType;
+import master.master.domain.RoleCode;
 import master.master.domain.User;
 import master.master.repository.UserRepository;
 import master.master.security.JwtUtil;
 import master.master.security.TokenBlacklistService;
+import master.master.service.UserRoleService;
 import master.master.web.rest.dto.AuthResponseDto;
 import master.master.web.rest.dto.LoginRequestDto;
 import master.master.web.rest.dto.RegisterRequestDto;
@@ -56,18 +57,21 @@ public class AuthController {
   private final AuthenticationManager authenticationManager;
   private final JwtUtil jwtUtil;
   private final TokenBlacklistService tokenBlacklistService;
+  private final UserRoleService userRoleService;
 
   public AuthController(
       UserRepository userRepository,
       PasswordEncoder passwordEncoder,
       AuthenticationManager authenticationManager,
       JwtUtil jwtUtil,
-      TokenBlacklistService tokenBlacklistService) {
+      TokenBlacklistService tokenBlacklistService,
+      UserRoleService userRoleService) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
     this.authenticationManager = authenticationManager;
     this.jwtUtil = jwtUtil;
     this.tokenBlacklistService = tokenBlacklistService;
+    this.userRoleService = userRoleService;
   }
 
   // Handle user registration requests
@@ -83,8 +87,8 @@ public class AuthController {
     user.setFirstName(request.getFirstName());
     user.setLastName(request.getLastName());
     user.setEmail(request.getEmail());
-    user.setPassword(passwordEncoder.encode(request.getPassword()));
-    user.setRole(RoleType.CLIENT); // Default role is CLIENT
+    user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+    userRoleService.assignRole(user, RoleCode.CLIENT); // Default role is CLIENT
 
     // Save new user in the database
     userRepository.save(user);
@@ -106,7 +110,12 @@ public class AuthController {
       // Prepare response with token and user role
       Map<String, Object> response = new HashMap<>();
       response.put("token", token);
-      response.put("role", user.getRole().name());
+      response.put(
+          "role",
+          user.getRoles().stream()
+              .findFirst()
+              .map(role -> role.getRoleCode().name())
+              .orElse(RoleCode.CLIENT.name()));
       return ResponseEntity.ok(response);
 
     } catch (Exception ex) {

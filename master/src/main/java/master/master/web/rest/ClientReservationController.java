@@ -3,8 +3,8 @@ package master.master.web.rest;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import master.master.domain.Reservation;
 import master.master.domain.User;
-import master.master.domain.UserReservation;
 import master.master.repository.ReservationRepository;
 import master.master.repository.UserRepository;
 import master.master.service.ReservationService;
@@ -42,7 +42,7 @@ public class ClientReservationController {
   public ResponseEntity<List<Map<String, Object>>> getCurrentClientReservations() {
     try {
       Long userId = getCurrentUserId();
-      List<UserReservation> reservations = reservationRepository.findByIdUserId(userId);
+      List<Reservation> reservations = reservationRepository.findByClientId(userId);
 
       List<Map<String, Object>> reservationData =
           reservations.stream().map(this::convertReservationToMap).collect(Collectors.toList());
@@ -65,35 +65,33 @@ public class ClientReservationController {
     }
   }
 
-  /** Convert UserReservation to Map for JSON response */
-  private Map<String, Object> convertReservationToMap(UserReservation reservation) {
+  /** Convert Reservation to Map for JSON response */
+  private Map<String, Object> convertReservationToMap(Reservation reservation) {
     return Map.of(
-        "userId", reservation.getId().getUserId(),
-        "roomId", reservation.getId().getRoomId(),
+        "userId", reservation.getClient() != null ? reservation.getClient().getId() : null,
+        "roomId", reservation.getRoom() != null ? reservation.getRoom().getId() : null,
         "roomName", reservation.getRoom() != null ? reservation.getRoom().getName() : "Unknown",
         "roomType", reservation.getRoom() != null ? reservation.getRoom().getType() : "Unknown",
-        "reservationDateStart", reservation.getReservationDateStart().toString(),
-        "reservationDateEnd", reservation.getReservationDateEnd().toString(),
-        "payed", reservation.isPayed(),
-        "nights", reservation.getReservationDurationDays(),
+        "reservationDateStart", reservation.getStartDatetime().toLocalDate().toString(),
+        "reservationDateEnd", reservation.getEndDatetime().toLocalDate().toString(),
+        "payed", Boolean.TRUE.equals(reservation.getPaid()),
+        "nights",
+            java.time.Duration.between(reservation.getStartDatetime(), reservation.getEndDatetime())
+                .toDays(),
         "status", getReservationStatus(reservation),
-        "createdAt",
-            reservation
-                .getReservationDateStart()
-                .toString() // Using start date as proxy for creation
-        );
+        "createdAt", reservation.getCreatedAt() != null ? reservation.getCreatedAt().toString() : null);
   }
 
   /** Determine reservation status */
-  private String getReservationStatus(UserReservation reservation) {
-    if (!reservation.isPayed()) {
+  private String getReservationStatus(Reservation reservation) {
+    if (!Boolean.TRUE.equals(reservation.getPaid())) {
       return "PENDING_PAYMENT";
     }
 
     java.time.LocalDate today = java.time.LocalDate.now();
-    if (reservation.getReservationDateEnd().isBefore(today)) {
+    if (reservation.getEndDatetime().toLocalDate().isBefore(today)) {
       return "COMPLETED";
-    } else if (reservation.getReservationDateStart().isAfter(today)) {
+    } else if (reservation.getStartDatetime().toLocalDate().isAfter(today)) {
       return "CONFIRMED";
     } else {
       return "ACTIVE";
