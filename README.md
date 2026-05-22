@@ -49,10 +49,41 @@ Welcome to **Overlook Hotel**, a Spring Boot–based hotel management applicatio
 
 ## Prerequisites
 
-- **Java 17+** (JDK)
+- **Java 25.0.3** (JDK)
 - **Maven 3.6+** _or_ **Gradle 7+**
 - **PostgreSQL 17.10** (target runtime database)
 - **Git** for version control
+
+Builds enforce Java 25.0.3 via Maven Enforcer, so ensure `JAVA_HOME` points to JDK 25.0.3.
+
+### Java Toolchain (Optional)
+
+If you want Maven to enforce JDK 25.0.3 regardless of your `JAVA_HOME`, enable the toolchains profile.
+
+1. Create `~/.m2/toolchains.xml` using the template below.
+2. Run Maven with the `toolchains` profile: `./mvnw -Ptoolchains clean test`
+
+Example `toolchains.xml`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<toolchains>
+   <toolchain>
+      <type>jdk</type>
+      <provides>
+         <version>25.0.3</version>
+         <vendor>any</vendor>
+      </provides>
+      <configuration>
+         <jdkHome>/path/to/jdk-25.0.3</jdkHome>
+      </configuration>
+   </toolchain>
+</toolchains>
+```
+
+CI note: if you add CI later, install JDK 25.0.3 and run with `-Ptoolchains` or set `JAVA_HOME` to the JDK 25.0.3 path.
+
+TODO: Add CI workflow and Docker image setup pinned to JDK 25.0.3.
 
 ---
 
