@@ -176,13 +176,13 @@
 
     <build>
         <plugins>
-            <!-- Plugin Spring Boot -->
+            <!-- Spring Boot plugin -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
 
-            <!-- Plugin Maven Compiler avec annotation processor pour Lombok et MapStruct -->
+            <!-- Maven Compiler Plugin with annotation processors for Lombok and MapStruct -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
