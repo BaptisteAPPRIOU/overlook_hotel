@@ -32,5 +32,8 @@ build/
 ### VS Code ###
 .vscode/
 
-###TEMP###
-*.yml
+### Local secrets (never commit) ###
+src/main/resources/application-local.properties
+
+### Local database backups ###
+db/backups/

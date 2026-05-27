@@ -1,6 +1,8 @@
 package master.master.domain;
 
 public enum EmployeeStatus {
-    ADDED,
-    REMOVED
+  ACTIVE,
+  INACTIVE,
+  ON_LEAVE,
+  TERMINATED
 }

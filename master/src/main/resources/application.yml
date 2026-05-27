@@ -6,19 +6,25 @@ server:
     include-binding-errors: always
 
 spring:
+  config:
+    import: optional:classpath:application-local.properties
   datasource:
-    url: jdbc:postgresql://100.127.131.70:5432/overlookhoteldb
-    username: dev
-    password: _GB7rG-@*d649Pab
+    url: ${spring.datasource.url}
+    username: ${spring.datasource.username}
+    password: ${spring.datasource.password}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     show-sql: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-    spring.jpa.hibernate.ddl-auto: create-drop
-    spring.jpa.show-sql: true
-    spring.jpa.properties.hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 1
+    validate-on-migrate: true
+    clean-disabled: true
 
   thymeleaf:
     cache: false
@@ -29,14 +35,19 @@ spring:
 
   security:
     user:
-      name: admin
-      password: admin
+      name: ${spring.security.user.name}
+      password: ${spring.security.user.password}
+
+app:
+  jwt:
+    secret: ${app.jwt.secret}
+    expiration-ms: ${app.jwt.expiration-ms:86400000}
 
 logging:
   level:
-    '[org.springframework.security]': DEBUG
-    '[org.hibernate.SQL]': DEBUG
-    '[org.hibernate.type.descriptor.sql.BasicBinder]': TRACE
-    '[org.springframework.web]': DEBUG
-    '[master.master]': DEBUG
+    "[org.springframework.security]": DEBUG
+    "[org.hibernate.SQL]": DEBUG
+    "[org.hibernate.type.descriptor.sql.BasicBinder]": TRACE
+    "[org.springframework.web]": DEBUG
+    "[master.master]": DEBUG
     root: INFO

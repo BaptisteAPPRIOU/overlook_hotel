@@ -6,16 +6,11 @@ import lombok.Data;
 
 @Data
 public class RegisterRequestDto {
-    @NotBlank
-    @Email
-    private String email;
+  @NotBlank @Email private String email;
 
-    @NotBlank
-    private String password;
+  @NotBlank private String password;
 
-    @NotBlank
-    private String firstName;
+  @NotBlank private String firstName;
 
-    @NotBlank
-    private String lastName;
+  @NotBlank private String lastName;
 }

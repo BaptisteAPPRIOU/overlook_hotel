@@ -3,331 +3,333 @@ package master.master.service;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-
+import master.master.domain.Room;
+import master.master.domain.RoomStatus;
+import master.master.domain.RoomType;
+import master.master.repository.RoomRepository;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import master.master.domain.Room;
-import master.master.repository.RoomRepository;
-
 /**
- * Service to initialize hotel rooms with proper amenities and hotel-specific data.
- * This service will populate existing rooms with realistic hotel amenities.
+ * Service to initialize hotel rooms with proper amenities and hotel-specific data. This service
+ * will populate existing rooms with realistic hotel amenities.
  */
 @Service
 @Transactional
 public class HotelDataInitializationService implements ApplicationRunner {
 
-    private final RoomRepository roomRepository;
+  private final RoomRepository roomRepository;
 
-    public HotelDataInitializationService(RoomRepository roomRepository) {
-        this.roomRepository = roomRepository;
+  public HotelDataInitializationService(RoomRepository roomRepository) {
+    this.roomRepository = roomRepository;
+  }
+
+  @Override
+  public void run(ApplicationArguments args) throws Exception {
+    try {
+      initializeHotelRoomsData();
+    } catch (Exception e) {
+      // Log error but don't fail application startup
+      System.err.println("Warning: Could not initialize hotel data: " + e.getMessage());
     }
+  }
 
-    @Override
-    public void run(ApplicationArguments args) throws Exception {
-        try {
-            initializeHotelRoomsData();
-        } catch (Exception e) {
-            // Log error but don't fail application startup
-            System.err.println("Warning: Could not initialize hotel data: " + e.getMessage());
-        }
+  /** Initialize or update existing rooms with hotel-specific data and amenities. */
+  public void initializeHotelRoomsData() {
+    List<Room> allRooms = roomRepository.findAll();
+
+    if (allRooms.isEmpty()) {
+      createSampleHotelRooms();
+    } else {
+      updateExistingRoomsWithAmenities(allRooms);
     }
+  }
 
-    /**
-     * Initialize or update existing rooms with hotel-specific data and amenities.
-     */
-    public void initializeHotelRoomsData() {
-        List<Room> allRooms = roomRepository.findAll();
-        
-        if (allRooms.isEmpty()) {
-            createSampleHotelRooms();
-        } else {
-            updateExistingRoomsWithAmenities(allRooms);
-        }
-    }
-
-    /**
-     * Create sample hotel rooms if none exist.
-     */
-    private void createSampleHotelRooms() {
-        // Deluxe Room
-        Room deluxeRoom = Room.builder()
+  /** Create sample hotel rooms if none exist. */
+  private void createSampleHotelRooms() {
+    // Deluxe Room
+    Room deluxeRoom =
+        Room.builder()
             .number("201")
-            .name("Chambre Deluxe")
-            .type(Room.RoomType.DELUXE)
+            .name("Deluxe Room")
+            .type(RoomType.DELUXE)
             .capacity(2)
-            .description("Chambre spacieuse avec vue sur la montagne, parfaite pour un séjour romantique.")
+            .description(
+                "Spacious room with a mountain view, perfect for a romantic stay.")
             .price(189.0)
-            .status(Room.RoomStatus.AVAILABLE)
+            .status(RoomStatus.AVAILABLE)
             .floorNumber(2)
             .hasAirConditioning(true)
             .hasProjector(false)
             .hasWhiteboard(false)
             .hasVideoConference(false)
-            .amenities(Arrays.asList(
-                "WiFi gratuit",
-                "Vue sur la montagne",
-                "Balcon",
-                "Mini-bar",
-                "Télévision écran plat",
-                "Room service 24h/24",
-                "Coffre-fort",
-                "Sèche-cheveux",
-                "Peignoirs"
-            ))
+            .amenities(
+                Arrays.asList(
+                    "Free WiFi",
+                    "Mountain view",
+                    "Balcony",
+                    "Mini-bar",
+                    "Flat-screen TV",
+                    "Room service 24h/24",
+                    "Safe",
+                    "Hair dryer",
+                    "Bathrobes"))
             .createdAt(LocalDateTime.now())
             .build();
-        roomRepository.save(deluxeRoom);
+    roomRepository.save(deluxeRoom);
 
-        // Presidential Suite
-        Room presidentialSuite = Room.builder()
+    // Presidential Suite
+    Room presidentialSuite =
+        Room.builder()
             .number("301")
-            .name("Suite Présidentielle")
-            .type(Room.RoomType.PRESIDENTIAL_SUITE)
+            .name("Presidential Suite")
+            .type(RoomType.PRESIDENTIAL_SUITE)
             .capacity(4)
-            .description("Notre suite la plus luxueuse avec salon séparé, jacuzzi et vue panoramique.")
+            .description(
+                "Our most luxurious suite with a separate living room, jacuzzi, and panoramic view.")
             .price(450.0)
-            .status(Room.RoomStatus.AVAILABLE)
+            .status(RoomStatus.AVAILABLE)
             .floorNumber(3)
             .hasAirConditioning(true)
             .hasProjector(false)
             .hasWhiteboard(false)
             .hasVideoConference(true)
-            .amenities(Arrays.asList(
-                "WiFi gratuit",
-                "Vue panoramique",
-                "Balcon privé",
-                "Jacuzzi",
-                "Mini-bar premium",
-                "Salon séparé",
-                "Télévision écran plat 65\"",
-                "Room service 24h/24",
-                "Coffre-fort",
-                "Sèche-cheveux",
-                "Peignoirs de luxe",
-                "Machine à café Nespresso",
-                "Bouteille de champagne",
-                "Accès spa privé"
-            ))
+            .amenities(
+                Arrays.asList(
+                    "Free WiFi",
+                    "Panoramic view",
+                    "Private balcony",
+                    "Jacuzzi",
+                    "Mini-bar premium",
+                    "Separate living room",
+                    "Flat-screen TV 65\"",
+                    "Room service 24h/24",
+                    "Safe",
+                    "Hair dryer",
+                    "Luxury bathrobes",
+                    "Nespresso coffee machine",
+                    "Bottle of champagne",
+                    "Private spa access"))
             .createdAt(LocalDateTime.now())
             .build();
-        roomRepository.save(presidentialSuite);
+    roomRepository.save(presidentialSuite);
 
-        // Standard Room
-        Room standardRoom = Room.builder()
+    // Standard Room
+    Room standardRoom =
+        Room.builder()
             .number("101")
-            .name("Chambre Standard")
-            .type(Room.RoomType.STANDARD)
+            .name("Standard Room")
+            .type(RoomType.STANDARD)
             .capacity(2)
-            .description("Chambre confortable avec toutes les commodités essentielles pour un séjour agréable.")
+            .description(
+                "Comfortable room with all essential amenities for a pleasant stay.")
             .price(129.0)
-            .status(Room.RoomStatus.AVAILABLE)
+            .status(RoomStatus.AVAILABLE)
             .floorNumber(1)
             .hasAirConditioning(true)
             .hasProjector(false)
             .hasWhiteboard(false)
             .hasVideoConference(false)
-            .amenities(Arrays.asList(
-                "WiFi gratuit",
-                "Vue sur jardin",
-                "Télévision écran plat",
-                "Mini-frigo",
-                "Coffre-fort",
-                "Sèche-cheveux",
-                "Room service",
-                "Bureau de travail"
-            ))
+            .amenities(
+                Arrays.asList(
+                    "Free WiFi",
+                    "Garden view",
+                    "Flat-screen TV",
+                    "Mini-fridge",
+                    "Safe",
+                    "Hair dryer",
+                    "Room service",
+                    "Desk"))
             .createdAt(LocalDateTime.now())
             .build();
-        roomRepository.save(standardRoom);
+    roomRepository.save(standardRoom);
 
-        // Family Room
-        Room familyRoom = Room.builder()
+    // Family Room
+    Room familyRoom =
+        Room.builder()
             .number("102")
-            .name("Chambre Familiale")
-            .type(Room.RoomType.FAMILY_ROOM)
+            .name("Family Room")
+            .type(RoomType.FAMILY_ROOM)
             .capacity(4)
-            .description("Spacieuse chambre familiale avec lits superposés, idéale pour les familles.")
+            .description(
+                "Spacious family room with bunk beds, ideal for families.")
             .price(199.0)
-            .status(Room.RoomStatus.AVAILABLE)
+            .status(RoomStatus.AVAILABLE)
             .floorNumber(1)
             .hasAirConditioning(true)
             .hasProjector(false)
             .hasWhiteboard(false)
             .hasVideoConference(false)
-            .amenities(Arrays.asList(
-                "WiFi gratuit",
-                "Vue sur jardin",
-                "Balcon",
-                "Télévision écran plat",
-                "Mini-frigo",
-                "Coffre-fort",
-                "Sèche-cheveux",
-                "Room service",
-                "Jeux pour enfants",
-                "Lits superposés",
-                "Espace de jeu"
-            ))
+            .amenities(
+                Arrays.asList(
+                    "Free WiFi",
+                    "Garden view",
+                    "Balcony",
+                    "Flat-screen TV",
+                    "Mini-fridge",
+                    "Safe",
+                    "Hair dryer",
+                    "Room service",
+                    "Children's games",
+                    "Bunk beds",
+                    "Play area"))
             .createdAt(LocalDateTime.now())
             .build();
-        roomRepository.save(familyRoom);
+    roomRepository.save(familyRoom);
 
-        // Superior Room
-        Room superiorRoom = Room.builder()
+    // Superior Room
+    Room superiorRoom =
+        Room.builder()
             .number("202")
-            .name("Chambre Supérieure")
-            .type(Room.RoomType.SUPERIOR)
+            .name("Superior Room")
+            .type(RoomType.SUPERIOR)
             .capacity(2)
-            .description("Suite avec coin salon et vue imprenable sur la vallée.")
+            .description("Suite with a sitting area and breathtaking valley view.")
             .price(249.0)
-            .status(Room.RoomStatus.AVAILABLE)
+            .status(RoomStatus.AVAILABLE)
             .floorNumber(2)
             .hasAirConditioning(true)
             .hasProjector(false)
             .hasWhiteboard(false)
             .hasVideoConference(false)
-            .amenities(Arrays.asList(
-                "WiFi gratuit",
-                "Vue sur la vallée",
-                "Balcon",
-                "Coin salon",
-                "Mini-bar",
-                "Télévision écran plat",
-                "Room service 24h/24",
-                "Coffre-fort",
-                "Sèche-cheveux",
-                "Peignoirs",
-                "Machine à café",
-                "Bureau exécutif"
-            ))
+            .amenities(
+                Arrays.asList(
+                    "Free WiFi",
+                    "Valley view",
+                    "Balcony",
+                    "Sitting area",
+                    "Mini-bar",
+                    "Flat-screen TV",
+                    "Room service 24h/24",
+                    "Safe",
+                    "Hair dryer",
+                    "Bathrobes",
+                    "Coffee machine",
+                    "Executive desk"))
             .createdAt(LocalDateTime.now())
             .build();
-        roomRepository.save(superiorRoom);
-    }
+    roomRepository.save(superiorRoom);
+  }
 
-    /**
-     * Update existing rooms with hotel amenities based on their type and features.
-     */
-    private void updateExistingRoomsWithAmenities(List<Room> rooms) {
-        for (Room room : rooms) {
-            // Only update rooms that don't have amenities and are hotel-type rooms
-            if ((room.getAmenities() == null || room.getAmenities().isEmpty()) 
-                && (room.getType() == Room.RoomType.OFFICE || room.getType() == Room.RoomType.ROOM)) {
-                
-                List<String> amenities = generateAmenitiesForRoom(room);
-                room.setAmenities(amenities);
-                
-                // Update other hotel-specific fields if needed
-                if (room.getPrice() == null) {
-                    room.setPrice(calculatePriceBasedOnCapacity(room.getCapacity()));
-                }
-                
-                if (room.getDescription() == null || room.getDescription().trim().isEmpty()) {
-                    room.setDescription(generateDescriptionForRoom(room));
-                }
-                
-                roomRepository.save(room);
-            }
+  /** Update existing rooms with hotel amenities based on their type and features. */
+  private void updateExistingRoomsWithAmenities(List<Room> rooms) {
+    for (Room room : rooms) {
+      // Only update rooms that don't have amenities and are hotel-type rooms
+      if ((room.getAmenities() == null || room.getAmenities().isEmpty())
+          && (room.getType() == RoomType.OFFICE || room.getType() == RoomType.ROOM)) {
+
+        List<String> amenities = generateAmenitiesForRoom(room);
+        room.setAmenities(amenities);
+
+        // Update other hotel-specific fields if needed
+        if (room.getPrice() == null) {
+          room.setPrice(calculatePriceBasedOnCapacity(room.getCapacity().intValue()));
         }
-    }
 
-    /**
-     * Generate appropriate amenities based on room characteristics.
-     */
-    private List<String> generateAmenitiesForRoom(Room room) {
-        // Determine room category based on capacity and name
-        String roomName = room.getName() != null ? room.getName().toLowerCase() : "";
-        Integer capacity = room.getCapacity() != null ? room.getCapacity() : 2;
-
-        if (roomName.contains("suite") || roomName.contains("présidentielle") || capacity >= 4) {
-            return Arrays.asList(
-                "WiFi gratuit",
-                "Vue panoramique",
-                "Balcon privé",
-                "Mini-bar premium",
-                "Salon séparé",
-                "Télévision écran plat 65\"",
-                "Room service 24h/24",
-                "Coffre-fort",
-                "Sèche-cheveux",
-                "Peignoirs de luxe",
-                "Machine à café Nespresso",
-                "Jacuzzi",
-                "Accès spa"
-            );
-        } else if (roomName.contains("deluxe") || roomName.contains("supérieur") || (room.getPrice() != null && room.getPrice() > 180)) {
-            return Arrays.asList(
-                "WiFi gratuit",
-                "Vue sur la montagne",
-                "Balcon",
-                "Mini-bar",
-                "Télévision écran plat",
-                "Room service 24h/24",
-                "Coffre-fort",
-                "Sèche-cheveux",
-                "Peignoirs",
-                "Machine à café"
-            );
-        } else if (roomName.contains("famille") || roomName.contains("family") || capacity >= 3) {
-            return Arrays.asList(
-                "WiFi gratuit",
-                "Vue sur jardin",
-                "Balcon",
-                "Télévision écran plat",
-                "Mini-frigo",
-                "Coffre-fort",
-                "Sèche-cheveux",
-                "Room service",
-                "Jeux pour enfants",
-                "Espace de jeu"
-            );
-        } else {
-            return Arrays.asList(
-                "WiFi gratuit",
-                "Vue sur jardin",
-                "Télévision écran plat",
-                "Mini-frigo",
-                "Coffre-fort",
-                "Sèche-cheveux",
-                "Room service",
-                "Bureau de travail"
-            );
+        if (room.getDescription() == null || room.getDescription().trim().isEmpty()) {
+          room.setDescription(generateDescriptionForRoom(room));
         }
-    }
 
-    /**
-     * Calculate price based on room capacity if not set.
-     */
-    private Double calculatePriceBasedOnCapacity(Integer capacity) {
-        if (capacity == null) return 150.0;
-        
-        switch (capacity) {
-            case 1: return 99.0;
-            case 2: return 150.0;
-            case 3: return 199.0;
-            case 4: return 249.0;
-            default: return 299.0;
-        }
+        roomRepository.save(room);
+      }
     }
+  }
 
-    /**
-     * Generate description based on room characteristics.
-     */
-    private String generateDescriptionForRoom(Room room) {
-        String roomName = room.getName() != null ? room.getName() : "Chambre " + room.getNumber();
-        Integer capacity = room.getCapacity() != null ? room.getCapacity() : 2;
-        
-        if (roomName.toLowerCase().contains("suite")) {
-            return "Suite luxueuse avec salon séparé, offrant confort et élégance pour un séjour inoubliable.";
-        } else if (roomName.toLowerCase().contains("famille")) {
-            return "Chambre spacieuse parfaitement adaptée aux familles, avec des équipements pensés pour le confort de tous.";
-        } else if (capacity >= 3) {
-            return "Chambre spacieuse pouvant accueillir plusieurs personnes, idéale pour les groupes.";
-        } else {
-            return "Chambre confortable avec toutes les commodités modernes pour un séjour agréable.";
-        }
+  /** Generate appropriate amenities based on room characteristics. */
+  private List<String> generateAmenitiesForRoom(Room room) {
+    // Determine room category based on capacity and name
+    String roomName = room.getName() != null ? room.getName().toLowerCase() : "";
+    Integer capacity = room.getCapacity() != null ? room.getCapacity().intValue() : 2;
+
+    if (roomName.contains("suite") || roomName.contains("presidential") || capacity >= 4) {
+      return Arrays.asList(
+          "Free WiFi",
+          "Panoramic view",
+          "Private balcony",
+          "Mini-bar premium",
+          "Separate living room",
+          "Flat-screen TV 65\"",
+          "Room service 24h/24",
+          "Safe",
+          "Hair dryer",
+          "Luxury bathrobes",
+          "Nespresso coffee machine",
+          "Jacuzzi",
+          "Spa access");
+    } else if (roomName.contains("deluxe")
+        || roomName.contains("superior")
+        || (room.getPrice() != null && room.getPrice() > 180)) {
+      return Arrays.asList(
+          "Free WiFi",
+          "Mountain view",
+          "Balcony",
+          "Mini-bar",
+          "Flat-screen TV",
+          "Room service 24h/24",
+          "Safe",
+          "Hair dryer",
+          "Bathrobes",
+          "Coffee machine");
+    } else if (roomName.contains("family") || roomName.contains("family") || capacity >= 3) {
+      return Arrays.asList(
+          "Free WiFi",
+          "Garden view",
+          "Balcony",
+          "Flat-screen TV",
+          "Mini-fridge",
+          "Safe",
+          "Hair dryer",
+          "Room service",
+          "Children's games",
+          "Play area");
+    } else {
+      return Arrays.asList(
+          "Free WiFi",
+          "Garden view",
+          "Flat-screen TV",
+          "Mini-fridge",
+          "Safe",
+          "Hair dryer",
+          "Room service",
+          "Desk");
     }
+  }
+
+  /** Calculate price based on room capacity if not set. */
+  private Double calculatePriceBasedOnCapacity(Integer capacity) {
+    if (capacity == null) return 150.0;
+
+    switch (capacity) {
+      case 1:
+        return 99.0;
+      case 2:
+        return 150.0;
+      case 3:
+        return 199.0;
+      case 4:
+        return 249.0;
+      default:
+        return 299.0;
+    }
+  }
+
+  /** Generate description based on room characteristics. */
+  private String generateDescriptionForRoom(Room room) {
+    String roomName = room.getName() != null ? room.getName() : "Room " + room.getNumber();
+    Integer capacity = room.getCapacity() != null ? room.getCapacity().intValue() : 2;
+
+    if (roomName.toLowerCase().contains("suite")) {
+      return "Luxury suite with a separate living room, offering comfort and elegance for an"
+          + " unforgettable stay.";
+    } else if (roomName.toLowerCase().contains("family")) {
+      return "Spacious room perfectly suited to families, with amenities designed for everyone's"
+          + " comfort.";
+    } else if (capacity >= 3) {
+      return "Spacious room that can accommodate several guests, ideal for groups.";
+    } else {
+      return "Comfortable room with all modern amenities for a pleasant stay.";
+    }
+  }
 }
