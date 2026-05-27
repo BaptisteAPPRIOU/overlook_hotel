@@ -8,6 +8,8 @@ spring.datasource.password=your_db_password
 spring.security.user.name=admin
 spring.security.user.password=your_admin_password
 
+app.seed.enabled=true
+
 # Minimum 32 characters for HS256
 app.jwt.secret=replace_with_a_secret_key_of_at_least_32_characters
 app.jwt.expiration-ms=86400000
