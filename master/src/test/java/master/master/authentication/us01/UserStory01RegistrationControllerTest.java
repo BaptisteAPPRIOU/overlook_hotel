@@ -50,6 +50,9 @@ class UserStory01RegistrationControllerTest {
   @MockitoBean private UserRoleService userRoleService;
   @MockitoBean private ClientService clientService;
 
+  // Type: Integration test.
+  // Verifies that the registration endpoint persists a new user, assigns the CLIENT role,
+  // and creates the related client profile.
   @Test
   void validClientRegistrationCreatesUserWithClientRole() throws Exception {
     RegisterRequestDto request = registerRequest("Jane", "Doe", "jane.doe@olh.fr", "securePass123");
@@ -97,6 +100,9 @@ class UserStory01RegistrationControllerTest {
     org.assertj.core.api.Assertions.assertThat(savedUser.getRole()).isEqualTo(RoleCode.CLIENT);
   }
 
+  // Type: Integration test.
+  // Verifies that an already used email is rejected by the registration endpoint
+  // without saving a duplicate account or creating a client profile.
   @Test
   void duplicateEmailIsRejectedWithoutCreatingAnotherAccount() throws Exception {
     RegisterRequestDto request = registerRequest("Jane", "Doe", "jane.doe@olh.fr", "securePass123");
@@ -114,6 +120,9 @@ class UserStory01RegistrationControllerTest {
     verifyNoInteractions(passwordEncoder, userRoleService, clientService);
   }
 
+  // Type: Integration test.
+  // Verifies that missing mandatory registration fields return validation errors
+  // and stop the request before persistence dependencies are called.
   @Test
   void missingRequiredFieldsReturnValidationErrorsWithoutPersistence() throws Exception {
     mockMvc
@@ -128,6 +137,9 @@ class UserStory01RegistrationControllerTest {
     verifyNoInteractions(userRepository, passwordEncoder, userRoleService, clientService);
   }
 
+  // Type: Integration test.
+  // Verifies that an invalid email format and a too-short password are reported
+  // as field-level validation errors.
   @Test
   void malformedEmailAndShortPasswordReturnFieldValidationErrors() throws Exception {
     RegisterRequestDto request = registerRequest("Jane", "Doe", "not-an-email", "short");

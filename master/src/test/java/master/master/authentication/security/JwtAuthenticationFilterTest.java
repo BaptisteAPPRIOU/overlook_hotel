@@ -43,6 +43,9 @@ class JwtAuthenticationFilterTest {
     SecurityContextHolder.clearContext();
   }
 
+  // Type: Unit test.
+  // Verifies that a valid Bearer token authenticates the request
+  // and stores the loaded user authorities in the security context.
   @Test
   void bearerTokenAuthenticatesRequestWhenTokenIsValid() throws Exception {
     MockHttpServletRequest request = new MockHttpServletRequest();
@@ -64,6 +67,9 @@ class JwtAuthenticationFilterTest {
         .containsExactly("CLIENT");
   }
 
+  // Type: Unit test.
+  // Verifies that the JWT cookie is used for authentication
+  // when the Authorization header is not present.
   @Test
   void jwtCookieAuthenticatesRequestWhenAuthorizationHeaderIsMissing() throws Exception {
     MockHttpServletRequest request = new MockHttpServletRequest();
@@ -82,6 +88,9 @@ class JwtAuthenticationFilterTest {
     assertThat(SecurityContextHolder.getContext().getAuthentication().getName()).isEqualTo("client@olh.fr");
   }
 
+  // Type: Unit test.
+  // Verifies that a blacklisted token is ignored
+  // and does not load user details or authenticate the request.
   @Test
   void blacklistedTokenDoesNotAuthenticateRequest() throws Exception {
     MockHttpServletRequest request = new MockHttpServletRequest();
@@ -96,6 +105,9 @@ class JwtAuthenticationFilterTest {
     verify(userDetailsService, never()).loadUserByUsername("client@olh.fr");
   }
 
+  // Type: Unit test.
+  // Verifies that an invalid token leaves the request unauthenticated
+  // and does not load user details.
   @Test
   void invalidTokenDoesNotAuthenticateRequest() throws Exception {
     MockHttpServletRequest request = new MockHttpServletRequest();

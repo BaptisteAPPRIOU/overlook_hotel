@@ -25,6 +25,9 @@ class CustomUserDetailsServiceTest {
     userDetailsService = new CustomUserDetailsService(userRepository);
   }
 
+  // Type: Unit test.
+  // Verifies that a known user is loaded with the stored password hash
+  // and the expected Spring Security authorities.
   @Test
   void knownUserIsLoadedWithStoredPasswordAndAuthorities() {
     User user = userWithRole("jane.doe@olh.fr", "hashed-password", RoleCode.CLIENT);
@@ -40,6 +43,9 @@ class CustomUserDetailsServiceTest {
         .containsExactly("CLIENT");
   }
 
+  // Type: Unit test.
+  // Verifies that an unknown email fails authentication
+  // with a UsernameNotFoundException.
   @Test
   void unknownUserReturnsAuthenticationErrorWithoutExtraDetails() {
     when(userRepository.findByEmail("missing@olh.fr")).thenReturn(null);

@@ -10,6 +10,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 class JwtUtilTest {
 
+  // Type: Unit test.
+  // Verifies that a generated JWT contains the user email
+  // and is accepted by the token validation helpers.
   @Test
   void generatedTokenContainsUserEmailAndIsValid() {
     JwtUtil jwtUtil = jwtUtilWithExpiration(86_400_000);
@@ -23,6 +26,9 @@ class JwtUtilTest {
     assertThat(jwtUtil.validateToken(token, userDetails)).isTrue();
   }
 
+  // Type: Unit test.
+  // Verifies that a JWT generated for one email
+  // is rejected when validated against another user.
   @Test
   void tokenIsRejectedWhenItBelongsToAnotherUser() {
     JwtUtil jwtUtil = jwtUtilWithExpiration(86_400_000);
@@ -34,6 +40,9 @@ class JwtUtilTest {
     assertThat(jwtUtil.validateToken(token, otherUser)).isFalse();
   }
 
+  // Type: Unit test.
+  // Verifies that an expired JWT is not considered valid
+  // by the token validation helper.
   @Test
   void expiredTokenIsNotValid() {
     JwtUtil jwtUtil = jwtUtilWithExpiration(-1);
@@ -43,6 +52,9 @@ class JwtUtilTest {
     assertThat(jwtUtil.isTokenValid(token)).isFalse();
   }
 
+  // Type: Unit test.
+  // Verifies that malformed token text is rejected
+  // without throwing an error to the caller.
   @Test
   void malformedTokenIsNotValid() {
     JwtUtil jwtUtil = jwtUtilWithExpiration(86_400_000);

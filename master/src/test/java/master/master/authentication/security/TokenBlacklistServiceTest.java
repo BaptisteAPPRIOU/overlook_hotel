@@ -7,6 +7,9 @@ import org.junit.jupiter.api.Test;
 
 class TokenBlacklistServiceTest {
 
+  // Type: Unit test.
+  // Verifies that a token is treated as usable
+  // before it has been blacklisted by logout.
   @Test
   void tokenIsNotBlacklistedBeforeLogout() {
     TokenBlacklistService tokenBlacklistService = new TokenBlacklistService();
@@ -14,6 +17,9 @@ class TokenBlacklistServiceTest {
     assertThat(tokenBlacklistService.isBlacklisted("jwt-token")).isFalse();
   }
 
+  // Type: Unit test.
+  // Verifies that a token becomes unusable after blacklisting
+  // while other tokens remain unaffected.
   @Test
   void blacklistedTokenCanNoLongerBeUsed() {
     TokenBlacklistService tokenBlacklistService = new TokenBlacklistService();

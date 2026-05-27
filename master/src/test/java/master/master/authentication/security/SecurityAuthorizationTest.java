@@ -47,6 +47,9 @@ class SecurityAuthorizationTest {
             Mockito.any(FilterChain.class));
   }
 
+  // Type: Integration test.
+  // Verifies that an unauthenticated user is redirected away
+  // from the protected employee dashboard.
   @Test
   void unauthenticatedUserIsRedirectedFromProtectedEmployeeArea() throws Exception {
     mockMvc
@@ -55,6 +58,9 @@ class SecurityAuthorizationTest {
         .andExpect(redirectedUrl("/?error=not_authenticated"));
   }
 
+  // Type: Integration test.
+  // Verifies that a CLIENT user cannot access the employee area
+  // and receives the configured access-denied redirect.
   @Test
   void clientCannotAccessEmployeeArea() throws Exception {
     mockMvc
@@ -63,6 +69,9 @@ class SecurityAuthorizationTest {
         .andExpect(redirectedUrl("/?error=access_denied"));
   }
 
+  // Type: Integration test.
+  // Verifies that an EMPLOYEE user cannot access the client area
+  // and receives the configured access-denied redirect.
   @Test
   void employeeCannotAccessClientArea() throws Exception {
     mockMvc
@@ -71,6 +80,9 @@ class SecurityAuthorizationTest {
         .andExpect(redirectedUrl("/?error=access_denied"));
   }
 
+  // Type: Integration test.
+  // Verifies that an EMPLOYEE user cannot perform administrator-level
+  // client account deletion.
   @Test
   void employeeCannotDeleteClientAccounts() throws Exception {
     mockMvc

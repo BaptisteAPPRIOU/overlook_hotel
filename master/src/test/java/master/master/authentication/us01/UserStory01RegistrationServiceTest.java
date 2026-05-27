@@ -49,6 +49,9 @@ class UserStory01RegistrationServiceTest {
             clientService);
   }
 
+  // Type: Unit test.
+  // Verifies that the registration service encodes the password, assigns the CLIENT role,
+  // saves the user, and creates the linked client profile.
   @Test
   void registerCreatesClientUserWithEncodedPasswordAndClientProfile() {
     RegisterRequestDto request = registerRequest("Jane", "Doe", "jane.doe@olh.fr", "securePass123");

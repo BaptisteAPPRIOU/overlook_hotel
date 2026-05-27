@@ -46,6 +46,9 @@ class UserStory02AuthenticationServiceTest {
             clientService);
   }
 
+  // Type: Unit test.
+  // Verifies that valid credentials are delegated to Spring Security authentication
+  // and that a JWT token is generated for the authenticated email.
   @Test
   void validCredentialsOpenAuthenticationAndGenerateToken() {
     LoginRequestDto request = loginRequest("jane.doe@olh.fr", "securePass123");
@@ -61,6 +64,9 @@ class UserStory02AuthenticationServiceTest {
     assertThat(token).isEqualTo("jwt-token");
   }
 
+  // Type: Unit test.
+  // Verifies that invalid credentials propagate the authentication failure
+  // and prevent JWT token generation.
   @Test
   void invalidPasswordDoesNotGenerateToken() {
     LoginRequestDto request = loginRequest("jane.doe@olh.fr", "wrongPassword");

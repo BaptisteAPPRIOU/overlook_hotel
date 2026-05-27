@@ -50,6 +50,9 @@ class UserStory02LoginControllerTest {
   @MockitoBean private UserRoleService userRoleService;
   @MockitoBean private ClientService clientService;
 
+  // Type: Integration test.
+  // Verifies that valid login credentials return a JWT token and expose the authenticated
+  // user's role for every role supported by the application.
   @ParameterizedTest
   @EnumSource(RoleCode.class)
   void validCredentialsReturnJwtTokenAndUserRole(RoleCode roleCode) throws Exception {
@@ -71,6 +74,9 @@ class UserStory02LoginControllerTest {
         .andExpect(jsonPath("$.role").value(roleCode.name()));
   }
 
+  // Type: Integration test.
+  // Verifies that an invalid password returns a generic unauthorized response
+  // and does not generate a JWT token.
   @Test
   void invalidPasswordReturnsGenericUnauthorizedMessageWithoutToken() throws Exception {
     LoginRequestDto request = loginRequest("jane.doe@olh.fr", "wrongPassword");
@@ -89,6 +95,9 @@ class UserStory02LoginControllerTest {
     verify(jwtUtil, never()).generateToken(any(String.class));
   }
 
+  // Type: Integration test.
+  // Verifies that missing login fields return validation errors
+  // before the authentication manager is called.
   @Test
   void missingLoginFieldsReturnValidationErrors() throws Exception {
     mockMvc

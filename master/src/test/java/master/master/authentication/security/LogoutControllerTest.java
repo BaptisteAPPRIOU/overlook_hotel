@@ -43,6 +43,9 @@ class LogoutControllerTest {
     SecurityContextHolder.clearContext();
   }
 
+  // Type: Integration test.
+  // Verifies that the logout endpoint blacklists the provided Bearer token
+  // and clears the current security context.
   @Test
   void logoutBlacklistsBearerTokenAndClearsSecurityContext() throws Exception {
     SecurityContextHolder.getContext()
@@ -59,6 +62,9 @@ class LogoutControllerTest {
         .isNull();
   }
 
+  // Type: Integration test.
+  // Verifies that logout still clears the current security context
+  // when no Bearer token is provided.
   @Test
   void logoutWithoutBearerTokenOnlyClearsSecurityContext() throws Exception {
     SecurityContextHolder.getContext()
