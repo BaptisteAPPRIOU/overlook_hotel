@@ -60,9 +60,9 @@ jobs:
         working-directory: master
         run: chmod +x mvnw
 
-      - name: Build and test
+      - name: Build, test and analyze
         working-directory: master
-        run: ./mvnw -B verify
+        run: ./mvnw -B -Pquality verify
 
       - name: Upload JAR
         uses: actions/upload-artifact@v4
@@ -76,6 +76,17 @@ jobs:
         with:
           name: recette-test-reports
           path: master/target/surefire-reports/
+          if-no-files-found: ignore
+
+      - name: Upload quality reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: recette-quality-reports
+          path: |
+            master/target/site/jacoco/
+            master/target/pmd.xml
+            master/target/spotbugsXml.xml
           if-no-files-found: ignore
 
   docker:
