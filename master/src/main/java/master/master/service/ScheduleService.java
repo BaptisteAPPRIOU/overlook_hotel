@@ -1,5 +1,6 @@
 package master.master.service;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 import master.master.domain.Employee;
@@ -40,7 +41,8 @@ public class ScheduleService {
   }
 
   public byte[] exportTimesheetData() {
-    return "Employee Name,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday\n".getBytes();
+    return "Employee Name,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday\n"
+        .getBytes(StandardCharsets.UTF_8);
   }
 
   public AttendanceReportDto getAttendanceReport(Long employeeId, String period) {
