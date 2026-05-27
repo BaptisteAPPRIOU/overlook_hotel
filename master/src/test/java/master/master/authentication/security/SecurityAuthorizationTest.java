@@ -17,8 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.stereotype.Controller;
 
@@ -28,8 +28,8 @@ class SecurityAuthorizationTest {
 
   @Autowired private MockMvc mockMvc;
 
-  @MockBean private CustomUserDetailsService userDetailsService;
-  @MockBean private JwtAuthenticationFilter jwtAuthenticationFilter;
+  @MockitoBean private CustomUserDetailsService userDetailsService;
+  @MockitoBean private JwtAuthenticationFilter jwtAuthenticationFilter;
 
   @BeforeEach
   void setUp() throws Exception {

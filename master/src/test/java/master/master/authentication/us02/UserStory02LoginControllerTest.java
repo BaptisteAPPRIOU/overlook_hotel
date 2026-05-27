@@ -26,13 +26,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(AuthController.class)
@@ -42,13 +42,13 @@ class UserStory02LoginControllerTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private ObjectMapper objectMapper;
 
-  @MockBean private UserRepository userRepository;
-  @MockBean private PasswordEncoder passwordEncoder;
-  @MockBean private AuthenticationManager authenticationManager;
-  @MockBean private JwtUtil jwtUtil;
-  @MockBean private TokenBlacklistService tokenBlacklistService;
-  @MockBean private UserRoleService userRoleService;
-  @MockBean private ClientService clientService;
+  @MockitoBean private UserRepository userRepository;
+  @MockitoBean private PasswordEncoder passwordEncoder;
+  @MockitoBean private AuthenticationManager authenticationManager;
+  @MockitoBean private JwtUtil jwtUtil;
+  @MockitoBean private TokenBlacklistService tokenBlacklistService;
+  @MockitoBean private UserRoleService userRoleService;
+  @MockitoBean private ClientService clientService;
 
   @ParameterizedTest
   @EnumSource(RoleCode.class)
