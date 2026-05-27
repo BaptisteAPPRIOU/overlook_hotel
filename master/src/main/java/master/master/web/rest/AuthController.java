@@ -1,6 +1,7 @@
 package master.master.web.rest;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
 import master.master.domain.RoleCode;
@@ -80,7 +81,7 @@ public class AuthController {
 
   // Handle user registration requests
   @PostMapping("/register")
-  public ResponseEntity<?> registerUser(@RequestBody RegisterRequestDto request) {
+  public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequestDto request) {
     // Check if email is already registered
     if (userRepository.findByEmail(request.getEmail()) != null) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email already exists");
@@ -102,7 +103,7 @@ public class AuthController {
 
   // Handle user login requests
   @PostMapping("/login")
-  public ResponseEntity<?> loginUser(@RequestBody LoginRequestDto request) {
+  public ResponseEntity<?> loginUser(@Valid @RequestBody LoginRequestDto request) {
     try {
       // Authenticate user with provided email and password
       authenticationManager.authenticate(
