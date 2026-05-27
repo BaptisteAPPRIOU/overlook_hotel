@@ -174,7 +174,7 @@ function displayReservations(reservations) {
                 <div class="col-md-6">
                     <h6 class="mb-1">${reservation.roomNumber} - ${reservation.roomType}</h6>
                     <p class="text-muted mb-1">
-                        <i class="fas fa-calendar"></i> 
+                        <i class="fas fa-calendar"></i>
                         ${formatDate(reservation.checkIn)} - ${formatDate(reservation.checkOut)}
                     </p>
                     <p class="text-muted mb-0">
@@ -277,7 +277,7 @@ function displayReviews(reviews) {
                     <small class="text-muted">${formatDate(review.date)}</small>
                 </div>
             </div>
-            
+
             <div class="review-details mb-3">
                 <div class="row">
                     <div class="col-md-3">
@@ -298,9 +298,9 @@ function displayReviews(reviews) {
                     </div>
                 </div>
             </div>
-            
+
             <p class="mb-3">${review.comment}</p>
-            
+
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     ${
@@ -861,7 +861,7 @@ function displayRedemptionOptions(options) {
     .map(
       (option) => `
         <div class="col-md-6 col-lg-4 redemption-option">
-            <div class="redemption-card ${option.available ? "available" : "unavailable"}" 
+            <div class="redemption-card ${option.available ? "available" : "unavailable"}"
                  onclick="${option.available ? `redeemOption('${option.id}', ${option.pointsCost})` : ""}">
                 <div class="position-relative">
                     <span class="redemption-type-badge badge bg-primary">${getTypeIcon(option.type)}</span>
