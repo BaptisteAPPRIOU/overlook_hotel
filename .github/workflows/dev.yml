@@ -10,8 +10,13 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: dev-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build:
+  test:
+    name: Tests et qualite
     runs-on: ubuntu-latest
     environment: dev
 
@@ -31,6 +36,7 @@ jobs:
           --health-retries 5
 
     env:
+      SPRING_PROFILES_ACTIVE: ci
       SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/overlook_hotel_test
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: ${{ secrets.CI_POSTGRES_PASSWORD }}
@@ -54,6 +60,14 @@ jobs:
         working-directory: master
         run: chmod +x mvnw
 
-      - name: Build and test with Maven
+      - name: Test Maven
         working-directory: master
         run: ./mvnw -B verify
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev-test-reports
+          path: master/target/surefire-reports/
+          if-no-files-found: ignore
