@@ -33,11 +33,12 @@ public class SecurityConfig {
   // Security filter chain configuration
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http.csrf(csrf -> csrf.disable())
+    http.csrf(
+            csrf ->
+                csrf.ignoringRequestMatchers("/api/**", "/employees", "/planning/create-default"))
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers(
-                        "/", "/clientLogin", "/employeeLogin", "/register", "employeeDashboard")
+                auth.requestMatchers("/", "/clientLogin", "/employeeLogin", "/register")
                     .permitAll()
                     .requestMatchers("/css/**", "/js/**", "/image/**", "/favicon.ico")
                     .permitAll()
