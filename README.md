@@ -47,97 +47,190 @@ Welcome to **Overlook Hotel**, a Spring Boot–based hotel management applicatio
 
 ---
 
+## Technical Stack
+
+- Java 25.0.3
+- Spring Boot 3.5
+- Maven Wrapper
+- PostgreSQL 17
+- Flyway
+- Spring Security
+- Thymeleaf
+- MapStruct
+- Lombok
+- Docker
+- GitHub Actions
+
+---
+
 ## Prerequisites
 
-- **Java 25.0.3** (JDK)
-- **Maven 3.6+** _or_ **Gradle 7+**
-- **PostgreSQL 17.10** (target runtime database)
-- **Git** for version control
+- JDK 25.0.3
+- PostgreSQL 17
+- Git
+- Docker, optional for container builds
 
-Builds enforce Java 25.0.3 via Maven Enforcer, so ensure `JAVA_HOME` points to JDK 25.0.3.
+The Maven Wrapper is included in `master/`, so a local Maven installation is not required.
 
-### Java Toolchain (Optional)
+## Configuration
 
-If you want Maven to enforce JDK 25.0.3 regardless of your `JAVA_HOME`, enable the toolchains profile.
+The application reads its runtime configuration from Spring properties and environment variables.
 
-1. Create `~/.m2/toolchains.xml` using the template below.
-2. Run Maven with the `toolchains` profile: `./mvnw -Ptoolchains clean test`
+For local development, create:
 
-Example `toolchains.xml`:
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<toolchains>
-   <toolchain>
-      <type>jdk</type>
-      <provides>
-         <version>25.0.3</version>
-         <vendor>any</vendor>
-      </provides>
-      <configuration>
-         <jdkHome>/path/to/jdk-25.0.3</jdkHome>
-      </configuration>
-   </toolchain>
-</toolchains>
+```text
+master/src/main/resources/application-local.properties
 ```
 
-CI note: if you add CI later, install JDK 25.0.3 and run with `-Ptoolchains` or set `JAVA_HOME` to the JDK 25.0.3 path.
+Example:
 
-TODO: Add CI workflow and Docker image setup pinned to JDK 25.0.3.
+```properties
+spring.datasource.url=jdbc:postgresql://localhost:5432/overlookhoteldb
+spring.datasource.username=postgres
+spring.datasource.password=change-me
 
----
+spring.security.user.name=admin
+spring.security.user.password=change-me
 
-## Getting Started
+app.jwt.secret=change-me-with-at-least-32-characters
+app.jwt.expiration-ms=86400000
+```
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/<your‑username>/overlook_hotel.git
-   cd overlook_hotel
-   ```
+`application-local.properties` is intended for local secrets and must not be committed.
 
----
+## Database
+
+The project uses PostgreSQL and Flyway.
+
+Migration files are stored in:
+
+```text
+master/src/main/resources/db/migration
+```
+
+Flyway is the source of truth for the SQL schema. Hibernate automatic schema generation should not be used as the production schema management strategy.
+
+## Run Locally
+
+From the project root:
+
+```bash
+cd master
+./mvnw spring-boot:run
+```
+
+On Windows:
+
+```powershell
+cd master
+.\mvnw.cmd spring-boot:run
+```
+
+The application starts on:
+
+```text
+http://localhost:8080
+```
+
+## Build and Test
+
+Linux/macOS:
+
+```bash
+cd master
+./mvnw -B verify
+```
+
+Windows:
+
+```powershell
+cd master
+.\mvnw.cmd -B verify
+```
+
+The current test suite is limited and should be expanded with service, security, integration and end-to-end tests.
+
+## Docker
+
+Build the image from the repository root:
+
+```bash
+docker build -f master/Dockerfile -t overlook-hotel:local master
+```
+
+Run the container with the required environment variables:
+
+```bash
+docker run --rm -p 8080:8080 \
+  -e SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/overlookhoteldb \
+  -e SPRING_DATASOURCE_USERNAME=postgres \
+  -e SPRING_DATASOURCE_PASSWORD=change-me \
+  -e SPRING_SECURITY_USER_NAME=admin \
+  -e SPRING_SECURITY_USER_PASSWORD=change-me \
+  -e APP_JWT_SECRET=change-me-with-at-least-32-characters \
+  overlook-hotel:local
+```
+
+## CI/CD
+
+GitHub Actions workflows are defined in:
+
+```text
+.github/workflows
+```
+
+The CI/CD strategy is documented in:
+
+```text
+docs/ci-cd.md
+```
+
+Branch strategy:
+
+| Branch | Workflow | Purpose |
+| --- | --- | --- |
+| `dev` | `CI - Dev` | Fast validation, unit tests, code quality and formatting checks. |
+| `recette` | `CD - Recette` | Build the JAR and Docker image, then run integration and end-to-end validation. |
+| `main` / `v*.*.*` tags | `CD - Production` | Build the production candidate and publish the Docker image. |
+
+Some quality, integration and end-to-end steps are planned and documented, but must be introduced through dedicated pull requests.
 
 ## Project Structure
 
 ```text
 overlook_hotel/
-├── .gitignore
+├── .github/workflows/          GitHub Actions workflows
+├── docs/                       Project documentation
 ├── README.md
 └── master/
-    ├── .gitignore
-    ├── HELP.md
+    ├── Dockerfile
     ├── mvnw
     ├── mvnw.cmd
     ├── pom.xml
-    ├── src/
-    │   └── main/
-    │       ├── java/
-    │       │   └── master/master/
-    │       │       ├── MasterApplication.java
-    │       │       ├── config/         ← Spring configuration classes (SecurityConfig, etc.)
-    │       │       ├── domain/         ← JPA entities
-    │       │       ├── dto/            ← Data Transfer Objects
-    │       │       ├── exceptions/     ← Custom exception handlers
-    │       │       ├── mapper/         ← MapStruct mappers
-    │       │       ├── repository/     ← Spring Data JPA repositories
-    │       │       ├── service/        ← Business logic
-    │       │       ├── security/       ← JwtUtil
-    │       │       └── web/            ← MVC & REST controllers
-    │       └── resources/
-    │           ├── application.yml     ← Spring Boot configuration
-    │           ├── static/
-    │           │   ├── css/
-    │           │   │   ├── employeeDashboard.css
-    │           │   │   └── homeLoginPage.css
-    │           │   ├── js/
-    │           │   └── images/
-    │           └── templates/
-    │               ├── clientLoginPage.html
-    │               ├── employeeDashboard.html
-    │               ├── employeeLoginPage.html
-    │               ├── homeLoginPage.html
-    │               ├── registerPage.html
-    │               └── roomManagement.html
-
-
+    └── src/
+        ├── main/
+        │   ├── java/master/master/
+        │   │   ├── config/        Spring configuration
+        │   │   ├── domain/        JPA entities
+        │   │   ├── mapper/        MapStruct mappers
+        │   │   ├── repository/    Spring Data repositories
+        │   │   ├── security/      JWT and security helpers
+        │   │   ├── service/       Business logic
+        │   │   └── web/           MVC and REST controllers
+        │   └── resources/
+        │       ├── db/migration/  Flyway migrations
+        │       ├── static/        CSS, JavaScript and images
+        │       └── templates/     Thymeleaf pages
+        └── test/                 Automated tests
 ```
+
+## Professional Project Notes
+
+For the CDA assessment, the delivery should demonstrate:
+
+- a clear branch and environment strategy;
+- reproducible builds;
+- database migrations through Flyway;
+- CI evidence through test and build reports;
+- a deployable Docker artifact;
+- documented limitations and improvement plan.
