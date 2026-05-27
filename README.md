@@ -195,6 +195,11 @@ Branch strategy:
 
 Some quality, integration and end-to-end steps are planned and documented, but must be introduced through dedicated pull requests.
 
+
+## Swagger
+
+http://localhost:8080/swagger-ui/index.html
+
 ## Project Structure
 
 ```text
