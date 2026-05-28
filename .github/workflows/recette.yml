@@ -131,7 +131,7 @@ jobs:
       - name: Wait for application health
         run: |
           for attempt in {1..60}; do
-            if curl -fsS http://localhost:8080/actuator/health; then
+            if curl -fsS --max-redirs 0 http://localhost:8080/actuator/health/readiness | grep -q '"status":"UP"'; then
               exit 0
             fi
             docker compose -f compose.recette.yml ps
@@ -145,17 +145,23 @@ jobs:
         run: ./mvnw -B -Pintegration -Drecette.base-url=http://localhost:8080 verify
 
       - name: Archive Docker image
-        run: docker save overlook-hotel:recette -o /tmp/overlook-hotel-recette.tar
+        if: always()
+        run: |
+          docker image inspect overlook-hotel:recette >/dev/null 2>&1 \
+            && docker save overlook-hotel:recette -o /tmp/overlook-hotel-recette.tar \
+            || true
 
       - name: Export recette Docker logs
         if: always()
         run: docker compose -f compose.recette.yml logs --no-color > /tmp/overlook-hotel-recette-compose.log
 
       - name: Upload Docker image archive
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: overlook-hotel-recette-image
           path: /tmp/overlook-hotel-recette.tar
+          if-no-files-found: ignore
 
       - name: Upload integration test reports
         if: always()
