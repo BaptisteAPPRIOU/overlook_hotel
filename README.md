@@ -193,14 +193,66 @@ Branch strategy:
 | `recette` | `CD - Recette` | Build the JAR and Docker image, then run integration and end-to-end validation. |
 | `main` / `v*.*.*` tags | `CD - Production` | Build the production candidate and publish the Docker image. |
 
-Some quality, integration and end-to-end steps are planned and documented, but must be introduced through dedicated pull requests.
+Current automation:
+
+- `dev` runs unit tests, packaging, formatting, coverage, PMD and SpotBugs/FindSecBugs.
+- `recette` runs the same quality gate, then starts a Docker Compose stack with PostgreSQL 17 and the application image.
+- `recette` checks `/actuator/health` and runs the Maven `integration` profile for future `*IT.java` tests.
+- `prod` validates the candidate and publishes the Docker image to GHCR outside pull requests.
+
+Run the recette stack locally:
+
+```bash
+cp .env.recette.example .env.recette
+docker compose --env-file .env.recette -f compose.recette.yml up --build
+```
+
+Run future integration tests against the local recette stack:
+
+```bash
+cd master
+./mvnw -B -Pintegration -Drecette.base-url=http://localhost:8080 verify
+```
+
+Stop the recette stack:
+
+```bash
+docker compose --env-file .env.recette -f compose.recette.yml down --volumes
+```
+
+Recommended collaborative commands:
+
+```bash
+make dev-test
+make quality
+make recette-up
+make recette-it
+make recette-down
+```
+
+Collaboration rules:
+
+- keep `dev` fast and Docker-free for everyday development;
+- open pull requests into `dev`, `recette` and `main` instead of pushing directly;
+- require green GitHub checks before merge;
+- keep `*Test.java` for unit and MVC tests;
+- keep `*IT.java` for Docker-backed recette integration tests;
+- keep future E2E tests in recette only, not in the fast dev workflow;
+- publish production images only after the validation workflow is green.
+
+
+## Swagger
+
+http://localhost:8080/swagger-ui/index.html
 
 ## Project Structure
 
 ```text
 overlook_hotel/
 ├── .github/workflows/          GitHub Actions workflows
+├── compose.recette.yml          Production-like recette Docker stack
 ├── docs/                       Project documentation
+├── Makefile                    Shared local commands
 ├── README.md
 └── master/
     ├── Dockerfile

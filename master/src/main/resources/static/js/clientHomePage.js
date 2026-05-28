@@ -166,7 +166,7 @@ function displayRooms(rooms) {
             <div class="col-12 text-center">
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle"></i>
-                    No rooms available for the selected criteria.                    
+                    No rooms available for the selected criteria.
                 </div>
             </div>
         `;
@@ -184,7 +184,7 @@ function displayRooms(rooms) {
                 <div class="card-body">
                     <h5 class="card-title">${getRoomDisplayName(room)}</h5>
                     <p class="card-text">${room.description || "Comfortable room with all modern amenities."}</p>
-                    
+
                     <ul class="room-features">
                         <li><i class="fas fa-users"></i> ${room.capacity} max guests</li>
                         ${
@@ -201,7 +201,7 @@ function displayRooms(rooms) {
                              <li><i class="fas fa-snowflake"></i> Air Conditioning</li>`
                         }
                     </ul>
-                    
+
                     <div class="d-flex justify-content-between align-items-center mt-3">
                         <div class="room-price">
                             EUR ${room.price || 129}
@@ -211,11 +211,11 @@ function displayRooms(rooms) {
                             ${getRoomStatusText(room.status)}
                         </span>
                     </div>
-                    
+
                     <div class="mt-3">
-                        <button class="btn btn-primary w-100" onclick="openReservationModal(${room.id})" 
+                        <button class="btn btn-primary w-100" onclick="openReservationModal(${room.id})"
                                 ${room.status !== "AVAILABLE" ? "disabled" : ""}>
-                            <i class="fas fa-calendar-check"></i> 
+                            <i class="fas fa-calendar-check"></i>
                             ${room.status !== "AVAILABLE" ? "Not available" : "Reserve"}
                         </button>
                     </div>
@@ -490,7 +490,7 @@ function openReservationModal(roomId) {
             <div class="col-md-6">
                 <h4>${room.name}</h4>
                 <p>${room.description}</p>
-                
+
                 <div class="reservation-details">
                     <div class="row mb-2">
                         <div class="col-6"><strong>Check-in:</strong></div>

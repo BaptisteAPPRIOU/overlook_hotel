@@ -29,6 +29,12 @@ replay_pid*
 
 .vscode/
 
+### Local environment files ###
+.env
+.env.*
+!.env.example
+!.env.recette.example
+
 ###TEMP###
 /master/src/main/resources/application.yml
 /master/src/main/resources/application-local.properties

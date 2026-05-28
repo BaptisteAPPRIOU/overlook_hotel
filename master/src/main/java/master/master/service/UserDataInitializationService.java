@@ -18,6 +18,7 @@ import master.master.repository.EmployeeRepository;
 import master.master.repository.ReviewRepository;
 import master.master.repository.RoomRepository;
 import master.master.repository.UserRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 @Transactional
+@ConditionalOnProperty(prefix = "app.seed", name = "enabled", havingValue = "true")
 public class UserDataInitializationService implements ApplicationRunner {
 
   private final UserRepository userRepository;

@@ -33,13 +33,18 @@ public class SecurityConfig {
   // Security filter chain configuration
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http.csrf(csrf -> csrf.disable())
+    http.csrf(
+            csrf ->
+                csrf.ignoringRequestMatchers("/api/**", "/employees", "/planning/create-default"))
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers(
-                        "/", "/clientLogin", "/employeeLogin", "/register", "employeeDashboard")
+                auth.requestMatchers("/", "/clientLogin", "/employeeLogin", "/register")
                     .permitAll()
                     .requestMatchers("/css/**", "/js/**", "/image/**", "/favicon.ico")
+                    .permitAll()
+                    .requestMatchers("/actuator/health", "/actuator/health/**")
+                    .permitAll()
+                    .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**")
                     .permitAll()
                     .requestMatchers("/api/v1/login", "/api/v1/register", "/error")
                     .permitAll()
