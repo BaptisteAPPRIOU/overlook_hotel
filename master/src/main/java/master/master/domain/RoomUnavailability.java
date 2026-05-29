@@ -31,10 +31,14 @@ public class RoomUnavailability implements Serializable {
   @Column(name = "reason", length = 255)
   private String reason;
 
+  // Enum values are stored as strings to avoid ordinal changes breaking existing data.
   @Enumerated(EnumType.STRING)
   @Column(name = "unavailability_status", nullable = false, length = 30)
   private UnavailabilityStatus unavailabilityStatus;
 
+  /**
+   * Compares unavailability periods by their persisted identifier to keep equality stable.
+   */
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -42,6 +46,9 @@ public class RoomUnavailability implements Serializable {
     return id != null && Objects.equals(id, that.id);
   }
 
+  /**
+   * Uses the entity class hash code to stay consistent before and after persistence.
+   */
   @Override
   public int hashCode() {
     return getClass().hashCode();

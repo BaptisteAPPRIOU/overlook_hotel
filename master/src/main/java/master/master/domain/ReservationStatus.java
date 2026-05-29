@@ -1,5 +1,8 @@
 package master.master.domain;
 
+/**
+ * Lists the lifecycle states available for a reservation.
+ */
 public enum ReservationStatus {
   PENDING,
   CONFIRMED,

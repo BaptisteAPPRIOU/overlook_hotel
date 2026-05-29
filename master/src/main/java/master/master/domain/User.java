@@ -35,10 +35,12 @@ public class User implements Serializable {
   @Column(name = "account_creation_date", nullable = false, updatable = false)
   private LocalDateTime accountCreationDate;
 
+  // Enum values are stored as strings to avoid ordinal changes breaking existing data.
   @Enumerated(EnumType.STRING)
   @Column(name = "account_status", nullable = false, length = 30)
   private AccountStatus accountStatus;
 
+  // User owns the many-to-many relation through the users_roles join table.
   @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(
       name = "users_roles",
@@ -46,12 +48,16 @@ public class User implements Serializable {
       inverseJoinColumns = @JoinColumn(name = "id_role"))
   private Set<Role> roles = new HashSet<>();
 
+  // Client and Employee profiles share this user's lifecycle when linked.
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   private Client clientProfile;
 
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   private Employee employeeProfile;
 
+  /**
+   * Initializes account metadata before the user is inserted in the database.
+   */
   @PrePersist
   protected void onCreate() {
     if (accountCreationDate == null) {
@@ -62,18 +68,30 @@ public class User implements Serializable {
     }
   }
 
+  /**
+   * Builds the display name from the first name and last name fields.
+   */
   public String getFullName() {
     return firstName + " " + lastName;
   }
 
+  /**
+   * Compatibility accessor that exposes passwordHash through Spring Security naming.
+   */
   public String getPassword() {
     return passwordHash;
   }
 
+  /**
+   * Compatibility mutator that stores the encoded password in passwordHash.
+   */
   public void setPassword(String password) {
     this.passwordHash = password;
   }
 
+  /**
+   * Returns the first assigned role code, or null when the user has no role.
+   */
   public RoleCode getRole() {
     return roles.stream().findFirst().map(Role::getRoleCode).orElse(null);
   }
@@ -93,6 +111,9 @@ public class User implements Serializable {
   //   }
   // }
 
+  /**
+   * Compares users by their persisted identifier to keep entity equality stable.
+   */
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -100,6 +121,9 @@ public class User implements Serializable {
     return id != null && Objects.equals(id, user.id);
   }
 
+  /**
+   * Uses the entity class hash code to stay consistent before and after persistence.
+   */
   @Override
   public int hashCode() {
     return getClass().hashCode();

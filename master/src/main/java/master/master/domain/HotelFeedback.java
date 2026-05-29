@@ -37,12 +37,18 @@ public class HotelFeedback implements Serializable {
   @Column(name = "response_content", columnDefinition = "TEXT")
   private String responseContent;
 
+  /**
+   * Initializes creation metadata before the feedback is inserted in the database.
+   */
   @PrePersist
   protected void onCreate() {
     if (createdAt == null) createdAt = LocalDateTime.now();
     if (displayed == null) displayed = false;
   }
 
+  /**
+   * Compares feedback records by their persisted identifier to keep entity equality stable.
+   */
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -50,6 +56,9 @@ public class HotelFeedback implements Serializable {
     return id != null && Objects.equals(id, that.id);
   }
 
+  /**
+   * Uses the entity class hash code to stay consistent before and after persistence.
+   */
   @Override
   public int hashCode() {
     return getClass().hashCode();

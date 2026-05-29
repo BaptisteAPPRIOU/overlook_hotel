@@ -30,6 +30,9 @@ public class RoomPhoto implements Serializable {
   @Column(name = "display_order", nullable = false)
   private Short displayOrder = 0;
 
+  /**
+   * Compares room photos by their persisted identifier to keep entity equality stable.
+   */
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -37,6 +40,9 @@ public class RoomPhoto implements Serializable {
     return id != null && Objects.equals(id, roomPhoto.id);
   }
 
+  /**
+   * Uses the entity class hash code to stay consistent before and after persistence.
+   */
   @Override
   public int hashCode() {
     return getClass().hashCode();

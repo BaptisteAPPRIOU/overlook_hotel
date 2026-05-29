@@ -33,10 +33,12 @@ public class Reservation implements Serializable {
   @Column(name = "end_datetime", nullable = false)
   private LocalDateTime endDatetime;
 
+  // Enum values are stored as strings to avoid ordinal changes breaking existing data.
   @Enumerated(EnumType.STRING)
   @Column(name = "reservation_status", nullable = false, length = 30)
   private ReservationStatus reservationStatus;
 
+  // BigDecimal keeps monetary values precise and avoids floating-point rounding issues.
   @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
   private BigDecimal totalAmount;
 
@@ -50,9 +52,13 @@ public class Reservation implements Serializable {
   @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;
 
+  // A reservation can receive only one room review.
   @OneToOne(mappedBy = "reservation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   private RoomReview review;
 
+  /**
+   * Initializes reservation metadata before the reservation is inserted in the database.
+   */
   @PrePersist
   protected void onCreate() {
     if (createdAt == null) createdAt = LocalDateTime.now();
@@ -60,10 +66,16 @@ public class Reservation implements Serializable {
     if (paid == null) paid = false;
   }
 
+  /**
+   * Checks whether the reservation is still active based on its end date.
+   */
   public boolean isActive() {
     return endDatetime != null && endDatetime.isAfter(LocalDateTime.now());
   }
 
+  /**
+   * Compares reservations by their persisted identifier to keep entity equality stable.
+   */
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -71,6 +83,9 @@ public class Reservation implements Serializable {
     return id != null && Objects.equals(id, that.id);
   }
 
+  /**
+   * Uses the entity class hash code to stay consistent before and after persistence.
+   */
   @Override
   public int hashCode() {
     return getClass().hashCode();

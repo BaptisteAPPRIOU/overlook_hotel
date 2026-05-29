@@ -12,6 +12,7 @@ import lombok.Setter;
 @Entity
 @Table(
     name = "leave_requests_validation",
+    // Each leave request can have only one validation record per workflow step.
     uniqueConstraints = @UniqueConstraint(columnNames = {"id_leave_request", "step_order"}))
 public class LeaveRequestValidation implements Serializable {
 
@@ -31,6 +32,7 @@ public class LeaveRequestValidation implements Serializable {
   @Column(name = "step_order", nullable = false)
   private Short stepOrder;
 
+  // Enum values are stored as strings to keep decisions readable in the database.
   @Enumerated(EnumType.STRING)
   @Column(name = "decision", nullable = false, length = 30)
   private ValidationDecision decision;
@@ -41,6 +43,9 @@ public class LeaveRequestValidation implements Serializable {
   @Column(name = "comment", columnDefinition = "TEXT")
   private String comment;
 
+  /**
+   * Compares validation steps by their persisted identifier to keep entity equality stable.
+   */
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -48,6 +53,9 @@ public class LeaveRequestValidation implements Serializable {
     return id != null && Objects.equals(id, that.id);
   }
 
+  /**
+   * Uses the entity class hash code to stay consistent before and after persistence.
+   */
   @Override
   public int hashCode() {
     return getClass().hashCode();

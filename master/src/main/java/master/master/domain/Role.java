@@ -19,6 +19,7 @@ public class Role implements Serializable {
   @Column(name = "id_role")
   private Long id;
 
+  // Enum values are stored as strings so role names remain readable in the database.
   @Enumerated(EnumType.STRING)
   @Column(name = "role_code", nullable = false, unique = true, length = 50)
   private RoleCode roleCode;
@@ -29,9 +30,13 @@ public class Role implements Serializable {
   @Column(name = "description", columnDefinition = "TEXT")
   private String description;
 
+  // User owns the users_roles join table, so Role only exposes the inverse side.
   @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
   private Set<User> users = new HashSet<>();
 
+  /**
+   * Compares roles by their persisted identifier to keep entity equality stable.
+   */
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -39,6 +44,9 @@ public class Role implements Serializable {
     return id != null && Objects.equals(id, role.id);
   }
 
+  /**
+   * Uses the entity class hash code to stay consistent before and after persistence.
+   */
   @Override
   public int hashCode() {
     return getClass().hashCode();

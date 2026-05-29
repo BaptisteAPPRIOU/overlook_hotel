@@ -22,6 +22,7 @@ public class Notification implements Serializable {
   @JoinColumn(name = "id_user", nullable = false)
   private User user;
 
+  // Enum values are stored as strings to keep notification data readable.
   @Enumerated(EnumType.STRING)
   @Column(name = "notification_type", nullable = false, length = 80)
   private NotificationType notificationType;
@@ -35,12 +36,18 @@ public class Notification implements Serializable {
   @Column(name = "is_read", nullable = false)
   private Boolean read = false;
 
+  /**
+   * Initializes send metadata before the notification is inserted in the database.
+   */
   @PrePersist
   protected void onCreate() {
     if (sentDate == null) sentDate = LocalDateTime.now();
     if (read == null) read = false;
   }
 
+  /**
+   * Compares notifications by their persisted identifier to keep entity equality stable.
+   */
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -48,6 +55,9 @@ public class Notification implements Serializable {
     return id != null && Objects.equals(id, that.id);
   }
 
+  /**
+   * Uses the entity class hash code to stay consistent before and after persistence.
+   */
   @Override
   public int hashCode() {
     return getClass().hashCode();

@@ -42,6 +42,7 @@ public class WorkShift implements Serializable {
   @Column(name = "planned_break_end")
   private LocalTime plannedBreakEnd;
 
+  // Enum values are stored as strings to avoid ordinal changes breaking existing data.
   @Enumerated(EnumType.STRING)
   @Column(name = "shift_type", nullable = false, length = 50)
   private ShiftType shiftType;
@@ -49,13 +50,18 @@ public class WorkShift implements Serializable {
   @Column(name = "service", length = 100)
   private String service;
 
+  // The status tracks the planning lifecycle independently from attendance.
   @Enumerated(EnumType.STRING)
   @Column(name = "shift_status", nullable = false, length = 30)
   private ShiftStatus shiftStatus;
 
+  // A work shift can have only one actual time entry.
   @OneToOne(mappedBy = "workShift", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   private EmployeeTimeEntry timeEntry;
 
+  /**
+   * Compares work shifts by their persisted identifier to keep entity equality stable.
+   */
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -63,6 +69,9 @@ public class WorkShift implements Serializable {
     return id != null && Objects.equals(id, that.id);
   }
 
+  /**
+   * Uses the entity class hash code to stay consistent before and after persistence.
+   */
   @Override
   public int hashCode() {
     return getClass().hashCode();

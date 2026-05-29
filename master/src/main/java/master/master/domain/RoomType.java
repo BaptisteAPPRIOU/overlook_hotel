@@ -1,5 +1,8 @@
 package master.master.domain;
 
+/**
+ * Lists the room categories supported by both hotel and meeting-space features.
+ */
 public enum RoomType {
   STANDARD,
   SUPERIOR,
@@ -26,6 +29,9 @@ public enum RoomType {
   ROOM,
   EVENT;
 
+  /**
+   * Checks whether this type represents a hotel bedroom rather than a workspace.
+   */
   public boolean isHotelRoom() {
     return switch (this) {
       case STANDARD,

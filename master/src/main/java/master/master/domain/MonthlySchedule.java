@@ -14,6 +14,7 @@ import lombok.Setter;
 @Entity
 @Table(
     name = "monthly_schedules",
+    // There must be only one schedule per month and year.
     uniqueConstraints = @UniqueConstraint(columnNames = {"schedule_month", "schedule_year"}))
 public class MonthlySchedule implements Serializable {
 
@@ -31,6 +32,7 @@ public class MonthlySchedule implements Serializable {
   @Column(name = "creation_date", nullable = false, updatable = false)
   private LocalDateTime creationDate;
 
+  // Enum values are stored as strings to avoid ordinal changes breaking existing data.
   @Enumerated(EnumType.STRING)
   @Column(name = "schedule_status", nullable = false, length = 30)
   private ScheduleStatus scheduleStatus;
@@ -38,15 +40,22 @@ public class MonthlySchedule implements Serializable {
   @Column(name = "publication_date")
   private LocalDateTime publicationDate;
 
+  // Removing a monthly schedule also removes its generated work shifts.
   @OneToMany(mappedBy = "monthlySchedule", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<WorkShift> workShifts = new ArrayList<>();
 
+  /**
+   * Initializes creation metadata before the schedule is inserted in the database.
+   */
   @PrePersist
   protected void onCreate() {
     if (creationDate == null) creationDate = LocalDateTime.now();
     if (scheduleStatus == null) scheduleStatus = ScheduleStatus.DRAFT;
   }
 
+  /**
+   * Compares schedules by their persisted identifier to keep entity equality stable.
+   */
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -54,6 +63,9 @@ public class MonthlySchedule implements Serializable {
     return id != null && Objects.equals(id, that.id);
   }
 
+  /**
+   * Uses the entity class hash code to stay consistent before and after persistence.
+   */
   @Override
   public int hashCode() {
     return getClass().hashCode();

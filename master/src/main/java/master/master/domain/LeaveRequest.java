@@ -34,6 +34,7 @@ public class LeaveRequest implements Serializable {
   @Column(name = "reason", columnDefinition = "TEXT")
   private String reason;
 
+  // Enum values are stored as strings to avoid ordinal changes breaking existing data.
   @Enumerated(EnumType.STRING)
   @Column(name = "leave_type", nullable = false, length = 30)
   private LeaveType leaveType;
@@ -41,26 +42,38 @@ public class LeaveRequest implements Serializable {
   @Column(name = "request_date", nullable = false, updatable = false)
   private LocalDateTime requestDate;
 
+  // The status starts as PENDING and is updated as validations are completed.
   @Enumerated(EnumType.STRING)
   @Column(name = "current_status", nullable = false, length = 30)
   private LeaveStatus currentStatus;
 
+  // Removing a leave request also removes its validation steps.
   @OneToMany(mappedBy = "leaveRequest", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<LeaveRequestValidation> validations = new ArrayList<>();
 
+  /**
+   * Initializes request metadata before the leave request is inserted in the database.
+   */
   @PrePersist
   protected void onCreate() {
     if (requestDate == null) requestDate = LocalDateTime.now();
     if (currentStatus == null) currentStatus = LeaveStatus.PENDING;
   }
 
+  /**
+   * Returns the inclusive number of calendar days covered by the leave request.
+   */
   public int getLeaveDurationDays() {
     if (startDate != null && endDate != null) {
+      // The +1 includes both the start and end dates in the leave duration.
       return (int) (endDate.toEpochDay() - startDate.toEpochDay()) + 1;
     }
     return 0;
   }
 
+  /**
+   * Compares leave requests by their persisted identifier to keep entity equality stable.
+   */
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -68,6 +81,9 @@ public class LeaveRequest implements Serializable {
     return id != null && Objects.equals(id, that.id);
   }
 
+  /**
+   * Uses the entity class hash code to stay consistent before and after persistence.
+   */
   @Override
   public int hashCode() {
     return getClass().hashCode();

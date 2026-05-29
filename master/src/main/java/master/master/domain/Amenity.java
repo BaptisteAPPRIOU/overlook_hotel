@@ -25,9 +25,13 @@ public class Amenity implements Serializable {
   @Column(name = "label", nullable = false, length = 100)
   private String label;
 
+  // The Room entity owns the many-to-many relation through the rooms_amenities join table.
   @ManyToMany(mappedBy = "amenities", fetch = FetchType.LAZY)
   private Set<Room> rooms = new HashSet<>();
 
+  /**
+   * Compares amenities by their persisted identifier to keep entity equality stable.
+   */
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -35,6 +39,9 @@ public class Amenity implements Serializable {
     return id != null && Objects.equals(id, amenity.id);
   }
 
+  /**
+   * Uses the entity class hash code to stay consistent before and after persistence.
+   */
   @Override
   public int hashCode() {
     return getClass().hashCode();
