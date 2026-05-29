@@ -24,6 +24,9 @@ public class LeaveRequestService {
     this.employeeService = employeeService;
   }
 
+  /**
+   * Creates a leave request after validating dates and overlap rules.
+   */
   public LeaveRequestDto createLeaveRequest(CreateLeaveRequestDto request) {
     validateLeaveRequest(request);
     if (!leaveRequestRepository
@@ -33,6 +36,7 @@ public class LeaveRequestService {
       throw new IllegalArgumentException("Leave request overlaps with existing leave");
     }
     LeaveRequest leaveRequest = new LeaveRequest();
+    // The employee entity is resolved server-side so the DTO cannot inject arbitrary relations.
     leaveRequest.setEmployeeRequester(employeeService.getEmployee(request.getEmployeeId()));
     leaveRequest.setStartDate(request.getStartDate());
     leaveRequest.setEndDate(request.getEndDate());
@@ -42,12 +46,18 @@ public class LeaveRequestService {
     return mapToDto(leaveRequestRepository.save(leaveRequest));
   }
 
+  /**
+   * Returns all pending leave requests.
+   */
   @Transactional(readOnly = true)
   public List<LeaveRequestDto> getPendingLeaveRequests() {
     return leaveRequestRepository.findByCurrentStatusOrderByRequestDateDesc(LeaveStatus.PENDING)
         .stream().map(this::mapToDto).toList();
   }
 
+  /**
+   * Returns every leave request, newest first.
+   */
   @Transactional(readOnly = true)
   public List<LeaveRequestDto> getAllLeaveRequests() {
     return leaveRequestRepository.findAllByOrderByRequestDateDesc().stream()
@@ -55,23 +65,35 @@ public class LeaveRequestService {
         .toList();
   }
 
+  /**
+   * Counts pending leave requests.
+   */
   @Transactional(readOnly = true)
   public Long getPendingLeaveRequestCount() {
     return leaveRequestRepository.countByCurrentStatus(LeaveStatus.PENDING);
   }
 
+  /**
+   * Returns leave requests submitted by one employee.
+   */
   @Transactional(readOnly = true)
   public List<LeaveRequestDto> getEmployeeLeaveRequests(Long employeeId) {
     return leaveRequestRepository.findByEmployeeRequesterIdOrderByRequestDateDesc(employeeId)
         .stream().map(this::mapToDto).toList();
   }
 
+  /**
+   * Approves a leave request.
+   */
   public LeaveRequestDto approveLeaveRequest(Long requestId, String approvedBy) {
     LeaveRequest leaveRequest = getLeaveRequest(requestId);
     leaveRequest.setCurrentStatus(LeaveStatus.APPROVED);
     return mapToDto(leaveRequestRepository.save(leaveRequest));
   }
 
+  /**
+   * Rejects a leave request.
+   */
   public LeaveRequestDto rejectLeaveRequest(
       Long requestId, String rejectedBy, String rejectionReason) {
     LeaveRequest leaveRequest = getLeaveRequest(requestId);
@@ -79,25 +101,40 @@ public class LeaveRequestService {
     return mapToDto(leaveRequestRepository.save(leaveRequest));
   }
 
+  /**
+   * Retrieves a leave request by id.
+   */
   @Transactional(readOnly = true)
   public LeaveRequestDto getLeaveRequestById(Long requestId) {
     return mapToDto(getLeaveRequest(requestId));
   }
 
+  /**
+   * Deletes a leave request by id.
+   */
   public void deleteLeaveRequest(Long requestId) {
     leaveRequestRepository.delete(getLeaveRequest(requestId));
   }
 
+  /**
+   * Returns the default allocated leave balance for a leave type.
+   */
   @Transactional(readOnly = true)
   public Double getLeaveBalance(Long employeeId, String leaveType) {
     return getDefaultLeaveAllocation(leaveType);
   }
 
+  /**
+   * Checks whether an employee already has leave overlapping a date range.
+   */
   @Transactional(readOnly = true)
   public boolean hasOverlappingLeave(Long employeeId, LocalDate startDate, LocalDate endDate) {
     return !leaveRequestRepository.findOverlappingLeaveRequests(employeeId, startDate, endDate).isEmpty();
   }
 
+  /**
+   * Builds aggregate leave request statistics.
+   */
   @Transactional(readOnly = true)
   public LeaveStatistics getLeaveStatistics() {
     return LeaveStatistics.builder()
@@ -107,12 +144,18 @@ public class LeaveRequestService {
         .build();
   }
 
+  /**
+   * Loads a leave request or fails when it does not exist.
+   */
   private LeaveRequest getLeaveRequest(Long requestId) {
     return leaveRequestRepository
         .findById(requestId)
         .orElseThrow(() -> new IllegalArgumentException("Leave request not found"));
   }
 
+  /**
+   * Validates leave dates before creating a request.
+   */
   private void validateLeaveRequest(CreateLeaveRequestDto request) {
     if (request.getStartDate().isAfter(request.getEndDate())) {
       throw new IllegalArgumentException("Start date must be before or equal to end date");
@@ -122,6 +165,9 @@ public class LeaveRequestService {
     }
   }
 
+  /**
+   * Returns the default yearly leave allocation for the requested type.
+   */
   private double getDefaultLeaveAllocation(String leaveType) {
     return switch (leaveType.toUpperCase()) {
       case "VACATION" -> 25.0;
@@ -133,6 +179,9 @@ public class LeaveRequestService {
     };
   }
 
+  /**
+   * Converts a LeaveRequest entity into the API DTO.
+   */
   private LeaveRequestDto mapToDto(LeaveRequest leaveRequest) {
     Long employeeId =
         leaveRequest.getEmployeeRequester() == null ? null : leaveRequest.getEmployeeRequester().getId();
@@ -151,6 +200,9 @@ public class LeaveRequestService {
         .build();
   }
 
+  /**
+   * Resolves the employee display name with a fallback for missing employee records.
+   */
   private String getEmployeeName(Long employeeId) {
     try {
       var employee = employeeService.getEmployee(employeeId);
@@ -160,6 +212,9 @@ public class LeaveRequestService {
     }
   }
 
+  /**
+   * DTO-like container for aggregated leave statistics.
+   */
   @lombok.Data
   @lombok.Builder
   public static class LeaveStatistics {

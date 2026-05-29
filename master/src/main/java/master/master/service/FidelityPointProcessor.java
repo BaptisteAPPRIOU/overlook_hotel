@@ -22,12 +22,16 @@ public class FidelityPointProcessor {
     this.reservationRepository = reservationRepository;
   }
 
+  /**
+   * Awards points every night for reservations that ended the previous day.
+   */
   @Scheduled(cron = "0 0 2 * * *")
   public void processCompletedReservations() {
     LocalDate yesterday = LocalDate.now().minusDays(1);
     reservationRepository.findAll().stream()
         .filter(
             reservation ->
+                // Only paid reservations that have just completed should be processed automatically.
                 reservation.getClient() != null
                     && Boolean.TRUE.equals(reservation.getPaid())
                     && reservation.getEndDatetime() != null
@@ -39,6 +43,9 @@ public class FidelityPointProcessor {
     logger.info("Fidelity point processing completed.");
   }
 
+  /**
+   * Recalculates fidelity points for every client that has at least one reservation.
+   */
   public int manualProcessAllReservations() {
     return (int)
         reservationRepository.findAll().stream()
@@ -49,6 +56,9 @@ public class FidelityPointProcessor {
             .count();
   }
 
+  /**
+   * Recalculates fidelity points for one user on demand.
+   */
   public boolean processUserFidelityPoints(Long userId) {
     fidelityPointService.recalculateAllPoints(userId);
     return true;

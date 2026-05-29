@@ -29,7 +29,9 @@ public class EmployeeService {
   private final PasswordEncoder passwordEncoder;
   private final UserRoleService userRoleService;
 
-  // Constructor to inject dependencies
+  /**
+   * Injects repositories and helpers required to manage employee user accounts.
+   */
   public EmployeeService(
       UserRepository userRepository,
       EmployeeRepository employeeRepository,
@@ -41,17 +43,21 @@ public class EmployeeService {
     this.userRoleService = userRoleService;
   }
 
-  // This method creates a new employee and automatically creates a User account for them.
+  /**
+   * Creates a user account and the linked Employee profile.
+   */
   public Employee createEmployee(CreateEmployeeRequestDto request) {
     User user = new User();
     user.setFirstName(request.getFirstName());
     user.setLastName(request.getLastName());
     user.setEmail(request.getEmail());
+    // Passwords are encoded before persistence so raw credentials are never stored.
     user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
     userRoleService.assignRole(user, RoleCode.EMPLOYEE);
     user = userRepository.save(user);
 
     Employee employee = new Employee();
+    // Employee uses @MapsId, so the employee id is shared with the linked user id.
     employee.setUser(user);
     employee.setMatricule("EMP-" + user.getId());
     employee.setEmployeeStatus(EmployeeStatus.ACTIVE);
@@ -59,19 +65,25 @@ public class EmployeeService {
     return employeeRepository.save(employee);
   }
 
-  // This method retrieves an employee by their ID.
+  /**
+   * Retrieves an employee by id or returns an HTTP 404 error.
+   */
   public Employee getEmployee(Long id) {
     return employeeRepository
         .findById(id)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found"));
   }
 
-  // This method retrieves all employees in the system.
+  /**
+   * Retrieves all employees in the system.
+   */
   public List<Employee> getAllEmployees() {
     return employeeRepository.findAll();
   }
 
-  // This method updates an existing employee's details.
+  /**
+   * Updates the user profile fields attached to an employee.
+   */
   public Employee updateEmployee(Long id, CreateEmployeeRequestDto request) {
     Employee employee = getEmployee(id);
     User user = employee.getUser();
@@ -82,7 +94,9 @@ public class EmployeeService {
     return employeeRepository.save(employee);
   }
 
-  // This method deletes an employee and their associated User account.
+  /**
+   * Deletes an employee profile and its associated user account.
+   */
   public void deleteEmployee(Long id) {
     if (!employeeRepository.existsById(id)) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found");

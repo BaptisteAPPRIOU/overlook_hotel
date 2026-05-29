@@ -28,7 +28,9 @@ public class ClientService {
     this.reservationRepository = reservationRepository;
   }
 
-  // This method creates a new client from a User entity.
+  /**
+   * Creates a Client profile for a user that has the CLIENT role.
+   */
   @Transactional
   public void createFromUser(User user) {
     if (user == null || user.getId() == null || repo.existsById(user.getId())) {
@@ -36,18 +38,23 @@ public class ClientService {
     }
     if (user.getRoles().stream().anyMatch(role -> role.getRoleCode() == RoleCode.CLIENT)) {
       Client c = new Client();
+      // Client uses @MapsId, so the client id is shared with the linked user id.
       c.setUser(user);
       c.setFidelityPoints(0);
       repo.save(c);
     }
   }
 
-  // This method retrieves all clients in the system.
+  /**
+   * Retrieves all client profiles visible through the API.
+   */
   public List<ClientDto.Info> findAllClients() {
     return repo.findAllByUserRoleCode(RoleCode.CLIENT).stream().map(mapper::toDto).toList();
   }
 
-  // This method retrieves a specific client by their user ID.
+  /**
+   * Retrieves one client profile by its shared user id.
+   */
   public ClientDto.Info findOneClient(Long userId) {
     Client c =
         repo.findByUserIdAndUserRoleCode(userId, RoleCode.CLIENT)
@@ -55,7 +62,9 @@ public class ClientService {
     return mapper.toDto(c);
   }
 
-  // This method updates an existing client's details.
+  /**
+   * Updates a client profile from an update DTO.
+   */
   @Transactional
   public ClientDto.Info update(ClientDto.Update dto) {
     Client c =
@@ -65,7 +74,9 @@ public class ClientService {
     return mapper.toDto(c);
   }
 
-  // This method deletes a client and their associated User account.
+  /**
+   * Deletes a client profile by its shared user id.
+   */
   @Transactional
   public void delete(Long userId) {
     Client c =
@@ -78,7 +89,9 @@ public class ClientService {
   // FIDELITY POINTS MANAGEMENT
   // ===============================
 
-  /** Get fidelity points for a specific client */
+  /**
+   * Returns the current fidelity point balance for a client.
+   */
   public int getFidelityPoints(Long userId) {
     Client client =
         repo.findByUserIdAndUserRoleCode(userId, RoleCode.CLIENT)
@@ -87,10 +100,7 @@ public class ClientService {
   }
 
   /**
-   * Add fidelity points to a client
-   *
-   * @param userId The client's user ID
-   * @param points Points to add (can be negative to subtract)
+   * Adds or subtracts fidelity points while keeping the balance non-negative.
    */
   @Transactional
   public int addFidelityPoints(Long userId, int points) {
@@ -99,7 +109,7 @@ public class ClientService {
             .orElseThrow(() -> new RuntimeException("Client not found"));
 
     int newTotal =
-        Math.max(0, client.getFidelityPoints() + points); // Ensure points don't go below 0
+        Math.max(0, client.getFidelityPoints() + points); // Fidelity points cannot go below zero.
     client.setFidelityPoints(newTotal);
     repo.save(client);
 
@@ -107,13 +117,12 @@ public class ClientService {
   }
 
   /**
-   * Calculate and award fidelity points based on a reservation Formula: 10 points per night + 50
-   * bonus points if reservation is > 7 nights
+   * Calculates and awards fidelity points for a paid reservation.
    */
   @Transactional
   public int awardPointsForReservation(Long userId, Reservation reservation) {
     if (!Boolean.TRUE.equals(reservation.getPaid())) {
-      return 0; // Only award points for paid reservations
+      return 0; // Only paid reservations can generate fidelity points.
     }
 
     int nights =
@@ -123,14 +132,14 @@ public class ClientService {
                         reservation.getStartDatetime(), reservation.getEndDatetime())
                     .toDays()
             : 0;
-    int pointsToAward = nights * 10; // 10 points per night
+    int pointsToAward = nights * 10; // Base rule: 10 points per night.
 
-    // Bonus for long stays
+    // Long stays receive a fixed bonus.
     if (nights > 7) {
       pointsToAward += 50;
     }
 
-    // Bonus for early check-in (reservation made more than 30 days in advance)
+    // Reservations made more than 30 days in advance receive an early booking bonus.
     if (reservation.getStartDatetime() != null
         && reservation.getStartDatetime().toLocalDate().isAfter(LocalDate.now().plusDays(30))) {
       pointsToAward += 25;
@@ -140,11 +149,7 @@ public class ClientService {
   }
 
   /**
-   * Redeem fidelity points for discounts
-   *
-   * @param userId The client's user ID
-   * @param pointsToRedeem Points to redeem
-   * @return true if redemption was successful, false if insufficient points
+   * Redeems fidelity points when the client has a sufficient balance.
    */
   @Transactional
   public boolean redeemFidelityPoints(Long userId, int pointsToRedeem) {
@@ -161,7 +166,9 @@ public class ClientService {
     return false;
   }
 
-  /** Get fidelity level based on points */
+  /**
+   * Resolves the fidelity level for the current point balance.
+   */
   public String getFidelityLevel(Long userId) {
     int points = getFidelityPoints(userId);
 
@@ -176,7 +183,9 @@ public class ClientService {
     }
   }
 
-  /** Get discount percentage based on fidelity level */
+  /**
+   * Returns the discount percentage associated with the client's fidelity level.
+   */
   public double getDiscountPercentage(Long userId) {
     String level = getFidelityLevel(userId);
 
@@ -188,7 +197,9 @@ public class ClientService {
     };
   }
 
-  /** Get all reservations for a client (for fidelity calculation) */
+  /**
+   * Retrieves all reservations used to calculate fidelity points for a client.
+   */
   public List<Reservation> getClientReservations(Long userId) {
     return reservationRepository.findByClientId(userId);
   }

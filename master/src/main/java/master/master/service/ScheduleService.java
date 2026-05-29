@@ -27,30 +27,47 @@ public class ScheduleService {
     this.employeeWorkdayService = employeeWorkdayService;
   }
 
+  /**
+   * Returns weekly schedules for all employees.
+   */
   public List<WeeklyScheduleDto> getWeeklySchedules() {
     return employeeWorkdayService.getWeeklySchedules();
   }
 
+  /**
+   * Returns schedules for the current month.
+   */
   public List<MonthlyScheduleDto> getMonthlySchedules() {
     return employeeWorkdayService.getMonthlySchedules(LocalDate.now().getMonth());
   }
 
+  /**
+   * Returns schedules included in the requested date range.
+   */
   public List<DateRangeScheduleDto> getSchedulesByDateRange(
       LocalDate startDate, LocalDate endDate) {
     return employeeWorkdayService.getSchedulesInRange(startDate, endDate);
   }
 
+  /**
+   * Exports a CSV header for timesheet data.
+   */
   public byte[] exportTimesheetData() {
+    // The endpoint currently returns a header-only CSV scaffold.
     return "Employee Name,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday\n"
         .getBytes(StandardCharsets.UTF_8);
   }
 
+  /**
+   * Builds a simple attendance report from configured workdays.
+   */
   public AttendanceReportDto getAttendanceReport(Long employeeId, String period) {
     Employee employee =
         employeeRepository
             .findById(employeeId)
             .orElseThrow(() -> new RuntimeException("Employee not found"));
     int expectedWorkdays = employeeWorkdayService.getWorkdaysByEmployeeId(employeeId).size();
+    // Until actual time entries are included, expected workdays are treated as present full days.
     return AttendanceReportDto.builder()
         .employeeId(employeeId)
         .employeeName(employee.getFullName())
@@ -63,10 +80,16 @@ public class ScheduleService {
         .build();
   }
 
+  /**
+   * Returns the configured work schedule for one employee.
+   */
   public EmployeeWorkScheduleDto getEmployeeWorkSchedule(Long employeeId) {
     return employeeWorkdayService.getEmployeeWorkSchedule(employeeId);
   }
 
+  /**
+   * Updates an employee work schedule from selected working days.
+   */
   public void updateEmployeeWorkSchedule(Long employeeId, List<WorkdayDto> workdays) {
     employeeWorkdayService.setWorkdays(
         employeeId,

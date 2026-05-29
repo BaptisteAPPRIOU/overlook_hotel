@@ -34,6 +34,9 @@ public class CustomUserDetailsService implements UserDetailsService {
     this.userRepository = userRepository;
   }
 
+  /**
+   * Loads a user by email and converts their roles into Spring Security authorities.
+   */
   @Override
   @Transactional(readOnly = true)
   public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -45,6 +48,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         user.getEmail(),
         user.getPasswordHash(),
         user.getRoles().stream()
+            // Authorities must match the strings checked by SecurityConfig, such as ADMIN.
             .map(role -> new SimpleGrantedAuthority(role.getRoleCode().name()))
             .map(SimpleGrantedAuthority.class::cast)
             .collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new)));

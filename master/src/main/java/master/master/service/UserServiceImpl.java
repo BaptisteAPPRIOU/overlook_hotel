@@ -38,7 +38,9 @@ public class UserServiceImpl implements UserService {
     this.clientService = clientService;
   }
 
-  // This method registers a new user with the provided details.
+  /**
+   * Registers a new client user and creates the matching Client profile.
+   */
   @Override
   @Transactional
   public User register(RegisterRequestDto dto) {
@@ -46,22 +48,29 @@ public class UserServiceImpl implements UserService {
     user.setEmail(dto.getEmail());
     user.setFirstName(dto.getFirstName());
     user.setLastName(dto.getLastName());
+    // The password is encoded before saving the user account.
     user.setPasswordHash(encoder.encode(dto.getPassword()));
     userRoleService.assignRole(user, RoleCode.CLIENT);
     User savedUser = userRepo.save(user);
+    // Registration creates the domain-specific client profile after the User id exists.
     clientService.createFromUser(savedUser);
     return savedUser;
   }
 
-  // This method authenticates a user and returns a JWT token.
+  /**
+   * Authenticates the credentials and generates a JWT for the email.
+   */
   @Override
   public String authenticateAndGetToken(LoginRequestDto dto) {
+    // AuthenticationManager delegates password verification to the configured security providers.
     authManager.authenticate(
         new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword()));
     return jwtUtil.generateToken(dto.getEmail());
   }
 
-  // This method retrieves a user by their email address.
+  /**
+   * Retrieves a user by email or fails when the account does not exist.
+   */
   @Override
   public User findByEmail(String email) {
     User user = userRepo.findByEmail(email);

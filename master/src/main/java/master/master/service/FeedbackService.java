@@ -25,7 +25,9 @@ public class FeedbackService {
     this.mapper = mapper;
   }
 
-  // This method creates a new feedback entry for a user.
+  /**
+   * Creates a new feedback entry for the requested user.
+   */
   @Transactional
   public FeedbackDto.Info create(Long userId, FeedbackDto.Create dto) {
     User user =
@@ -33,11 +35,14 @@ public class FeedbackService {
             .findById(userId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found"));
     HotelFeedback fb = mapper.toEntity(dto);
+    // The mapper ignores the user because the authenticated user is supplied by the service.
     fb.setUser(user);
     return mapper.toDto(repo.save(fb));
   }
 
-  // This method retrieves all feedback entries made by a specific user.
+  /**
+   * Retrieves all feedback entries created by a specific user.
+   */
   public List<FeedbackDto.Info> findByUser(Long userId) {
     return repo.findByUser_Id(userId).stream().map(mapper::toDto).toList();
   }

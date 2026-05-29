@@ -33,7 +33,9 @@ public class ReservationService {
     this.mapper = mapper;
   }
 
-  // This method creates a new reservation for a user.
+  /**
+   * Creates a reservation for a client and room.
+   */
   @Transactional
   public ReservationDto.Info create(Long userId, ReservationDto.Create dto) {
     Client client =
@@ -47,16 +49,20 @@ public class ReservationService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found"));
 
     Reservation ur = mapper.toEntity(dto);
+    // Client and room are resolved by the service instead of being trusted from the DTO.
     ur.setClient(client);
     ur.setRoom(room);
     ur.setReservationStatus(ReservationStatus.PENDING);
     ur.setPaid(false);
+    // The current implementation uses the room base price as the reservation amount.
     ur.setTotalAmount(room.getBasePrice() != null ? room.getBasePrice() : BigDecimal.ZERO);
 
     return mapper.toDto(repo.save(ur));
   }
 
-  // This method retrieves all reservations made by a specific user.
+  /**
+   * Retrieves all reservations made by a specific client user id.
+   */
   public List<ReservationDto.Info> findByUser(Long userId) {
     return repo.findByClientId(userId).stream().map(mapper::toDto).toList();
   }

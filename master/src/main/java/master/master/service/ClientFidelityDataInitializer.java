@@ -24,6 +24,9 @@ public class ClientFidelityDataInitializer implements CommandLineRunner {
     this.clientRepository = clientRepository;
   }
 
+  /**
+   * Initializes missing client fidelity point balances when the application starts.
+   */
   @Override
   @Transactional
   public void run(String... args) throws Exception {
@@ -35,6 +38,7 @@ public class ClientFidelityDataInitializer implements CommandLineRunner {
 
       for (Client client : allClients) {
         if (client.getFidelityPoint() == null) {
+          // Existing rows may predate the fidelity feature, so null balances are normalized to zero.
           logger.info(
               String.format("Initializing fidelity points for client ID: %d", client.getUserId()));
           client.setFidelityPoint(0);

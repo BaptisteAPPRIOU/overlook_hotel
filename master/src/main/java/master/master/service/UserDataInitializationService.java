@@ -59,6 +59,9 @@ public class UserDataInitializationService implements ApplicationRunner {
     this.userRoleService = userRoleService;
   }
 
+  /**
+   * Runs seed data initialization during application startup when seeding is enabled.
+   */
   @Override
   public void run(ApplicationArguments args) throws Exception {
     try {
@@ -66,14 +69,16 @@ public class UserDataInitializationService implements ApplicationRunner {
       initializeDefaultRooms();
       initializeDefaultReviews();
     } catch (Exception e) {
-      // Log error but don't fail application startup
+      // Seed data is optional, so startup continues even if a seed step fails.
       System.err.println("Warning: Could not initialize data: " + e.getMessage());
     }
   }
 
-  /** Initialize default users if none exist. */
+  /**
+   * Initializes default users when the users table is empty.
+   */
   public void initializeDefaultUsers() {
-    // Check if users already exist
+    // Existing users mean the database has already been seeded or configured manually.
     if (userRepository.count() > 0) {
       System.out.println("Users already exist in database, skipping initialization");
       return;
@@ -81,24 +86,20 @@ public class UserDataInitializationService implements ApplicationRunner {
 
     System.out.println("Initializing default users...");
 
-    // Create default admin user
+    // The default users cover the main authentication roles used by the application.
     createAdminUser();
-
-    // Create test employee user
     createTestEmployeeUser();
-
-    // Create test client user
     createTestClientUser();
-
-    // Create additional client users
     createAdditionalClientUsers();
 
     System.out.println("Default users created successfully");
   }
 
-  /** Initialize default rooms if none exist. */
+  /**
+   * Initializes default rooms or backfills missing image URLs.
+   */
   public void initializeDefaultRooms() {
-    // Check if rooms already exist
+    // Existing rooms are kept, but missing images are filled for the website UI.
     if (roomRepository.count() > 0) {
       System.out.println("Rooms already exist in database, checking for missing image URLs...");
       updateRoomsWithImageUrls();
@@ -107,13 +108,14 @@ public class UserDataInitializationService implements ApplicationRunner {
 
     System.out.println("Initializing default rooms...");
 
-    // Create sample rooms with French hotel imagery
     createSampleRooms();
 
     System.out.println("Default rooms created successfully");
   }
 
-  /** Update existing rooms with image URLs if they're missing. */
+  /**
+   * Updates existing rooms with image URLs when they are missing.
+   */
   private void updateRoomsWithImageUrls() {
     List<Room> roomsWithoutImages =
         roomRepository.findAll().stream()
@@ -127,7 +129,7 @@ public class UserDataInitializationService implements ApplicationRunner {
 
     System.out.println("Updating " + roomsWithoutImages.size() + " rooms with image URLs...");
 
-    // Define room images based on room numbers (mapping to our original creation logic)
+    // The mapping preserves the original seed image choice for known room numbers.
     Map<String, String> roomImageUrls =
         Map.of(
             "101",
@@ -163,6 +165,9 @@ public class UserDataInitializationService implements ApplicationRunner {
     System.out.println("Finished updating rooms with image URLs");
   }
 
+  /**
+   * Creates the default administrator user.
+   */
   private void createAdminUser() {
     User admin = new User();
     admin.setFirstName("Admin");
@@ -174,6 +179,9 @@ public class UserDataInitializationService implements ApplicationRunner {
     System.out.println("Created admin user: Admin@dev.com / admin123");
   }
 
+  /**
+   * Creates a sample employee user and its Employee profile.
+   */
   private void createTestEmployeeUser() {
     User employee = new User();
     employee.setFirstName("John");
@@ -183,9 +191,9 @@ public class UserDataInitializationService implements ApplicationRunner {
     userRoleService.assignRole(employee, RoleCode.EMPLOYEE);
     User savedEmployee = userRepository.save(employee);
 
-    // Create corresponding Employee record
+    // Employee uses @MapsId, so assigning the user links both records to the same id.
     Employee employeeRecord = new Employee();
-    employeeRecord.setUser(savedEmployee); // Only set the user - @MapsId will handle the userId
+    employeeRecord.setUser(savedEmployee);
     employeeRecord.setMatricule("EMP-" + savedEmployee.getId());
     employeeRecord.setEmployeeStatus(EmployeeStatus.ACTIVE);
     employeeRecord.setHireDate(LocalDate.now());
@@ -194,6 +202,9 @@ public class UserDataInitializationService implements ApplicationRunner {
     System.out.println("Created employee user: john.doe@olh.fr / employee123");
   }
 
+  /**
+   * Creates a sample client user and its Client profile.
+   */
   private void createTestClientUser() {
     User client = new User();
     client.setFirstName("Jane");
@@ -203,15 +214,18 @@ public class UserDataInitializationService implements ApplicationRunner {
     userRoleService.assignRole(client, RoleCode.CLIENT);
     User savedClient = userRepository.save(client);
 
-    // Create corresponding Client record
+    // Client uses @MapsId, so assigning the user links both records to the same id.
     Client clientRecord = new Client();
-    clientRecord.setUser(savedClient); // Only set the user - @MapsId will handle the userId
-    clientRecord.setFidelityPoint(0); // Start with 0 fidelity points
+    clientRecord.setUser(savedClient);
+    clientRecord.setFidelityPoint(0);
     clientRepository.save(clientRecord);
 
     System.out.println("Created client user: jane.smith@olh.fr / client123");
   }
 
+  /**
+   * Creates additional sample client accounts with different loyalty balances.
+   */
   private void createAdditionalClientUsers() {
     // Create Pierre Martin - a business traveler
     createClientUser("Pierre", "Martin", "pierre.martin@business.fr", "pierre123", 150);
@@ -226,6 +240,9 @@ public class UserDataInitializationService implements ApplicationRunner {
     createClientUser("Sophie", "Laurent", "sophie.laurent@vip.fr", "sophie123", 500);
   }
 
+  /**
+   * Creates one seeded client user and matching Client profile.
+   */
   private void createClientUser(
       String firstName, String lastName, String email, String password, int fidelityPoints) {
     User client = new User();
@@ -236,9 +253,9 @@ public class UserDataInitializationService implements ApplicationRunner {
     userRoleService.assignRole(client, RoleCode.CLIENT);
     User savedClient = userRepository.save(client);
 
-    // Create corresponding Client record
+    // Client uses @MapsId, so assigning the user links both records to the same id.
     Client clientRecord = new Client();
-    clientRecord.setUser(savedClient); // Only set the user - @MapsId will handle the userId
+    clientRecord.setUser(savedClient);
     clientRecord.setFidelityPoint(fidelityPoints);
     clientRepository.save(clientRecord);
 
@@ -252,9 +269,10 @@ public class UserDataInitializationService implements ApplicationRunner {
             + ")");
   }
 
+  /**
+   * Creates the default room catalog used by development and demo environments.
+   */
   private void createSampleRooms() {
-    // Create diverse room types with French hotel room images
-
     // Standard rooms
     createRoom(
         "101",
@@ -383,6 +401,9 @@ public class UserDataInitializationService implements ApplicationRunner {
         Arrays.asList("Free WiFi", "Private terrace", "Fireplace", "Desk", "Kitchenette"));
   }
 
+  /**
+   * Creates and persists one seeded room.
+   */
   private void createRoom(
       String number,
       RoomType type,
@@ -404,21 +425,25 @@ public class UserDataInitializationService implements ApplicationRunner {
             .amenities(amenities)
             .hasProjector(type == RoomType.SUITE)
             .hasVideoConference(type == RoomType.SUITE || type == RoomType.JUNIOR_SUITE)
-            .hasWhiteboard(false) // Hotel rooms typically don't have whiteboards
-            .hasAirConditioning(true) // All rooms have AC in a luxury hotel
+            .hasWhiteboard(false) // Hotel rooms typically do not have whiteboards.
+            .hasAirConditioning(true) // All seeded rooms have AC in this luxury hotel.
             .build();
 
     roomRepository.save(room);
     System.out.println("Created room: " + number + " (" + type + ")");
   }
 
-  /** Initialize default validated reviews for demonstration. */
+  /**
+   * Initializes default validated reviews for demonstration.
+   */
   private void initializeDefaultReviews() {
     System.out.println("Skipping demo review initialization for normalized reservation reviews.");
   }
 
-  /** Create a validated review (approved by admin). */
+  /**
+   * Creates a validated review for legacy callers.
+   */
   private void createValidatedReview(Long authorId, Long roomId, int rating, String comment) {
-    // Reviews are now attached to reservations through RoomReview.
+    // Reviews are now attached to reservations through RoomReview, so this legacy method is empty.
   }
 }

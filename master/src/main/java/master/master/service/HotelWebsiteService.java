@@ -45,43 +45,44 @@ public class HotelWebsiteService {
   }
 
   /**
-   * Get available rooms for specific dates and guest count. Filters by room capacity and
-   * availability status.
+   * Returns available hotel rooms for the requested dates and guest count.
    */
   public List<Map<String, Object>> getAvailableRooms(
       LocalDate checkIn, LocalDate checkOut, int adults, int children) {
     int totalGuests = adults + children;
 
-    // Get all available rooms that can accommodate the guests
+    // This currently checks room status and capacity; reservation overlap checks can be added here.
     List<Room> availableRooms =
         roomRepository.findAll().stream()
             .filter(room -> room.getStatus() == RoomStatus.AVAILABLE)
-            .filter(room -> room.getType().isHotelRoom()) // Hotel rooms
+            .filter(room -> room.getType().isHotelRoom())
             .filter(room -> room.getCapacity() != null && room.getCapacity() >= totalGuests)
             .collect(Collectors.toList());
 
     return availableRooms.stream().map(this::convertRoomToMap).collect(Collectors.toList());
   }
 
-  /** Get all room types with basic information. */
+  /**
+   * Returns all hotel room types with basic display information.
+   */
   public List<Map<String, Object>> getAllRoomTypes() {
     List<Room> allRooms =
         roomRepository.findAll().stream()
-            .filter(room -> room.getType().isHotelRoom()) // Hotel rooms
+            .filter(room -> room.getType().isHotelRoom())
             .collect(Collectors.toList());
 
     return allRooms.stream().map(this::convertRoomToMap).collect(Collectors.toList());
   }
 
   /**
-   * Get validated guest reviews for the "Livret d'Or". Only returns reviews that have been verified
-   * by an admin.
+   * Returns validated guest reviews for the public guestbook.
    */
   public List<Map<String, Object>> getValidatedReviews(int offset, int limit) {
     List<RoomReview> verifiedReviews =
         reviewRepository.findAll().stream()
             .filter(review -> Boolean.TRUE.equals(review.getVerified()))
             .sorted((r1, r2) -> r2.getCreatedAt().compareTo(r1.getCreatedAt()))
+            // Offset and limit provide simple pagination for the guestbook.
             .skip(offset)
             .limit(limit)
             .collect(Collectors.toList());
@@ -89,25 +90,29 @@ public class HotelWebsiteService {
     return verifiedReviews.stream().map(this::convertReviewToMap).collect(Collectors.toList());
   }
 
-  /** Get latest validated reviews (most recent first). */
+  /**
+   * Returns the latest validated reviews.
+   */
   public List<Map<String, Object>> getLatestValidatedReviews(int limit) {
     return getValidatedReviews(0, limit);
   }
 
-  /** Create a reservation request. */
+  /**
+   * Creates a reservation request from website form data.
+   */
   @Transactional
   public Map<String, Object> createReservationRequest(Map<String, Object> reservationData) {
     Map<String, Object> result = new HashMap<>();
 
     try {
-      // Extract reservation data
+      // Website forms send generic map values, so each field is parsed explicitly.
       Long roomId = Long.valueOf(reservationData.get("roomId").toString());
       Long userId = Long.valueOf(reservationData.get("userId").toString());
       LocalDate checkIn = LocalDate.parse(reservationData.get("checkIn").toString());
       LocalDate checkOut = LocalDate.parse(reservationData.get("checkOut").toString());
       Boolean payNow = Boolean.valueOf(reservationData.get("payNow").toString());
 
-      // Verify room availability
+      // The room must exist and still be marked available before creating the reservation.
       Optional<Room> roomOpt = roomRepository.findById(roomId);
       if (!roomOpt.isPresent()) {
         result.put("success", false);
@@ -129,6 +134,7 @@ public class HotelWebsiteService {
               .flatMap(user -> Optional.ofNullable(user.getClientProfile()))
               .orElseThrow(() -> new IllegalArgumentException("Client not found")));
       reservation.setRoom(room);
+      // Date-only website input is expanded to full-day reservation boundaries.
       reservation.setStartDatetime(checkIn.atStartOfDay());
       reservation.setEndDatetime(checkOut.atTime(23, 59, 59));
       reservation.setPaid(payNow);
@@ -138,7 +144,7 @@ public class HotelWebsiteService {
 
       reservationRepository.save(reservation);
 
-      // Update room status to reserved
+      // Mark the room as reserved immediately so it no longer appears as available.
       room.setStatus(RoomStatus.RESERVED);
       roomRepository.save(room);
 
@@ -155,16 +161,17 @@ public class HotelWebsiteService {
     return result;
   }
 
-  /** Get hotel information and statistics. */
+  /**
+   * Returns static hotel information combined with database statistics.
+   */
   public Map<String, Object> getHotelInformation() {
     Map<String, Object> hotelInfo = new HashMap<>();
 
-    // Basic hotel information
+    // Static content is mixed with live database counts for the website overview.
     hotelInfo.put("name", "Overlook Hotel");
     hotelInfo.put("description", "A luxury property nestled in the Colorado mountains");
     hotelInfo.put("established", 1907);
 
-    // Statistics from database
     long totalRooms = roomRepository.count();
     long availableRooms =
         roomRepository.findAll().stream()
@@ -188,7 +195,9 @@ public class HotelWebsiteService {
     return hotelInfo;
   }
 
-  /** Convert Room entity to Map for API response. */
+  /**
+   * Converts a Room entity to the map shape expected by the website API.
+   */
   private Map<String, Object> convertRoomToMap(Room room) {
     Map<String, Object> roomMap = new HashMap<>();
     roomMap.put("id", room.getId());
@@ -205,7 +214,7 @@ public class HotelWebsiteService {
     roomMap.put("status", room.getStatus().getDisplayName());
     roomMap.put("floorNumber", null);
 
-    // Features
+    // Feature flags are kept for frontend compatibility even when not stored by Room.
     Map<String, Boolean> features = new HashMap<>();
     features.put("hasProjector", false);
     features.put("hasWhiteboard", false);
@@ -213,30 +222,31 @@ public class HotelWebsiteService {
     features.put("hasAirConditioning", true);
     roomMap.put("features", features);
 
-    // Amenities from database
+    // Amenities come from normalized Amenity entities when available.
     List<String> amenities =
         room.getAmenities().stream().map(amenity -> amenity.getLabel()).toList();
     if (amenities != null && !amenities.isEmpty()) {
       roomMap.put("amenities", amenities);
     } else {
-      // Fallback amenities if none are set
+      // Fallback amenities keep the website display complete for legacy room data.
       roomMap.put(
           "amenities",
           Arrays.asList("Free WiFi", "Flat-screen TV", "Safe", "Hair dryer"));
     }
 
-    // Get average rating for this room
+    // Ratings are rounded to one decimal for display.
     Double avgRating = reviewRepository.getAverageRatingByRoomId(room.getId());
     roomMap.put("rating", avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0);
 
-    // Get review count for this room
     Long reviewCount = reviewRepository.countByReservationRoomId(room.getId());
     roomMap.put("reviewCount", reviewCount != null ? reviewCount : 0);
 
     return roomMap;
   }
 
-  /** Convert RoomReview entity to Map for API response. */
+  /**
+   * Converts a RoomReview entity to the map shape expected by the website API.
+   */
   private Map<String, Object> convertReviewToMap(RoomReview review) {
     Map<String, Object> reviewMap = new HashMap<>();
     reviewMap.put("id", review.getId());
@@ -247,7 +257,7 @@ public class HotelWebsiteService {
     reviewMap.put("isAnonymous", Boolean.TRUE.equals(review.getAnonymous()));
     reviewMap.put("helpfulCount", 0);
 
-    // Get room information
+    // Room data is included only when the review still has a complete reservation relation.
     if (review.getReservation() != null && review.getReservation().getRoom() != null) {
       Room room = review.getReservation().getRoom();
       reviewMap.put("roomNumber", room.getNumber());
@@ -255,11 +265,11 @@ public class HotelWebsiteService {
           "roomName", room.getName() != null ? room.getName() : "Room " + room.getNumber());
     }
 
-    // Get author information (if not anonymous)
+    // Anonymous reviews hide the real client name from public responses.
     if (!Boolean.TRUE.equals(review.getAnonymous())) {
       if (review.getReservation() != null && review.getReservation().getClient() != null) {
         User user = review.getReservation().getClient().getUser();
-        // Only show first name for privacy
+        // Only the first name is shown for privacy.
         String authorName = user.getFirstName() != null ? user.getFirstName() : "Client";
         reviewMap.put("authorName", authorName);
       } else {
@@ -272,9 +282,11 @@ public class HotelWebsiteService {
     return reviewMap;
   }
 
-  /** Calculate total price for a stay. */
+  /**
+   * Calculates the total stay price from the nightly room price and number of nights.
+   */
   private double calculateTotalPrice(Double roomPrice, LocalDate checkIn, LocalDate checkOut) {
-    if (roomPrice == null) roomPrice = 150.0; // Default price
+    if (roomPrice == null) roomPrice = 150.0; // Default price used when legacy rooms have no price.
     long nights = checkIn.until(checkOut).getDays();
     return roomPrice * nights;
   }

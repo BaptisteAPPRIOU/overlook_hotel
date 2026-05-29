@@ -16,16 +16,23 @@ public class UserRoleService {
     this.roleRepository = roleRepository;
   }
 
+  /**
+   * Replaces the user's current roles with the requested role.
+   */
   @Transactional
   public void assignRole(User user, RoleCode roleCode) {
     Role role =
         roleRepository
             .findByRoleCode(roleCode)
             .orElseGet(() -> roleRepository.save(createRole(roleCode)));
+    // The application currently expects one active role per user.
     user.getRoles().clear();
     user.getRoles().add(role);
   }
 
+  /**
+   * Creates a missing role record from a stable RoleCode value.
+   */
   private Role createRole(RoleCode roleCode) {
     Role role = new Role();
     role.setRoleCode(roleCode);

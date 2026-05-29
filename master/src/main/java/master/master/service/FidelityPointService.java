@@ -23,16 +23,23 @@ public class FidelityPointService {
     this.reservationRepository = reservationRepository;
   }
 
+  /**
+   * Returns the current point balance and initializes missing balances to zero.
+   */
   @Transactional
   public int getCurrentPoints(Long userId) {
     Client client = getClient(userId);
     if (client.getFidelityPoints() == null) {
+      // Older client rows may not have a point balance yet.
       client.setFidelityPoints(0);
       clientRepository.save(client);
     }
     return client.getFidelityPoints();
   }
 
+  /**
+   * Resolves the loyalty level from the current point balance.
+   */
   public FidelityLevel getFidelityLevel(Long userId) {
     int points = getCurrentPoints(userId);
     if (points >= 1000) return FidelityLevel.DIAMOND;
@@ -41,10 +48,16 @@ public class FidelityPointService {
     return FidelityLevel.BRONZE;
   }
 
+  /**
+   * Returns the discount percentage attached to the current loyalty level.
+   */
   public double getDiscountPercentage(Long userId) {
     return getFidelityLevel(userId).getDiscountPercentage();
   }
 
+  /**
+   * Calculates points for one reservation without modifying the client balance.
+   */
   public int calculatePointsForReservation(Reservation reservation) {
     if (!Boolean.TRUE.equals(reservation.getPaid())) {
       return 0;
@@ -58,30 +71,42 @@ public class FidelityPointService {
                             reservation.getStartDatetime(), reservation.getEndDatetime())
                         .toDays())
             : 0;
+    // Base rule: 10 points per completed night.
     int points = nights * 10;
     if (nights > 7) points += 50;
     if (reservation.getStartDatetime() != null
         && reservation.getStartDatetime().toLocalDate().isAfter(LocalDate.now().plusDays(30))) {
+      // Early bookings made more than 30 days ahead receive a fixed bonus.
       points += 25;
     }
     return points;
   }
 
+  /**
+   * Calculates and adds points for a reservation.
+   */
   @Transactional
   public int awardPointsForReservation(Long userId, Reservation reservation) {
     return addPoints(userId, calculatePointsForReservation(reservation));
   }
 
+  /**
+   * Adds points to a client balance while preventing negative totals.
+   */
   @Transactional
   public int addPoints(Long userId, int points) {
     Client client = getClient(userId);
     int current = client.getFidelityPoints() == null ? 0 : client.getFidelityPoints();
+    // Negative adjustments are allowed, but the stored balance cannot fall below zero.
     int total = Math.max(0, current + points);
     client.setFidelityPoints(total);
     clientRepository.save(client);
     return total;
   }
 
+  /**
+   * Redeems points when the client has enough balance.
+   */
   @Transactional
   public boolean redeemPoints(Long userId, int pointsToRedeem) {
     Client client = getClient(userId);
@@ -92,6 +117,9 @@ public class FidelityPointService {
     return true;
   }
 
+  /**
+   * Returns how many points are needed to reach the next loyalty level.
+   */
   public int getPointsToNextLevel(Long userId) {
     int current = getCurrentPoints(userId);
     return switch (getFidelityLevel(userId)) {
@@ -102,10 +130,16 @@ public class FidelityPointService {
     };
   }
 
+  /**
+   * Retrieves all reservations attached to a client.
+   */
   public List<Reservation> getClientReservations(Long userId) {
     return reservationRepository.findByClientId(userId);
   }
 
+  /**
+   * Rebuilds the point balance from all paid reservations that have already ended.
+   */
   @Transactional
   public int recalculateAllPoints(Long userId) {
     int total =
@@ -118,17 +152,24 @@ public class FidelityPointService {
             .mapToInt(this::calculatePointsForReservation)
             .sum();
     Client client = getClient(userId);
+    // Recalculation replaces the balance instead of adding to it to avoid duplicate awards.
     client.setFidelityPoints(total);
     clientRepository.save(client);
     return total;
   }
 
+  /**
+   * Builds the complete loyalty summary returned to clients.
+   */
   public FidelitySummary getFidelitySummary(Long userId) {
     int currentPoints = getCurrentPoints(userId);
     return new FidelitySummary(
         currentPoints, getFidelityLevel(userId), getPointsToNextLevel(userId), getDiscountPercentage(userId));
   }
 
+  /**
+   * Processes all completed paid reservations and awards their points.
+   */
   @Transactional
   public void processCompletedReservations() {
     for (Reservation reservation : reservationRepository.findAll()) {
@@ -141,12 +182,18 @@ public class FidelityPointService {
     }
   }
 
+  /**
+   * Retrieves the client profile for a user id.
+   */
   private Client getClient(Long userId) {
     return clientRepository
         .findByUserIdAndUserRoleCode(userId, RoleCode.CLIENT)
         .orElseThrow(() -> new RuntimeException("Client not found"));
   }
 
+  /**
+   * Immutable response object containing the main loyalty information.
+   */
   public static class FidelitySummary {
     private final int currentPoints;
     private final FidelityLevel level;
@@ -161,15 +208,30 @@ public class FidelityPointService {
       this.discountPercentage = discountPercentage;
     }
 
+    /**
+     * Returns the current loyalty point balance.
+     */
     public int getCurrentPoints() { return currentPoints; }
 
+    /**
+     * Returns the current loyalty level.
+     */
     public FidelityLevel getLevel() { return level; }
 
+    /**
+     * Returns the point gap before the next level.
+     */
     public int getPointsToNextLevel() { return pointsToNextLevel; }
 
+    /**
+     * Returns the discount attached to the current level.
+     */
     public double getDiscountPercentage() { return discountPercentage; }
   }
 
+  /**
+   * Defines loyalty levels and their discount percentages.
+   */
   public enum FidelityLevel {
     BRONZE("Bronze", 0.0),
     SILVER("Silver", 0.05),
@@ -184,8 +246,14 @@ public class FidelityPointService {
       this.discountPercentage = discountPercentage;
     }
 
+    /**
+     * Returns the user-facing level name.
+     */
     public String getDisplayName() { return displayName; }
 
+    /**
+     * Returns the discount percentage for this level.
+     */
     public double getDiscountPercentage() { return discountPercentage; }
   }
 }

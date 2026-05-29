@@ -44,6 +44,9 @@ public class EmployeeWorkdayService {
     this.monthlyScheduleRepository = monthlyScheduleRepository;
   }
 
+  /**
+   * Returns the distinct ISO weekday numbers configured for an employee.
+   */
   public List<Integer> getWorkdaysByEmployeeId(Long employeeId) {
     if (employeeId == null) {
       return List.of();
@@ -55,11 +58,15 @@ public class EmployeeWorkdayService {
         .toList();
   }
 
+  /**
+   * Replaces an employee's configured workdays with default planned shifts.
+   */
   public void setWorkdays(Long employeeId, List<Integer> weekdays) {
     Employee employee =
         employeeRepository
             .findById(employeeId)
             .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Employee not found"));
+    // Existing shifts are removed so the workday configuration stays in sync with the input list.
     workShiftRepository.deleteByEmployeeId(employeeId);
     for (Integer weekday : weekdays.stream().distinct().toList()) {
       LocalDate date = nextDateForWeekday(weekday);
@@ -68,6 +75,7 @@ public class EmployeeWorkdayService {
       shift.setMonthlySchedule(scheduleFor(date));
       shift.setWorkDate(date);
       shift.setPlannedStartTime(LocalTime.of(9, 0));
+      // Saturday receives a shorter default shift.
       shift.setPlannedEndTime(weekday == 6 ? LocalTime.of(13, 0) : LocalTime.of(17, 0));
       shift.setShiftType(ShiftType.FULL_DAY);
       shift.setShiftStatus(ShiftStatus.PLANNED);
@@ -75,6 +83,9 @@ public class EmployeeWorkdayService {
     }
   }
 
+  /**
+   * Builds weekly schedule DTOs for all employees.
+   */
   public List<WeeklyScheduleDto> getWeeklySchedules() {
     return employeeRepository.findAll().stream()
         .map(
@@ -94,6 +105,9 @@ public class EmployeeWorkdayService {
         .toList();
   }
 
+  /**
+   * Builds monthly schedule DTOs for all employees.
+   */
   public List<MonthlyScheduleDto> getMonthlySchedules(java.time.Month targetMonth) {
     java.time.Month month = targetMonth == null ? LocalDate.now().getMonth() : targetMonth;
     return employeeRepository.findAll().stream()
@@ -114,10 +128,14 @@ public class EmployeeWorkdayService {
         .toList();
   }
 
+  /**
+   * Groups shifts by employee for a date range.
+   */
   public List<DateRangeScheduleDto> getSchedulesInRange(LocalDate start, LocalDate end) {
     Map<Long, DateRangeScheduleDto> byEmployee = new HashMap<>();
     for (WorkShift shift : workShiftRepository.findByWorkDateBetween(start, end)) {
       Long employeeId = shift.getEmployee().getId();
+      // computeIfAbsent creates one DTO per employee and then appends each date entry.
       byEmployee
           .computeIfAbsent(
               employeeId,
@@ -133,14 +151,23 @@ public class EmployeeWorkdayService {
     return new ArrayList<>(byEmployee.values());
   }
 
+  /**
+   * Checks whether an employee has at least one configured workday.
+   */
   public boolean hasWorkdaysConfigured(Long employeeId) {
     return !getWorkdaysByEmployeeId(employeeId).isEmpty();
   }
 
+  /**
+   * Counts employees that have at least one saved work shift.
+   */
   public long getEmployeesWithWorkdaysCount() {
     return workShiftRepository.findAll().stream().map(shift -> shift.getEmployee().getId()).distinct().count();
   }
 
+  /**
+   * Builds the detailed work schedule for one employee.
+   */
   public EmployeeWorkScheduleDto getEmployeeWorkSchedule(Long employeeId) {
     Employee employee =
         employeeRepository
@@ -150,6 +177,7 @@ public class EmployeeWorkdayService {
     String[] names = {"", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
     List<WorkdayDto> days = new ArrayList<>();
     for (int i = 1; i <= 7; i++) {
+      // The array is one-indexed so ISO day values can be used directly.
       days.add(
           WorkdayDto.builder()
               .dayOfWeek(i)
@@ -167,15 +195,22 @@ public class EmployeeWorkdayService {
         .build();
   }
 
+  /**
+   * Returns the next date for the requested ISO weekday number.
+   */
   private LocalDate nextDateForWeekday(int weekday) {
     return LocalDate.now().with(java.time.temporal.TemporalAdjusters.nextOrSame(DayOfWeek.of(weekday)));
   }
 
+  /**
+   * Finds or creates the monthly schedule that owns shifts for the given date.
+   */
   private MonthlySchedule scheduleFor(LocalDate date) {
     return monthlyScheduleRepository
         .findByScheduleMonthAndScheduleYear((short) date.getMonthValue(), (short) date.getYear())
         .orElseGet(
             () -> {
+              // New schedules start as drafts until explicitly published.
               MonthlySchedule schedule = new MonthlySchedule();
               schedule.setScheduleMonth((short) date.getMonthValue());
               schedule.setScheduleYear((short) date.getYear());
@@ -184,6 +219,9 @@ public class EmployeeWorkdayService {
             });
   }
 
+  /**
+   * Creates an empty weekly schedule map with a placeholder for each day.
+   */
   private Map<String, String> emptyWeek() {
     Map<String, String> schedule = new HashMap<>();
     for (DayOfWeek day : DayOfWeek.values()) {
