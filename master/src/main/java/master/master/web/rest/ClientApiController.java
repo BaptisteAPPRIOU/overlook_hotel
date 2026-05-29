@@ -42,13 +42,7 @@ public class ClientApiController {
   }
 
   /**
-   * Get available rooms for specific dates and criteria.
-   *
-   * @param checkIn Check-in date
-   * @param checkOut Check-out date
-   * @param adults Number of adults
-   * @param children Number of children
-   * @return List of available rooms with details
+   * Returns available rooms for specific dates and guest counts.
    */
   @GetMapping("/rooms")
   public ResponseEntity<List<Map<String, Object>>> getAvailableRooms(
@@ -62,14 +56,13 @@ public class ClientApiController {
           hotelWebsiteService.getAvailableRooms(checkIn, checkOut, adults, children);
       return ResponseEntity.ok(rooms);
     } catch (Exception e) {
+      // The public client API hides internal details and returns a generic server error.
       return ResponseEntity.internalServerError().build();
     }
   }
 
   /**
-   * Get all room types for display.
-   *
-   * @return List of all room types with basic information
+   * Returns all hotel room entries for display.
    */
   @GetMapping("/rooms/all")
   public ResponseEntity<List<Map<String, Object>>> getAllRooms() {
@@ -82,12 +75,7 @@ public class ClientApiController {
   }
 
   /**
-   * Get validated guest reviews for the "Livret d'Or". Only returns reviews that have been
-   * validated by an admin.
-   *
-   * @param offset Number of reviews to skip (for pagination)
-   * @param limit Maximum number of reviews to return
-   * @return List of validated reviews
+   * Returns validated guest reviews using offset/limit pagination.
    */
   @GetMapping("/reviews")
   public ResponseEntity<List<Map<String, Object>>> getValidatedReviews(
@@ -102,10 +90,7 @@ public class ClientApiController {
   }
 
   /**
-   * Get latest validated reviews (most recent first).
-   *
-   * @param limit Maximum number of reviews to return
-   * @return List of latest validated reviews
+   * Returns the latest validated guest reviews.
    */
   @GetMapping("/reviews/latest")
   public ResponseEntity<List<Map<String, Object>>> getLatestReviews(
@@ -120,16 +105,14 @@ public class ClientApiController {
   }
 
   /**
-   * Create a reservation request.
-   *
-   * @param reservationData Reservation details
-   * @return Reservation confirmation
+   * Creates a reservation request from query parameters.
    */
   @GetMapping("/reservation/create")
   public ResponseEntity<Map<String, Object>> createReservation(
       @RequestParam Map<String, Object> reservationData) {
 
     try {
+      // The website currently sends reservation form values as request parameters.
       Map<String, Object> result = hotelWebsiteService.createReservationRequest(reservationData);
       return ResponseEntity.ok(result);
     } catch (Exception e) {
@@ -138,9 +121,7 @@ public class ClientApiController {
   }
 
   /**
-   * Get hotel information and statistics.
-   *
-   * @return Hotel information including basic stats
+   * Returns hotel information and public statistics.
    */
   @GetMapping("/hotel/info")
   public ResponseEntity<Map<String, Object>> getHotelInfo() {
@@ -153,14 +134,13 @@ public class ClientApiController {
   }
 
   /**
-   * Get current user profile information.
-   *
-   * @return Current user's profile data
+   * Returns profile information for the authenticated user.
    */
   @GetMapping("/profile")
   public ResponseEntity<Map<String, Object>> getCurrentUserProfile() {
     try {
       Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+      // The authentication name is the email extracted from the JWT.
       String email = authentication.getName();
 
       User user = userRepository.findByEmail(email);
@@ -175,7 +155,7 @@ public class ClientApiController {
       profile.put("email", user.getEmail());
       profile.put("role", user.getRole().toString());
 
-      // If user is a client, add client-specific data
+      // Client accounts expose fidelity points in addition to the shared user fields.
       if (user.getRole().toString().equals("CLIENT")) {
         Client client = clientRepository.findById(user.getId()).orElse(null);
         if (client != null) {

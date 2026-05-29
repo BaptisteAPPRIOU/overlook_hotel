@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class CustomErrorController implements ErrorController {
 
-  // This method handles errors and displays a custom error page.
+  /**
+   * Renders the custom error page using attributes provided by Spring Boot's error dispatch.
+   */
   @GetMapping("/error")
   public String handleError(HttpServletRequest request, Model model) {
     Object status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
@@ -29,6 +31,7 @@ public class CustomErrorController implements ErrorController {
     if (status != null) {
       Integer statusCode = Integer.valueOf(status.toString());
 
+      // The 403 page includes role-oriented hints because most forbidden errors are security related.
       if (statusCode == HttpStatus.FORBIDDEN.value()) {
         model.addAttribute("errorTitle", "Access Forbidden (403)");
         model.addAttribute(

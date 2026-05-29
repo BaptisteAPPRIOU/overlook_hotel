@@ -17,25 +17,33 @@ public class ClientController {
     this.service = service;
   }
 
-  // List all clients
+  /**
+   * Returns all registered client profiles.
+   */
   @GetMapping
   public List<ClientDto.Info> all() {
     return service.findAllClients();
   }
 
-  // Create a new client
+  /**
+   * Returns one client profile by user id.
+   */
   @GetMapping("/{userId}")
   public ClientDto.Info one(@PathVariable Long userId) {
     return service.findOneClient(userId);
   }
 
-  // Create a new client
+  /**
+   * Updates an existing client profile.
+   */
   @PutMapping
   public ClientDto.Info update(@Valid @RequestBody ClientDto.Update dto) {
     return service.update(dto);
   }
 
-  // Delete a client by user ID
+  /**
+   * Deletes a client profile by user id.
+   */
   @DeleteMapping("/{userId}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void delete(@PathVariable Long userId) {

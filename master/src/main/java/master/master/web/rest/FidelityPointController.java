@@ -30,7 +30,7 @@ public class FidelityPointController {
     this.userRepository = userRepository;
   }
 
-  /** Get current fidelity summary for authenticated client */
+  /** Returns the complete fidelity summary for the authenticated client. */
   @GetMapping("/summary")
   public ResponseEntity<FidelityPointService.FidelitySummary> getFidelitySummary() {
     try {
@@ -46,7 +46,7 @@ public class FidelityPointController {
     }
   }
 
-  /** Get current fidelity points */
+  /** Returns the current number of fidelity points for the authenticated client. */
   @GetMapping("/points")
   public ResponseEntity<Map<String, Integer>> getCurrentPoints() {
     Long userId = getCurrentUserId();
@@ -54,7 +54,7 @@ public class FidelityPointController {
     return ResponseEntity.ok(Map.of("points", points));
   }
 
-  /** Get fidelity level information */
+  /** Returns the current fidelity level and progress toward the next level. */
   @GetMapping("/level")
   public ResponseEntity<Map<String, Object>> getFidelityLevel() {
     Long userId = getCurrentUserId();
@@ -74,13 +74,13 @@ public class FidelityPointController {
             pointsToNext));
   }
 
-  /** Redeem fidelity points */
+  /** Redeems fidelity points from the authenticated client's balance. */
   @PostMapping("/redeem")
   public ResponseEntity<Map<String, Object>> redeemPoints(
       @RequestBody Map<String, Object> request) {
     Long userId = getCurrentUserId();
 
-    // Handle both optionId and points parameters
+    // JSON clients may send numbers as Integer values or as strings depending on the form source.
     Object pointsObj = request.get("points");
 
     int pointsToRedeem;
@@ -111,7 +111,7 @@ public class FidelityPointController {
     }
   }
 
-  /** Get available redemption options */
+  /** Returns static redemption options enriched with availability for the current client. */
   @GetMapping("/redemption-options")
   public ResponseEntity<java.util.List<Map<String, Object>>> getRedemptionOptions() {
     try {
@@ -172,7 +172,7 @@ public class FidelityPointController {
     }
   }
 
-  /** Recalculate points based on reservation history */
+  /** Recalculates fidelity points from the client's reservation history. */
   @PostMapping("/recalculate")
   public ResponseEntity<Map<String, Object>> recalculatePoints() {
     Long userId = getCurrentUserId();
@@ -182,13 +182,14 @@ public class FidelityPointController {
         Map.of("success", true, "message", "Points recalculated successfully", "newTotal", newTotal));
   }
 
-  /** Get the current authenticated user's ID */
+  /** Resolves the authenticated user's database id from the Spring Security context. */
   private Long getCurrentUserId() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || !authentication.isAuthenticated()) {
       throw new RuntimeException("Unauthenticated user");
     }
 
+    // The JWT subject is the email address, so the database id requires a repository lookup.
     String email = authentication.getName();
     System.out.println("DEBUG: FidelityPointController - Authentication email: " + email);
 

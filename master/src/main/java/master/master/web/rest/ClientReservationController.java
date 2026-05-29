@@ -37,7 +37,9 @@ public class ClientReservationController {
     this.userRepository = userRepository;
   }
 
-  /** Get current client's reservations */
+  /**
+   * Returns the current client's reservations in the website map format.
+   */
   @GetMapping("/me/reservations")
   public ResponseEntity<List<Map<String, Object>>> getCurrentClientReservations() {
     try {
@@ -53,7 +55,9 @@ public class ClientReservationController {
     }
   }
 
-  /** Get current client's reservations (DTO version) */
+  /**
+   * Returns the current client's reservations in the typed DTO format.
+   */
   @GetMapping("/me/reservations/dto")
   public ResponseEntity<List<ReservationDto.Info>> getCurrentClientReservationsDto() {
     try {
@@ -65,7 +69,9 @@ public class ClientReservationController {
     }
   }
 
-  /** Convert Reservation to Map for JSON response */
+  /**
+   * Converts a Reservation entity to the map format used by the client profile page.
+   */
   private Map<String, Object> convertReservationToMap(Reservation reservation) {
     return Map.of(
         "userId", reservation.getClient() != null ? reservation.getClient().getId() : null,
@@ -82,7 +88,9 @@ public class ClientReservationController {
         "createdAt", reservation.getCreatedAt() != null ? reservation.getCreatedAt().toString() : null);
   }
 
-  /** Determine reservation status */
+  /**
+   * Derives a display status from payment state and reservation dates.
+   */
   private String getReservationStatus(Reservation reservation) {
     if (!Boolean.TRUE.equals(reservation.getPaid())) {
       return "PENDING_PAYMENT";
@@ -98,13 +106,16 @@ public class ClientReservationController {
     }
   }
 
-  /** Get the current authenticated user's ID */
+  /**
+   * Resolves the current authenticated user's database id.
+   */
   private Long getCurrentUserId() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || !authentication.isAuthenticated()) {
       throw new RuntimeException("Unauthenticated user");
     }
 
+    // Authentication name comes from the JWT subject and stores the user's email.
     String email = authentication.getName();
     User user = userRepository.findByEmail(email);
 

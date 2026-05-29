@@ -53,7 +53,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1")
 public class AuthController {
 
-  // Inject dependencies for user data, password encoding, authentication, and JWT creation
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
   private final AuthenticationManager authenticationManager;
@@ -79,41 +78,43 @@ public class AuthController {
     this.clientService = clientService;
   }
 
-  // Handle user registration requests
+  /**
+   * Registers a new client account and creates the associated Client profile.
+   */
   @PostMapping("/register")
   public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequestDto request) {
-    // Check if email is already registered
+    // Email is unique and must be checked before creating the account.
     if (userRepository.findByEmail(request.getEmail()) != null) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email already exists");
     }
 
-    // Create new user and encode password
     User user = new User();
     user.setFirstName(request.getFirstName());
     user.setLastName(request.getLastName());
     user.setEmail(request.getEmail());
+    // Passwords are encoded before persistence so raw credentials are never stored.
     user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-    userRoleService.assignRole(user, RoleCode.CLIENT); // Default role is CLIENT
+    userRoleService.assignRole(user, RoleCode.CLIENT); // New public registrations become clients.
 
-    // Save new user in the database and create the matching client profile
+    // The client profile is created after the User id is generated.
     User savedUser = userRepository.save(user);
     clientService.createFromUser(savedUser);
     return ResponseEntity.ok("User registered successfully");
   }
 
-  // Handle user login requests
+  /**
+   * Authenticates credentials and returns a JWT token with the user's primary role.
+   */
   @PostMapping("/login")
   public ResponseEntity<?> loginUser(@Valid @RequestBody LoginRequestDto request) {
     try {
-      // Authenticate user with provided email and password
+      // AuthenticationManager verifies the password through Spring Security providers.
       authenticationManager.authenticate(
           new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
-      // If successful, find user and generate JWT token
       User user = userRepository.findByEmail(request.getEmail());
       String token = jwtUtil.generateToken(user.getEmail());
 
-      // Prepare response with token and user role
       Map<String, Object> response = new HashMap<>();
       response.put("token", token);
       response.put(
@@ -125,16 +126,19 @@ public class AuthController {
       return ResponseEntity.ok(response);
 
     } catch (Exception ex) {
-      // Return 401 Unauthorized if authentication fails
+      // Authentication failures are intentionally returned as a generic credential error.
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
     }
   }
 
-  // Handle user logout requests
+  /**
+   * Logs out the current request by blacklisting its bearer token and clearing the security context.
+   */
   @PostMapping("/logout")
   public ResponseEntity<AuthResponseDto> logout(HttpServletRequest request) {
     String header = request.getHeader("Authorization");
     if (header != null && header.startsWith("Bearer ")) {
+      // Blacklisting prevents a stateless JWT from being reused after logout.
       String jwt = header.substring(7);
       tokenBlacklistService.blacklist(jwt);
     }

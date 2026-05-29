@@ -187,10 +187,12 @@ public class EmployeeDashboardController {
     }
   }
 
+  /** Save the selected working weekdays for one employee from the dashboard. */
   @PostMapping("/api/dashboard/employees/{id}/workdays")
   public ResponseEntity<Void> setEmployeeWorkdays(
       @PathVariable Long id, @RequestBody List<Integer> weekdays) {
     try {
+      // The dashboard sends weekdays as integers so it can store compact checkbox selections.
       workdayService.setWorkdays(id, weekdays);
       return ResponseEntity.ok().build();
     } catch (Exception e) {
@@ -221,6 +223,7 @@ public class EmployeeDashboardController {
   // ERROR HANDLING
   // =============================================================================
 
+  /** Converts unexpected dashboard API exceptions into a consistent JSON error body. */
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponseDto> handleException(Exception e) {
     ErrorResponseDto error =

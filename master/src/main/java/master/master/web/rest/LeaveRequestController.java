@@ -30,14 +30,12 @@ public class LeaveRequestController {
 
   @Autowired private LeaveRequestService leaveRequestService;
 
-  /** Submit a new leave request. POST /api/v1/leave-requests/submit */
+  /** Submits a new leave request for an employee. */
   @PostMapping("/submit")
   public ResponseEntity<?> submitLeaveRequest(@RequestBody CreateLeaveRequestDto request) {
     try {
-      // Get current user's employee ID from security context
-      // For now, we'll use the employeeId from the request or a default value
       if (request.getEmployeeId() == null) {
-        // You might want to get this from the authentication context
+        // Temporary fallback until employee identity is read directly from authentication.
         request =
             CreateLeaveRequestDto.builder()
                 .employeeId(1L) // Default employee ID for testing
@@ -70,11 +68,11 @@ public class LeaveRequestController {
     }
   }
 
-  /** Get all leave requests for the current employee. GET /api/v1/leave-requests/my-requests */
+  /** Returns all leave requests for the current employee. */
   @GetMapping("/my-requests")
   public ResponseEntity<?> getMyLeaveRequests(@RequestParam(required = false) Long employeeId) {
     try {
-      // Get current user's employee ID from security context or use default
+      // The request parameter is used as a temporary stand-in for authenticated employee lookup.
       Long currentEmployeeId = employeeId != null ? employeeId : 1L; // Default for testing
 
       List<LeaveRequestDto> requests =
@@ -89,7 +87,7 @@ public class LeaveRequestController {
   }
 
   /**
-   * Get all pending leave requests for approval (managers only). GET /api/v1/leave-requests/pending
+   * Returns all pending leave requests waiting for manager approval.
    */
   @GetMapping("/pending")
   public ResponseEntity<?> getPendingLeaveRequests() {
@@ -107,7 +105,7 @@ public class LeaveRequestController {
     }
   }
 
-  /** Get all leave requests for admin oversight. GET /api/v1/leave-requests/all */
+  /** Returns all leave requests for administrator oversight. */
   @GetMapping("/all")
   public ResponseEntity<?> getAllLeaveRequests() {
     try {
@@ -124,12 +122,12 @@ public class LeaveRequestController {
     }
   }
 
-  /** Approve a leave request. PUT /api/v1/leave-requests/{requestId}/approve */
+  /** Approves a leave request and records who approved it. */
   @PutMapping("/{requestId}/approve")
   public ResponseEntity<?> approveLeaveRequest(@PathVariable Long requestId) {
     try {
-      // Get current user for approval tracking
-      String approvedBy = "Admin"; // You might want to get this from authentication context
+      // Temporary value until the approver is resolved from the security context.
+      String approvedBy = "Admin";
 
       LeaveRequestDto approvedRequest =
           leaveRequestService.approveLeaveRequest(requestId, approvedBy);
@@ -154,15 +152,15 @@ public class LeaveRequestController {
     }
   }
 
-  /** Reject a leave request. PUT /api/v1/leave-requests/{requestId}/reject */
+  /** Rejects a leave request with an optional rejection reason. */
   @PutMapping("/{requestId}/reject")
   public ResponseEntity<?> rejectLeaveRequest(
       @PathVariable Long requestId,
       @RequestBody(required = false) Map<String, String> requestBody) {
     try {
-      // Get rejection reason if provided
+      // The request body is optional because a manager may reject without adding a reason.
       String rejectionReason = requestBody != null ? requestBody.get("reason") : null;
-      String rejectedBy = "Admin"; // You might want to get this from authentication context
+      String rejectedBy = "Admin"; // Temporary value until authentication is wired here.
 
       LeaveRequestDto rejectedRequest =
           leaveRequestService.rejectLeaveRequest(requestId, rejectedBy, rejectionReason);
@@ -188,8 +186,7 @@ public class LeaveRequestController {
   }
 
   /**
-   * Cancel a leave request (employee can cancel their own pending requests). DELETE
-   * /api/v1/leave-requests/{requestId}
+   * Cancels a leave request, typically for an employee's own pending request.
    */
   @DeleteMapping("/{requestId}")
   public ResponseEntity<?> cancelLeaveRequest(@PathVariable Long requestId) {

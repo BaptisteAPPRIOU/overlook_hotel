@@ -11,28 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * REST controller for managing employees and their workdays.
- *
- * <p>Provides endpoints to retrieve all employees, get an employee's workdays, and set/update the
- * workdays for a specific employee.
- *
- * <ul>
- *   <li><b>GET /api/v1/employees</b>: Retrieve the list of all employees.
- *   <li><b>GET /api/v1/employees/{id}/workdays</b>: Get the list of workdays (as integers) for a
- *       specific employee.
- *   <li><b>POST /api/v1/employees/{id}/workdays</b>: Set or update the workdays for a specific
- *       employee.
- * </ul>
- *
- * Dependencies:
- *
- * <ul>
- *   <li>{@link EmployeeRepository} for employee data access.
- *   <li>{@link EmployeeWorkdayRepository} for managing employee workdays.
- * </ul>
- */
-
-/**
  * REST controller for managing employees in the hotel reservation system.
  *
  * <p>This controller provides endpoints for CRUD operations on Employee entities and manages
@@ -52,14 +30,15 @@ public class EmployeeController {
   private final EmployeeService employeeService;
   private final EmployeeWorkdayService workdayService;
 
-  // Constructor to inject dependencies
   public EmployeeController(
       EmployeeService employeeService, EmployeeWorkdayService workdayService) {
     this.employeeService = employeeService;
     this.workdayService = workdayService;
   }
 
-  // Endpoint to create a new employee
+  /**
+   * Creates a new employee account and its employee profile.
+   */
   @PostMapping
   public ResponseEntity<Employee> create(@RequestBody CreateEmployeeRequestDto request) {
     log.info(
@@ -76,42 +55,55 @@ public class EmployeeController {
     }
   }
 
-  // Endpoint to retrieve an employee by ID
+  /**
+   * Returns one employee by id.
+   */
   @GetMapping("/{id}")
   public ResponseEntity<Employee> getOne(@PathVariable Long id) {
     return ResponseEntity.ok(employeeService.getEmployee(id));
   }
 
-  // Endpoint to retrieve all employees
+  /**
+   * Returns the complete employee list.
+   */
   @GetMapping
   public ResponseEntity<List<Employee>> getAll() {
     return ResponseEntity.ok(employeeService.getAllEmployees());
   }
 
-  // Endpoint to update an existing employee
+  /**
+   * Updates an existing employee profile and account data.
+   */
   @PutMapping("/{id}")
   public ResponseEntity<Employee> update(
       @PathVariable Long id, @RequestBody CreateEmployeeRequestDto request) {
     return ResponseEntity.ok(employeeService.updateEmployee(id, request));
   }
 
-  // Endpoint to delete an employee by ID
+  /**
+   * Deletes an employee by id.
+   */
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> delete(@PathVariable Long id) {
     employeeService.deleteEmployee(id);
     return ResponseEntity.noContent().build();
   }
 
-  // Endpoint to retrieve workdays for a specific employee
+  /**
+   * Returns the configured weekdays for a specific employee.
+   */
   @GetMapping("/{id}/workdays")
   public ResponseEntity<List<Integer>> getWorkdays(@PathVariable Long id) {
     return ResponseEntity.ok(workdayService.getWorkdaysByEmployeeId(id));
   }
 
-  // Endpoint to set or update workdays for a specific employee
+  /**
+   * Replaces the configured weekdays for a specific employee.
+   */
   @PostMapping("/{id}/workdays")
   public ResponseEntity<Void> setWorkdays(
       @PathVariable Long id, @RequestBody List<Integer> weekdays) {
+    // Weekdays are represented as integers to match the planning tables and frontend payload.
     workdayService.setWorkdays(id, weekdays);
     return ResponseEntity.ok().build();
   }

@@ -17,7 +17,9 @@ public class ReservationController {
     this.service = service;
   }
 
-  // Endpoint to create a new reservation for a specific user
+  /**
+   * Creates a reservation for a specific client user.
+   */
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public ReservationDto.Info create(
@@ -25,7 +27,9 @@ public class ReservationController {
     return service.create(userId, dto);
   }
 
-  // Endpoint to retrieve all reservations for a specific user
+  /**
+   * Returns all reservations for a specific client user.
+   */
   @GetMapping
   public List<ReservationDto.Info> list(@PathVariable Long userId) {
     return service.findByUser(userId);

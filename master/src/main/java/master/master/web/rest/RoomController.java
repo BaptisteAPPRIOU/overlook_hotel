@@ -18,11 +18,11 @@ import org.springframework.web.bind.annotation.*;
  * <p>Access to these endpoints is restricted to users with the 'EMPLOYEE' authority.
  *
  * Endpoints:
- *   GET    /api/v1/rooms       – List all rooms.
- *   GET    /api/v1/rooms/{id}  – Retrieve a specific room by ID.
- *   POST   /api/v1/rooms       – Create a new room.
- *   PUT    /api/v1/rooms/{id}  – Update an existing room by ID.
- *   DELETE /api/v1/rooms/{id}  – Delete a room by ID.
+ *   GET    /api/v1/rooms       - List all rooms.
+ *   GET    /api/v1/rooms/{id}  - Retrieve a specific room by ID.
+ *   POST   /api/v1/rooms       - Create a new room.
+ *   PUT    /api/v1/rooms/{id}  - Update an existing room by ID.
+ *   DELETE /api/v1/rooms/{id}  - Delete a room by ID.
  *
  * @author tiste
  */
@@ -36,11 +36,17 @@ public class RoomController {
     this.roomRepository = roomRepository;
   }
 
+  /**
+   * Returns all rooms managed by the hotel.
+   */
   @GetMapping
   public List<Room> listAll() {
     return roomRepository.findAll();
   }
 
+  /**
+   * Returns one room by id, or a 404 response when it does not exist.
+   */
   @GetMapping("/{id}")
   public ResponseEntity<Room> getOne(@PathVariable Long id) {
     return roomRepository
@@ -54,12 +60,13 @@ public class RoomController {
    * response.
    *
    * @param dto the room data to create
-   * @return a ResponseEntity with the created room or a 400 Bad Request response
+   * @return the created room
    */
   @PostMapping
   public Room create(@RequestBody RoomDto dto) {
     Room room = new Room();
     room.setNumber(dto.getNumber());
+    // Type and status are stored as enums, so incoming strings must match enum names.
     room.setType(RoomType.valueOf(dto.getType()));
     room.setCapacity(dto.getCapacity() != null ? dto.getCapacity() : 1);
     if (dto.getStatus() != null) {
