@@ -11,16 +11,17 @@ import lombok.Data;
 public class HourlyPlanningRequestDto {
   private Long employeeId;
   private Integer weeklyHours;
-  private String contractType; // FULL_TIME, PART_TIME
-  private String status; // ACTIVE, INACTIVE
+  private String contractType; // Expected values: FULL_TIME, PART_TIME.
+  private String status; // Expected values: ACTIVE, INACTIVE.
   private List<WorkDayDto> workDays;
 
+  /** DTO describing the hourly schedule for one weekday. */
   @Data
   public static class WorkDayDto {
-    private String dayName; // Monday, Tuesday, etc.
+    private String dayName; // Expected values include Monday, Tuesday, etc.
     private Boolean isWorking;
-    private String startTime; // HH:mm format
-    private String endTime; // HH:mm format
+    private String startTime; // Expected format: HH:mm.
+    private String endTime; // Expected format: HH:mm.
     private Integer dailyHours;
   }
 }

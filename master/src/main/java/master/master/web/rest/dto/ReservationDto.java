@@ -1,4 +1,3 @@
-// ReservationDto.java
 package master.master.web.rest.dto;
 
 import jakarta.validation.constraints.NotNull;
@@ -7,8 +6,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/** DTO namespace for reservation request and response payloads. */
 public class ReservationDto {
 
+  /** Reservation details returned to clients. */
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
@@ -20,6 +21,7 @@ public class ReservationDto {
     private boolean isPayed;
   }
 
+  /** Payload required to create a reservation for a client and room. */
   @Data
   @NoArgsConstructor
   @AllArgsConstructor

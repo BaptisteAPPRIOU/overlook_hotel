@@ -17,22 +17,22 @@ public class TimeTrackingDto {
   private LocalDate workDate;
   private String dayOfWeek;
 
-  // Planned schedule
+  // Planned values come from the employee planning module.
   private LocalTime plannedStartTime;
   private LocalTime plannedEndTime;
   private Double plannedHours;
 
-  // Actual time tracking
+  // Actual values are recorded by clock-in and clock-out actions.
   private LocalTime actualClockIn;
   private LocalTime actualClockOut;
   private Double actualHours;
   private Integer breakDurationMinutes;
 
-  // Status and calculations
-  private String status; // SCHEDULED, CHECKED_IN, CHECKED_OUT, ABSENT, LATE, EARLY_LEAVE
+  // Status and deltas are calculated by comparing planned and actual times.
+  private String status; // Expected values: SCHEDULED, CHECKED_IN, CHECKED_OUT, ABSENT, LATE, EARLY_LEAVE.
   private Boolean isLate;
   private Boolean isEarlyLeave;
   private Integer minutesLate;
   private Integer minutesEarly;
-  private Double overtime; // Hours beyond planned
+  private Double overtime; // Hours worked beyond the planned schedule.
 }

@@ -4,6 +4,7 @@ import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 
+/** DTO used to create a new hotel room. */
 @Data
 @Builder
 public class CreateRoomDto {

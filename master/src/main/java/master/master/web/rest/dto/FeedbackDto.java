@@ -6,8 +6,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/** DTO namespace for client feedback request and response payloads. */
 public class FeedbackDto {
 
+  /** Payload used when a client creates a feedback entry. */
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
@@ -15,6 +17,7 @@ public class FeedbackDto {
     @NotBlank private String content;
   }
 
+  /** Feedback details returned by the API, including an optional answer. */
   @Data
   @NoArgsConstructor
   @AllArgsConstructor

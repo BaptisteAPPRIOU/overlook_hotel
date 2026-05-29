@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+/** DTO carrying the full room payload exchanged by room management endpoints. */
 @Getter
 @Setter
 @Data
@@ -14,6 +15,7 @@ import lombok.Setter;
 public class RoomDto {
   private Long id;
   private String number;
+  // Type and status are converted to enums by the controller/service layer.
   private String type;
   private Integer capacity;
   private String description;

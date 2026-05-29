@@ -3,6 +3,7 @@ package master.master.web.rest.dto;
 import lombok.Builder;
 import lombok.Data;
 
+/** DTO containing the main aggregated counters displayed on the employee dashboard. */
 @Data
 @Builder
 public class DashboardStatsDto {

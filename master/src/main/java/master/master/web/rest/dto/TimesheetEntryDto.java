@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Data;
 
+/** DTO representing one exported or displayed timesheet row. */
 @Data
 @Builder
 public class TimesheetEntryDto {
@@ -14,5 +15,5 @@ public class TimesheetEntryDto {
   private LocalDateTime clockIn;
   private LocalDateTime clockOut;
   private Double hoursWorked;
-  private String status; // PRESENT, ABSENT, LATE, HALF_DAY
+  private String status; // Expected values: PRESENT, ABSENT, LATE, HALF_DAY.
 }

@@ -18,6 +18,7 @@ public class UserResponseDto {
   private final String email;
   private final RoleCode role;
 
+  /** Builds the response object sent after user lookup or creation flows. */
   public UserResponseDto(Long id, String firstName, String lastName, String email, RoleCode role) {
     this.id = id;
     this.firstName = firstName;

@@ -3,6 +3,7 @@ package master.master.web.rest.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+/** DTO used by dashboard views to display compact employee work-time information. */
 @Getter
 @Setter
 public class EmployeeWorkTimeDto {

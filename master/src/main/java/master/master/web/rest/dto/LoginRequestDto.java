@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+/** DTO carrying the credentials submitted to the login endpoint. */
 @Data
 public class LoginRequestDto {
   @NotBlank @Email private String email;

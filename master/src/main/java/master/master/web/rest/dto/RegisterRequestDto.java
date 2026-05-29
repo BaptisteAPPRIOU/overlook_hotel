@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+/** DTO carrying the information required to register a new client account. */
 @Data
 public class RegisterRequestDto {
   @NotBlank @Email private String email;

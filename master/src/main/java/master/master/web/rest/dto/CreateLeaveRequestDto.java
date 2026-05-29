@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import lombok.Builder;
 import lombok.Data;
 
+/** DTO used when an employee submits a new leave request. */
 @Data
 @Builder
 public class CreateLeaveRequestDto {
@@ -11,5 +12,5 @@ public class CreateLeaveRequestDto {
   private LocalDate startDate;
   private LocalDate endDate;
   private String reason;
-  private String type; // VACATION, SICK, PERSONAL, etc.
+  private String type; // Expected values include VACATION, SICK, PERSONAL, etc.
 }

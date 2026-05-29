@@ -6,8 +6,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/** DTO namespace for client profile payloads used by the client REST endpoints. */
 public class ClientDto {
 
+  /** Read-only client profile returned by the API. */
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
@@ -19,6 +21,7 @@ public class ClientDto {
     private int fidelityPoint;
   }
 
+  /** Payload used to update editable client profile fields. */
   @Data
   @NoArgsConstructor
   @AllArgsConstructor

@@ -4,11 +4,12 @@ import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 
+/** DTO grouping the configured workdays and shift type for one employee. */
 @Data
 @Builder
 public class EmployeeWorkScheduleDto {
   private Long employeeId;
   private String employeeName;
   private List<WorkdayDto> workdays;
-  private String shiftType; // MORNING, AFTERNOON, NIGHT, FLEXIBLE
+  private String shiftType; // Expected values: MORNING, AFTERNOON, NIGHT, FLEXIBLE.
 }

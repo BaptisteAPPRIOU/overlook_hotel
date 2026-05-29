@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/** DTO returned by authentication endpoints after login or logout operations. */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

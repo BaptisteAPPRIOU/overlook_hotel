@@ -20,12 +20,12 @@ public class CreatePlanningRequestDto {
   private Boolean saturday;
   private Boolean sunday;
 
-  // Work hours configuration
-  private LocalTime startTime; // Default start time for all working days
-  private LocalTime endTime; // Default end time for all working days
-  private Integer breakDurationMinutes; // Break duration in minutes (default: 60)
+  // These default times apply to every selected working day unless a day-specific value is set.
+  private LocalTime startTime;
+  private LocalTime endTime;
+  private Integer breakDurationMinutes; // Default break duration is 60 minutes.
 
-  // Optional: Custom times for specific days
+  // Optional day-specific times override the default start and end times above.
   private LocalTime mondayStart;
   private LocalTime mondayEnd;
   private LocalTime tuesdayStart;
@@ -41,5 +41,5 @@ public class CreatePlanningRequestDto {
   private LocalTime sundayStart;
   private LocalTime sundayEnd;
 
-  private String contractType; // FULL_TIME, PART_TIME, FLEXIBLE
+  private String contractType; // Expected values: FULL_TIME, PART_TIME, FLEXIBLE.
 }

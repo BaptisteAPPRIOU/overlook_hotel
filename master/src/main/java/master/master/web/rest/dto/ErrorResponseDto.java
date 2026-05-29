@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Data;
 
+/** DTO used to return consistent error details from REST controllers. */
 @Data
 @Builder
 public class ErrorResponseDto {
