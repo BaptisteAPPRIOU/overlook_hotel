@@ -19,6 +19,10 @@ import org.springframework.web.server.ResponseStatusException;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+  /**
+   * Converts ResponseStatusException instances into responses using the status chosen by the
+   * controller or service layer.
+   */
   @ExceptionHandler(ResponseStatusException.class)
   public ResponseEntity<Map<String, Object>> handleResponseStatusException(
       ResponseStatusException ex) {
@@ -27,10 +31,14 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(body, ex.getStatusCode());
   }
 
+  /**
+   * Converts bean validation errors into a structured HTTP 400 response.
+   */
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<Map<String, Object>> handleValidationException(
       MethodArgumentNotValidException ex) {
     Map<String, String> errors = new HashMap<>();
+    // Each invalid field is returned with the message produced by its validation annotation.
     ex.getBindingResult()
         .getFieldErrors()
         .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
@@ -43,12 +51,16 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
   }
 
+  /**
+   * Handles unexpected exceptions that are not covered by more specific handlers.
+   */
   @ExceptionHandler(Exception.class)
   public ResponseEntity<Map<String, Object>> handleGeneralException(Exception ex) {
     Map<String, Object> body = new HashMap<>();
     body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
     body.put("message", "An unexpected error occurred");
 
+    // The trace helps during development, but it should be hidden in production responses.
     body.put("trace", ex.toString());
 
     return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
