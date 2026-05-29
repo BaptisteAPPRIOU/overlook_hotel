@@ -19,7 +19,9 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-/** Filtre JWT qui prend en compte la blacklist. */
+/**
+ * Reads JWT tokens from incoming requests and authenticates valid, non-blacklisted tokens.
+ */
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -29,6 +31,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   @Autowired private TokenBlacklistService tokenBlacklistService;
 
+  /**
+   * Extracts a JWT from the request, validates it, and stores the authenticated user in the
+   * Spring Security context.
+   */
   @Override
   protected void doFilterInternal(
       @NonNull HttpServletRequest request,
@@ -40,12 +46,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     String jwtToken = null;
     String email = null;
 
-    // First, check Authorization header for "Bearer " token
+    // The Authorization header is the preferred location for API clients.
     if (authHeader != null && authHeader.startsWith("Bearer ")) {
       jwtToken = authHeader.substring(7);
     }
 
-    // If no token in header, check cookies
+    // Browser flows can also send the JWT through the jwtToken cookie.
     if (jwtToken == null && request.getCookies() != null) {
       for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
         if ("jwtToken".equals(cookie.getName())) {
@@ -55,27 +61,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       }
     }
 
-    // Validate token and extract email
+    // Validate the token before trusting any value stored inside its claims.
     if (jwtToken != null && jwtUtil.isTokenValid(jwtToken)) {
-      // Check if token is blacklisted
+      // Blacklisted tokens are usually tokens that were explicitly logged out.
       if (tokenBlacklistService.isBlacklisted(jwtToken)) {
         filterChain.doFilter(request, response);
         return;
       }
 
-      // Extract email from token
+      // The username claim stores the user's email address in this application.
       email = jwtUtil.extractUsername(jwtToken);
     }
 
-    // If email is extracted and not already authenticated, authenticate the request
+    // Avoid replacing an authentication that was already set earlier in the filter chain.
     if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
       UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
       if (jwtUtil.isTokenValid(jwtToken)) {
+        // Spring Security uses this token to expose the current user and their authorities.
         UsernamePasswordAuthenticationToken authToken =
             new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities());
 
+        // Request details include metadata such as the remote address and session id.
         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
         SecurityContextHolder.getContext().setAuthentication(authToken);
