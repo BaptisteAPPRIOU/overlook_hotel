@@ -5,17 +5,14 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
- * Repository interface for managing User entities in the database. Extends JpaRepository to provide
- * standard CRUD operations for User entities.
- *
- * <p>This repository provides custom query methods for User-specific operations beyond the standard
- * JPA repository functionality.
- *
- * @author Generated
- * @version 1.0
- * @since 1.0
+ * Provides database access methods for User entities.
  */
 public interface UserRepository extends JpaRepository<User, Long> {
+
+  /**
+   * Finds a user by email and loads roles in the same query.
+   */
   @EntityGraph(attributePaths = "roles")
+  // Authentication needs roles immediately, so eager loading here avoids lazy loading later.
   User findByEmail(String email);
 }
