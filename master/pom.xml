@@ -31,6 +31,14 @@
         <java.version>25</java.version>
         <java.version.full>25.0.3</java.version.full>
         <java.version.range>[25.0.3,25.0.4)</java.version.range>
+        <spotless.maven.plugin.version>3.4.0</spotless.maven.plugin.version>
+        <maven.pmd.plugin.version>3.28.0</maven.pmd.plugin.version>
+        <spotbugs.maven.plugin.version>4.9.8.3</spotbugs.maven.plugin.version>
+        <findsecbugs.plugin.version>1.14.0</findsecbugs.plugin.version>
+        <jacoco.maven.plugin.version>0.8.14</jacoco.maven.plugin.version>
+        <maven.surefire.plugin.version>3.5.3</maven.surefire.plugin.version>
+        <maven.failsafe.plugin.version>3.5.3</maven.failsafe.plugin.version>
+        <recette.base-url>http://localhost:8080</recette.base-url>
     </properties>
     <dependencies>
         <dependency>
@@ -217,4 +225,162 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>quality</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.diffplug.spotless</groupId>
+                        <artifactId>spotless-maven-plugin</artifactId>
+                        <version>${spotless.maven.plugin.version}</version>
+                        <configuration>
+                            <formats>
+                                <format>
+                                    <includes>
+                                        <include>pom.xml</include>
+                                        <include>src/**/*.java</include>
+                                        <include>src/**/*.js</include>
+                                        <include>src/**/*.css</include>
+                                        <include>src/**/*.html</include>
+                                        <include>src/**/*.properties</include>
+                                        <include>src/**/*.yml</include>
+                                        <include>src/**/*.yaml</include>
+                                        <include>src/**/*.sql</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>src/main/resources/application-local.properties</exclude>
+                                        <exclude>src/main/resources/application-local.yml</exclude>
+                                        <exclude>src/main/resources/application-local.yaml</exclude>
+                                    </excludes>
+                                    <trimTrailingWhitespace />
+                                    <endWithNewline />
+                                </format>
+                            </formats>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>spotless-check</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>${jacoco.maven.plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>jacoco-prepare-agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>jacoco-report</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-pmd-plugin</artifactId>
+                        <version>${maven.pmd.plugin.version}</version>
+                        <configuration>
+                            <printFailingErrors>true</printFailingErrors>
+                            <linkXRef>false</linkXRef>
+                            <rulesets>
+                                <ruleset>${project.basedir}/config/pmd/ruleset.xml</ruleset>
+                            </rulesets>
+                            <failurePriority>1</failurePriority>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>pmd-check</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>com.github.spotbugs</groupId>
+                        <artifactId>spotbugs-maven-plugin</artifactId>
+                        <version>${spotbugs.maven.plugin.version}</version>
+                        <configuration>
+                            <effort>Max</effort>
+                            <threshold>High</threshold>
+                            <xmlOutput>true</xmlOutput>
+                            <failOnError>true</failOnError>
+                            <plugins>
+                                <plugin>
+                                    <groupId>com.h3xstream.findsecbugs</groupId>
+                                    <artifactId>findsecbugs-plugin</artifactId>
+                                    <version>${findsecbugs.plugin.version}</version>
+                                </plugin>
+                            </plugins>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>spotbugs-check</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>integration</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>${maven.surefire.plugin.version}</version>
+                        <configuration>
+                            <skipTests>true</skipTests>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <version>${maven.failsafe.plugin.version}</version>
+                        <configuration>
+                            <includes>
+                                <include>**/*IT.java</include>
+                                <include>**/*ITCase.java</include>
+                            </includes>
+                            <systemPropertyVariables>
+                                <recette.base-url>${recette.base-url}</recette.base-url>
+                            </systemPropertyVariables>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>integration-tests</id>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

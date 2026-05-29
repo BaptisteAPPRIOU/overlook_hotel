@@ -39,6 +39,8 @@ spring:
       password: ${spring.security.user.password}
 
 app:
+  seed:
+    enabled: ${APP_SEED_ENABLED:false}
   jwt:
     secret: ${app.jwt.secret}
     expiration-ms: ${app.jwt.expiration-ms:86400000}

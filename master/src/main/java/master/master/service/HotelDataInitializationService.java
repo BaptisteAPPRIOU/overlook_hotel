@@ -272,7 +272,7 @@ public class HotelDataInitializationService implements ApplicationRunner {
           "Hair dryer",
           "Bathrobes",
           "Coffee machine");
-    } else if (roomName.contains("family") || roomName.contains("family") || capacity >= 3) {
+    } else if (roomName.contains("family") || capacity >= 3) {
       return Arrays.asList(
           "Free WiFi",
           "Garden view",

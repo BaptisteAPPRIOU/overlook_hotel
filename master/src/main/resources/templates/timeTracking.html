@@ -124,9 +124,9 @@
                       <td>
                         <span
                           class="badge"
-                          th:classappend="${tracking.status == 'CHECKED_OUT'} ? 'bg-success' : 
-                                                                  (${tracking.status == 'CHECKED_IN'} ? 'bg-warning' : 
-                                                                  (${tracking.status == 'LATE'} ? 'bg-danger' : 
+                          th:classappend="${tracking.status == 'CHECKED_OUT'} ? 'bg-success' :
+                                                                  (${tracking.status == 'CHECKED_IN'} ? 'bg-warning' :
+                                                                  (${tracking.status == 'LATE'} ? 'bg-danger' :
                                                                   (${tracking.status == 'SCHEDULED'} ? 'bg-info' : 'bg-secondary')))"
                           th:text="${tracking.status}"
                           >CHECKED_OUT</span>

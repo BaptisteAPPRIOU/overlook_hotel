@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: ${RECETTE_POSTGRES_DB:?RECETTE_POSTGRES_DB is required}
+      POSTGRES_USER: ${RECETTE_POSTGRES_USER:?RECETTE_POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${RECETTE_POSTGRES_PASSWORD:?RECETTE_POSTGRES_PASSWORD is required}
+    ports:
+      - "5433:5432"
+    volumes:
+      - recette-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    image: overlook-hotel:recette
+    build:
+      context: ./master
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: recette
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${RECETTE_POSTGRES_DB:?RECETTE_POSTGRES_DB is required}
+      SPRING_DATASOURCE_USERNAME: ${RECETTE_POSTGRES_USER:?RECETTE_POSTGRES_USER is required}
+      SPRING_DATASOURCE_PASSWORD: ${RECETTE_POSTGRES_PASSWORD:?RECETTE_POSTGRES_PASSWORD is required}
+      SPRING_SECURITY_USER_NAME: ${SPRING_SECURITY_USER_NAME:?SPRING_SECURITY_USER_NAME is required}
+      SPRING_SECURITY_USER_PASSWORD: ${SPRING_SECURITY_USER_PASSWORD:?SPRING_SECURITY_USER_PASSWORD is required}
+      APP_JWT_SECRET: ${APP_JWT_SECRET:?APP_JWT_SECRET is required}
+      APP_JWT_EXPIRATION_MS: ${APP_JWT_EXPIRATION_MS:-86400000}
+      APP_SEED_ENABLED: ${APP_SEED_ENABLED:-false}
+    ports:
+      - "8080:8080"
+
+volumes:
+  recette-postgres-data:
