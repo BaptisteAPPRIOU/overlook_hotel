@@ -23,6 +23,9 @@ public class SecurityConfig {
   private final CustomUserDetailsService userDetailsService;
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+  /**
+   * Injects the authentication services required by the Spring Security configuration.
+   */
   public SecurityConfig(
       CustomUserDetailsService userDetailsService,
       JwtAuthenticationFilter jwtAuthenticationFilter) {
@@ -30,11 +33,14 @@ public class SecurityConfig {
     this.jwtAuthenticationFilter = jwtAuthenticationFilter;
   }
 
-  // Security filter chain configuration
+  /**
+   * Defines the HTTP security rules, public routes, role-based access, and JWT authentication filter.
+   */
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.csrf(
             csrf ->
+                // API and selected form endpoints are excluded from CSRF because JWT handles API authentication.
                 csrf.ignoringRequestMatchers("/api/**", "/employees", "/planning/create-default"))
         .authorizeHttpRequests(
             auth ->
@@ -51,6 +57,7 @@ public class SecurityConfig {
                     .requestMatchers("/api/v1/logout")
                     .authenticated()
                     .requestMatchers(HttpMethod.DELETE, "/api/v1/clients/**")
+                    // Deleting client accounts is restricted to administrators.
                     .hasAuthority("ADMIN")
 
                     // Employee Dashboard and related pages - Only EMPLOYEE and ADMIN can
@@ -118,6 +125,7 @@ public class SecurityConfig {
                           // Redirect to login page for unauthenticated requests
                           response.sendRedirect("/?error=not_authenticated");
                         }))
+        // The JWT filter must run before username/password authentication so tokens are read first.
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         .formLogin(form -> form.disable())
         .httpBasic(basic -> basic.disable());
@@ -125,17 +133,23 @@ public class SecurityConfig {
     return http.build();
   }
 
-  // Bean for PasswordEncoder
+  /**
+   * Provides the password encoder used to hash and verify user passwords.
+   */
   @Bean
   public PasswordEncoder passwordEncoder() {
+    // BCrypt stores a salted hash, which is safer than keeping raw passwords.
     return new BCryptPasswordEncoder();
   }
 
-  // Bean for AuthenticationManager
+  /**
+   * Creates the AuthenticationManager with the custom user lookup service and password encoder.
+   */
   @Bean
   public AuthenticationManager authenticationManager(
       HttpSecurity http, PasswordEncoder passwordEncoder) throws Exception {
     AuthenticationManagerBuilder builder = http.getSharedObject(AuthenticationManagerBuilder.class);
+    // Spring Security delegates credential checks to the custom service and BCrypt encoder.
     builder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
     return builder.build();
   }

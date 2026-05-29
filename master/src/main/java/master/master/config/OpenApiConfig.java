@@ -12,8 +12,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenApiConfig {
 
+  // This name must match the security requirement and the declared OpenAPI security scheme.
   private static final String SECURITY_SCHEME_NAME = "bearerAuth";
 
+  /**
+   * Builds the main OpenAPI definition and declares JWT bearer authentication for Swagger UI.
+   */
   @Bean
   public OpenAPI overlookHotelOpenApi() {
     return new OpenAPI()
@@ -27,6 +31,7 @@ public class OpenApiConfig {
             new Components()
                 .addSecuritySchemes(
                     SECURITY_SCHEME_NAME,
+                    // Swagger UI uses this HTTP bearer scheme to send JWT tokens in the Authorization header.
                     new SecurityScheme()
                         .name(SECURITY_SCHEME_NAME)
                         .type(SecurityScheme.Type.HTTP)
@@ -34,6 +39,9 @@ public class OpenApiConfig {
                         .bearerFormat("JWT")));
   }
 
+  /**
+   * Groups all REST API endpoints under a dedicated Swagger documentation section.
+   */
   @Bean
   public GroupedOpenApi overlookHotelApiGroup() {
     return GroupedOpenApi.builder()
