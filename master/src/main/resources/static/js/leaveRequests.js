@@ -1,15 +1,13 @@
 /**
- * Leave Request Management JavaScript
- * Handles employee leave request operations in the employee dashboard
+ * Leave request management script for the employee dashboard.
+ * Handles request submission, validation, and approval workflows.
  */
 
 // Global variables
 let currentEmployeeId = null;
 let leaveRequests = [];
 
-/**
- * Fetch with authentication helper function
- */
+// Fetches data with JWT authentication.
 async function fetchWithAuth(url, options = {}) {
   const token = localStorage.getItem("jwtToken");
 
@@ -36,9 +34,7 @@ async function fetchWithAuth(url, options = {}) {
   return response;
 }
 
-/**
- * Initialize leave request functionality when page loads
- */
+// Initialize leave request functionality when page loads
 document.addEventListener("DOMContentLoaded", function () {
   initializeLeaveRequestSection();
   loadMyLeaveRequests();
@@ -50,9 +46,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
-/**
- * Initialize the leave request form and event listeners
- */
+// Initialize the leave request form and event listeners
 function initializeLeaveRequestSection() {
   const submitButton = document.getElementById("submitLeaveRequestBtn");
   const leaveRequestForm = document.getElementById("leaveRequestForm");
@@ -105,9 +99,7 @@ function initializeLeaveRequestSection() {
   }
 }
 
-/**
- * Handle leave request form submission
- */
+// Handle leave request form submission
 async function handleSubmitLeaveRequest() {
   try {
     // Get form data
@@ -169,9 +161,7 @@ async function handleSubmitLeaveRequest() {
   }
 }
 
-/**
- * Validate leave request form data
- */
+// Validate leave request form data
 function validateLeaveRequestForm(startDate, endDate, reason, type) {
   // Check required fields
   if (!startDate) {
@@ -221,9 +211,7 @@ function validateLeaveRequestForm(startDate, endDate, reason, type) {
   return true;
 }
 
-/**
- * Validate date inputs when they change
- */
+// Validate date inputs when they change
 function validateLeaveDates() {
   const startDateInput = document.getElementById("leaveStartDate");
   const endDateInput = document.getElementById("leaveEndDate");
@@ -242,9 +230,7 @@ function validateLeaveDates() {
   }
 }
 
-/**
- * Load current employee's leave requests
- */
+// Load current employee's leave requests
 async function loadMyLeaveRequests() {
   try {
     const response = await fetchWithAuth("/api/v1/leave-requests/my-requests");
@@ -265,9 +251,7 @@ async function loadMyLeaveRequests() {
   }
 }
 
-/**
- * Load pending leave requests for admin approval
- */
+// Load pending leave requests for admin approval
 async function loadPendingLeaveRequests() {
   try {
     const response = await fetchWithAuth("/api/v1/leave-requests/pending");
@@ -287,9 +271,7 @@ async function loadPendingLeaveRequests() {
   }
 }
 
-/**
- * Load all leave requests for admin oversight
- */
+// Load all leave requests for admin oversight
 async function loadAllLeaveRequests() {
   try {
     const response = await fetchWithAuth("/api/v1/leave-requests/all");
@@ -309,9 +291,7 @@ async function loadAllLeaveRequests() {
   }
 }
 
-/**
- * Display employee's leave requests in the table
- */
+// Display employee's leave requests in the table
 function displayMyLeaveRequests(requests) {
   const tableBody = document.querySelector("#myLeaveRequestsTable tbody");
   if (!tableBody) return;
@@ -364,9 +344,7 @@ function displayMyLeaveRequests(requests) {
   });
 }
 
-/**
- * Display pending leave requests for admin approval
- */
+// Display pending leave requests for admin approval
 function displayPendingLeaveRequests(requests) {
   const tableBody = document.querySelector("#pendingLeaveRequestsTable tbody");
   if (!tableBody) return;
@@ -424,9 +402,7 @@ function displayPendingLeaveRequests(requests) {
   });
 }
 
-/**
- * Display all leave requests for admin oversight
- */
+// Display all leave requests for admin oversight
 function displayAllLeaveRequests(requests) {
   const tableBody = document.querySelector("#allLeaveRequestsTable tbody");
   if (!tableBody) return;
@@ -497,9 +473,7 @@ function displayAllLeaveRequests(requests) {
   });
 }
 
-/**
- * Cancel a leave request
- */
+// Cancel a leave request
 async function cancelLeaveRequest(requestId) {
   if (!confirm("Are you sure you want to cancel this leave request?")) {
     return;
@@ -530,9 +504,7 @@ async function cancelLeaveRequest(requestId) {
   }
 }
 
-/**
- * Approve a leave request (admin only)
- */
+// Approve a leave request (admin only)
 async function approveLeaveRequest(requestId) {
   if (!confirm("Are you sure you want to approve this leave request?")) {
     return;
@@ -564,9 +536,7 @@ async function approveLeaveRequest(requestId) {
   }
 }
 
-/**
- * Reject a leave request (admin only)
- */
+// Reject a leave request (admin only)
 async function rejectLeaveRequest(requestId) {
   const reason = prompt("Please enter the reason for rejection:");
   if (!reason || reason.trim() === "") {
@@ -603,9 +573,7 @@ async function rejectLeaveRequest(requestId) {
   }
 }
 
-/**
- * Reset the leave request form
- */
+// Reset the leave request form
 function resetLeaveRequestForm() {
   document.getElementById("leaveStartDate").value = "";
   document.getElementById("leaveEndDate").value = "";
@@ -613,10 +581,7 @@ function resetLeaveRequestForm() {
   document.getElementById("leaveType").selectedIndex = 0;
 }
 
-/**
- * Utility functions
- */
-
+// Utility helpers used by the leave request view.
 function formatLeaveType(type) {
   const types = {
     VACATION: "Vacation",
@@ -632,6 +597,7 @@ function formatLeaveType(type) {
   return types[type] || type;
 }
 
+// Format date to a more readable format
 function formatDate(dateString) {
   const date = new Date(dateString);
   return date.toLocaleDateString("en-US", {
@@ -641,6 +607,7 @@ function formatDate(dateString) {
   });
 }
 
+// Format date and time to a more readable format
 function formatDateTime(dateTimeString) {
   const date = new Date(dateTimeString);
   return date.toLocaleDateString("en-US", {
@@ -652,6 +619,7 @@ function formatDateTime(dateTimeString) {
   });
 }
 
+// Calculate the duration of leave in days
 function calculateLeaveDuration(startDate, endDate) {
   const start = new Date(startDate);
   const end = new Date(endDate);
@@ -660,6 +628,7 @@ function calculateLeaveDuration(startDate, endDate) {
   return diffDays;
 }
 
+// Check if the current user is an admin
 function isCurrentUserAdmin() {
   // Check if current user has admin role
   // For now, return true to enable admin functionality for testing
@@ -667,6 +636,7 @@ function isCurrentUserAdmin() {
   return true;
 }
 
+// Show notification messages to the user
 function showNotification(message, type = "info") {
   // Create notification container if it doesn't exist
   let container = document.getElementById("notificationContainer");

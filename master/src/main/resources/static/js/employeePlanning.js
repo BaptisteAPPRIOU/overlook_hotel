@@ -1,4 +1,6 @@
-// Planning data for Alpine.js
+/**
+ * Planning data for Alpine.js
+ */
 function planningData() {
   return {
     employees: [],
@@ -82,6 +84,7 @@ function planningData() {
       }
     },
 
+    // Helper method to get employee initials
     getEmployeeInitials(employee) {
       if (employee.firstName && employee.lastName) {
         return employee.firstName.charAt(0) + employee.lastName.charAt(0);
@@ -104,6 +107,7 @@ function planningData() {
       return "??";
     },
 
+    // Helper method to determine the role of an employee
     getEmployeeRole(employee) {
       // Check if the employee has a user object with a role
       if (employee.user && employee.user.role) {
@@ -119,6 +123,7 @@ function planningData() {
       return "EMPLOYEE";
     },
 
+    // Method to calculate total hours for an employee based on the schedule
     getEmployeeHours(employee) {
       // Calculate actual hours from schedule if available
       let totalHours = 0;
@@ -206,6 +211,7 @@ function planningData() {
       return totalHours + " h/35 h";
     },
 
+    // Helper method to check if two dates are consecutive days
     async loadEmployees() {
       try {
         const response = await fetch("/api/planning/employees", {
@@ -1075,6 +1081,7 @@ function validateShiftTimes() {
   }
 }
 
+// Time validation function for edit shift modal
 function validateEditShiftTimes() {
   const startTimeInput = document.getElementById("editShiftStartTime");
   const endTimeInput = document.getElementById("editShiftEndTime");

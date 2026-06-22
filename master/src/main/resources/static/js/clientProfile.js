@@ -1,6 +1,8 @@
-// ================================
-// Client Profile JavaScript
-// ================================
+/**
+ * ================================
+ * Client Profile JavaScript
+ * ================================
+ */
 
 // Global variables
 let currentUser = null;

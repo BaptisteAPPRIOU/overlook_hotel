@@ -1,6 +1,8 @@
-// ================================
-// Client Home Page JavaScript
-// ================================
+/**
+ * ================================
+ * Client Home Page JavaScript
+ * ================================
+ */
 
 // Global variables
 let currentRooms = [];
