@@ -35,6 +35,7 @@ public class EmployeeWorkdayService {
   private final EmployeeRepository employeeRepository;
   private final MonthlyScheduleRepository monthlyScheduleRepository;
 
+  // Wire the shift, employee, and monthly schedule repositories.
   public EmployeeWorkdayService(
       WorkShiftRepository workShiftRepository,
       EmployeeRepository employeeRepository,
@@ -44,6 +45,7 @@ public class EmployeeWorkdayService {
     this.monthlyScheduleRepository = monthlyScheduleRepository;
   }
 
+  // Return the configured weekday numbers for one employee.
   public List<Integer> getWorkdaysByEmployeeId(Long employeeId) {
     if (employeeId == null) {
       return List.of();
@@ -55,6 +57,7 @@ public class EmployeeWorkdayService {
         .toList();
   }
 
+  // Replace all workday entries for one employee.
   public void setWorkdays(Long employeeId, List<Integer> weekdays) {
     Employee employee =
         employeeRepository
@@ -75,6 +78,7 @@ public class EmployeeWorkdayService {
     }
   }
 
+  // Build the weekly schedule view for every employee.
   public List<WeeklyScheduleDto> getWeeklySchedules() {
     return employeeRepository.findAll().stream()
         .map(
@@ -94,6 +98,7 @@ public class EmployeeWorkdayService {
         .toList();
   }
 
+  // Build the monthly schedule view for every employee.
   public List<MonthlyScheduleDto> getMonthlySchedules(java.time.Month targetMonth) {
     java.time.Month month = targetMonth == null ? LocalDate.now().getMonth() : targetMonth;
     return employeeRepository.findAll().stream()
@@ -114,6 +119,7 @@ public class EmployeeWorkdayService {
         .toList();
   }
 
+  // Build a date-range schedule grouped by employee.
   public List<DateRangeScheduleDto> getSchedulesInRange(LocalDate start, LocalDate end) {
     Map<Long, DateRangeScheduleDto> byEmployee = new HashMap<>();
     for (WorkShift shift : workShiftRepository.findByWorkDateBetween(start, end)) {
@@ -133,14 +139,17 @@ public class EmployeeWorkdayService {
     return new ArrayList<>(byEmployee.values());
   }
 
+  // Check whether an employee has any configured workdays.
   public boolean hasWorkdaysConfigured(Long employeeId) {
     return !getWorkdaysByEmployeeId(employeeId).isEmpty();
   }
 
+  // Count how many employees currently have workday entries.
   public long getEmployeesWithWorkdaysCount() {
     return workShiftRepository.findAll().stream().map(shift -> shift.getEmployee().getId()).distinct().count();
   }
 
+  // Convert one employee's workdays into the detailed schedule DTO.
   public EmployeeWorkScheduleDto getEmployeeWorkSchedule(Long employeeId) {
     Employee employee =
         employeeRepository
@@ -167,10 +176,12 @@ public class EmployeeWorkdayService {
         .build();
   }
 
+  // Pick the next calendar date matching the requested weekday.
   private LocalDate nextDateForWeekday(int weekday) {
     return LocalDate.now().with(java.time.temporal.TemporalAdjusters.nextOrSame(DayOfWeek.of(weekday)));
   }
 
+  // Resolve or create the monthly schedule that owns the workday.
   private MonthlySchedule scheduleFor(LocalDate date) {
     return monthlyScheduleRepository
         .findByScheduleMonthAndScheduleYear((short) date.getMonthValue(), (short) date.getYear())
@@ -184,6 +195,7 @@ public class EmployeeWorkdayService {
             });
   }
 
+  // Build an empty Monday-through-Sunday schedule map.
   private Map<String, String> emptyWeek() {
     Map<String, String> schedule = new HashMap<>();
     for (DayOfWeek day : DayOfWeek.values()) {

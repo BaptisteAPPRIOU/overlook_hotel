@@ -22,10 +22,12 @@ public class HotelDataInitializationService implements ApplicationRunner {
 
   private final RoomRepository roomRepository;
 
+  // Inject the room repository used by the startup initializer.
   public HotelDataInitializationService(RoomRepository roomRepository) {
     this.roomRepository = roomRepository;
   }
 
+  // Run the hotel room initialization after the application starts.
   @Override
   public void run(ApplicationArguments args) throws Exception {
     try {
@@ -36,7 +38,7 @@ public class HotelDataInitializationService implements ApplicationRunner {
     }
   }
 
-  /** Initialize or update existing rooms with hotel-specific data and amenities. */
+  // Initialize or update existing rooms with hotel-specific data and amenities.
   public void initializeHotelRoomsData() {
     List<Room> allRooms = roomRepository.findAll();
 
@@ -47,7 +49,7 @@ public class HotelDataInitializationService implements ApplicationRunner {
     }
   }
 
-  /** Create sample hotel rooms if none exist. */
+  // Create sample hotel rooms if none exist.
   private void createSampleHotelRooms() {
     // Deluxe Room
     Room deluxeRoom =
@@ -213,7 +215,7 @@ public class HotelDataInitializationService implements ApplicationRunner {
     roomRepository.save(superiorRoom);
   }
 
-  /** Update existing rooms with hotel amenities based on their type and features. */
+  // Update existing rooms with hotel amenities based on their type and features.
   private void updateExistingRoomsWithAmenities(List<Room> rooms) {
     for (Room room : rooms) {
       // Only update rooms that don't have amenities and are hotel-type rooms
@@ -237,7 +239,7 @@ public class HotelDataInitializationService implements ApplicationRunner {
     }
   }
 
-  /** Generate appropriate amenities based on room characteristics. */
+  // Generate appropriate amenities based on room characteristics.
   private List<String> generateAmenitiesForRoom(Room room) {
     // Determine room category based on capacity and name
     String roomName = room.getName() != null ? room.getName().toLowerCase() : "";
@@ -297,7 +299,7 @@ public class HotelDataInitializationService implements ApplicationRunner {
     }
   }
 
-  /** Calculate price based on room capacity if not set. */
+  // Calculate price based on room capacity if not set.
   private Double calculatePriceBasedOnCapacity(Integer capacity) {
     if (capacity == null) return 150.0;
 
@@ -315,7 +317,7 @@ public class HotelDataInitializationService implements ApplicationRunner {
     }
   }
 
-  /** Generate description based on room characteristics. */
+  // Generate description based on room characteristics.
   private String generateDescriptionForRoom(Room room) {
     String roomName = room.getName() != null ? room.getName() : "Room " + room.getNumber();
     Integer capacity = room.getCapacity() != null ? room.getCapacity().intValue() : 2;

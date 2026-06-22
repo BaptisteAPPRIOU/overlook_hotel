@@ -14,6 +14,7 @@ public class OpenApiConfig {
 
   private static final String SECURITY_SCHEME_NAME = "bearerAuth";
 
+  // Publish the OpenAPI document and declare JWT bearer authentication.
   @Bean
   public OpenAPI overlookHotelOpenApi() {
     return new OpenAPI()
@@ -34,6 +35,7 @@ public class OpenApiConfig {
                         .bearerFormat("JWT")));
   }
 
+  // Group every /api/** endpoint into a single Swagger section.
   @Bean
   public GroupedOpenApi overlookHotelApiGroup() {
     return GroupedOpenApi.builder()

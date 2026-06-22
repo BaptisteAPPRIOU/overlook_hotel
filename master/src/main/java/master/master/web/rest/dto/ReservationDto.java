@@ -1,4 +1,3 @@
-// ReservationDto.java
 package master.master.web.rest.dto;
 
 import jakarta.validation.constraints.NotNull;
@@ -9,9 +8,15 @@ import lombok.NoArgsConstructor;
 
 public class ReservationDto {
 
+  /*
+   * DTOs for reservation-related API interactions.
+   * Contains simplified payloads for creating and returning reservation data.
+   */
+
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
+  // Overview of reservation details exposed to clients
   public static class Info {
     private Long userId;
     private Long roomId;
@@ -23,6 +28,7 @@ public class ReservationDto {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
+  // Payload required to create a new reservation
   public static class Create {
     @NotNull private Long roomId;
     @NotNull private LocalDate reservationDateStart;

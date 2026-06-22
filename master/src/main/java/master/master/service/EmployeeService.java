@@ -14,12 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
- * Service class for managing Employee entities and their associated User accounts. This service
- * provides CRUD operations for employees and handles the relationship between Employee and User
- * entities.
- *
- * <p>The service automatically creates and manages User accounts with EMPLOYEE role when creating
- * new employees, and ensures proper password encoding for security.
+ * Service that manages employee records and their backing user accounts.
+ * It creates, updates, and deletes employee data while keeping the related user entity aligned.
  */
 @Service
 public class EmployeeService {
@@ -29,7 +25,7 @@ public class EmployeeService {
   private final PasswordEncoder passwordEncoder;
   private final UserRoleService userRoleService;
 
-  // Constructor to inject dependencies
+  // Wires the employee service to the user, employee, password, and role helpers.
   public EmployeeService(
       UserRepository userRepository,
       EmployeeRepository employeeRepository,
@@ -41,7 +37,7 @@ public class EmployeeService {
     this.userRoleService = userRoleService;
   }
 
-  // This method creates a new employee and automatically creates a User account for them.
+  // Creates a new employee and the associated user account.
   public Employee createEmployee(CreateEmployeeRequestDto request) {
     User user = new User();
     user.setFirstName(request.getFirstName());
@@ -59,19 +55,19 @@ public class EmployeeService {
     return employeeRepository.save(employee);
   }
 
-  // This method retrieves an employee by their ID.
+  // Returns a single employee by identifier.
   public Employee getEmployee(Long id) {
     return employeeRepository
         .findById(id)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found"));
   }
 
-  // This method retrieves all employees in the system.
+  // Returns the full employee list.
   public List<Employee> getAllEmployees() {
     return employeeRepository.findAll();
   }
 
-  // This method updates an existing employee's details.
+  // Updates the employee profile and mirrors the changes to the linked user.
   public Employee updateEmployee(Long id, CreateEmployeeRequestDto request) {
     Employee employee = getEmployee(id);
     User user = employee.getUser();
@@ -82,7 +78,7 @@ public class EmployeeService {
     return employeeRepository.save(employee);
   }
 
-  // This method deletes an employee and their associated User account.
+  // Deletes the employee and the associated user account.
   public void deleteEmployee(Long id) {
     if (!employeeRepository.existsById(id)) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found");

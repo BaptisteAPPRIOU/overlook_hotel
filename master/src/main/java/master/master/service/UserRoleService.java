@@ -12,10 +12,12 @@ public class UserRoleService {
 
   private final RoleRepository roleRepository;
 
+  // Inject the role repository used to resolve or create roles.
   public UserRoleService(RoleRepository roleRepository) {
     this.roleRepository = roleRepository;
   }
 
+  // Ensure the user has exactly the requested role.
   @Transactional
   public void assignRole(User user, RoleCode roleCode) {
     Role role =
@@ -26,6 +28,7 @@ public class UserRoleService {
     user.getRoles().add(role);
   }
 
+  // Build a new role entity for a missing role code.
   private Role createRole(RoleCode roleCode) {
     Role role = new Role();
     role.setRoleCode(roleCode);

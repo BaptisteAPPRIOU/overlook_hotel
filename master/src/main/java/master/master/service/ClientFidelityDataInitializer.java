@@ -20,10 +20,12 @@ public class ClientFidelityDataInitializer implements CommandLineRunner {
 
   private final ClientRepository clientRepository;
 
+  // Inject the client repository used to repair missing fidelity balances.
   public ClientFidelityDataInitializer(ClientRepository clientRepository) {
     this.clientRepository = clientRepository;
   }
 
+  // Ensure every client has a non-null fidelity point balance at startup.
   @Override
   @Transactional
   public void run(String... args) throws Exception {

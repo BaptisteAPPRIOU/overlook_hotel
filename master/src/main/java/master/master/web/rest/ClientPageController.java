@@ -11,14 +11,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class ClientPageController {
 
-  /**
-   * Display the main client home page with hotel presentation. This page includes: - Hotel
-   * presentation section - Rooms showcase with reservation capability - Guest reviews (Livret d'Or)
-   * with validated reviews only
-   *
-   * @param model Spring MVC model for passing data to the view
-   * @return the client home page template
-   */
+  // Display the main client home page with hotel presentation. This page includes: - Hotel
+  // presentation section - Rooms showcase with reservation capability - Guest reviews (Livret d'Or)
+  // with validated reviews only
   @GetMapping("/clientHomePage")
   public String clientHomePage(Model model) {
     // Add any model attributes needed for the home page
@@ -31,36 +26,21 @@ public class ClientPageController {
     return "clientHomePage";
   }
 
-  /**
-   * Alternative mapping for explicit home page access.
-   *
-   * @param model Spring MVC model
-   * @return the client home page template
-   */
+  // Alternative mapping for explicit home page access.
   @GetMapping("/home")
   public String home(Model model) {
     return clientHomePage(model);
   }
 
-  /**
-   * Display the client home page from client login redirect.
-   *
-   * @param model Spring MVC model
-   * @return the client home page template
-   */
+  // Display the client home page from client login redirect.
   @GetMapping("/client/home")
   public String clientHomeRedirect(Model model) {
     return clientHomePage(model);
   }
 
-  /**
-   * Display the client profile page for authenticated users. This page includes: - Personal
-   * information management - Reservation history with filtering options - Review system for past
-   * stays
-   *
-   * @param model Spring MVC model for passing data to the view
-   * @return the client profile page template
-   */
+  // Display the client profile page for authenticated users. This page includes: - Personal
+  // information management - Reservation history with filtering options - Review system for past
+  // stays
   @GetMapping("/clientProfile")
   public String clientProfile(Model model) {
     // Add any model attributes needed for the profile page

@@ -7,17 +7,22 @@ import master.master.web.rest.dto.ReservationDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * REST controller for client reservations.
+ * Exposes reservation creation and listing for the client ownership path.
+ */
 @RestController
 @RequestMapping("/api/v1/clients/{userId}/reservations")
 public class ReservationController {
 
   private final ReservationService service;
 
+  // Inject the reservation service used by this client-scoped endpoint set.
   public ReservationController(ReservationService service) {
     this.service = service;
   }
 
-  // Endpoint to create a new reservation for a specific user
+  // Create a reservation for the targeted client.
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public ReservationDto.Info create(
@@ -25,7 +30,7 @@ public class ReservationController {
     return service.create(userId, dto);
   }
 
-  // Endpoint to retrieve all reservations for a specific user
+  // List all reservations for the targeted client.
   @GetMapping
   public List<ReservationDto.Info> list(@PathVariable Long userId) {
     return service.findByUser(userId);

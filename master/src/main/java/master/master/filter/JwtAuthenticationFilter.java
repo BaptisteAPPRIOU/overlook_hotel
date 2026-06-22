@@ -1,4 +1,3 @@
-// src/main/java/master/master/security/JwtAuthenticationFilter.java
 package master.master.filter;
 
 import jakarta.servlet.FilterChain;
@@ -19,7 +18,10 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-/** Filtre JWT qui prend en compte la blacklist. */
+/**
+ * JWT request filter that authenticates incoming requests from the bearer header or cookie.
+ * It also skips tokens that have been explicitly blacklisted during logout.
+ */
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -27,8 +29,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final JwtUtil jwtUtil;
   private final UserDetailsService userDetailsService;
 
+  // Injects the JWT helper, user loader, and blacklist service.
   @Autowired private TokenBlacklistService tokenBlacklistService;
 
+  // Extracts the token, validates it, and populates the security context when possible.
   @Override
   protected void doFilterInternal(
       @NonNull HttpServletRequest request,

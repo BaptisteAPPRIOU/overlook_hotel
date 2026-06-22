@@ -3,7 +3,9 @@ package master.master.web.rest.dto;
 import lombok.Builder;
 import lombok.Data;
 
-/** DTO used to create an employee through the API. */
+/**
+ * DTO used to create an employee through the API.
+ */
 @Data
 @Builder
 public class CreateEmployeeRequestDto {

@@ -15,6 +15,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Central security configuration for the application.
+ * It wires JWT filtering, authorization rules, password encoding, and the authentication manager.
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -23,6 +27,7 @@ public class SecurityConfig {
   private final CustomUserDetailsService userDetailsService;
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+  // Wires the security configuration to the user service and JWT filter.
   public SecurityConfig(
       CustomUserDetailsService userDetailsService,
       JwtAuthenticationFilter jwtAuthenticationFilter) {
@@ -30,7 +35,7 @@ public class SecurityConfig {
     this.jwtAuthenticationFilter = jwtAuthenticationFilter;
   }
 
-  // Security filter chain configuration
+  // Builds the HTTP security filter chain and endpoint authorization rules.
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.csrf(
@@ -125,13 +130,13 @@ public class SecurityConfig {
     return http.build();
   }
 
-  // Bean for PasswordEncoder
+  // Exposes the password encoder used for account registration and authentication.
   @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
   }
 
-  // Bean for AuthenticationManager
+  // Builds the authentication manager from the configured user details service.
   @Bean
   public AuthenticationManager authenticationManager(
       HttpSecurity http, PasswordEncoder passwordEncoder) throws Exception {

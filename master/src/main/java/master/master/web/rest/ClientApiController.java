@@ -32,6 +32,7 @@ public class ClientApiController {
   private final UserRepository userRepository;
   private final ClientRepository clientRepository;
 
+  // Wire the hotel website service and user lookup repositories used by the client API.
   public ClientApiController(
       HotelWebsiteService hotelWebsiteService,
       UserRepository userRepository,
@@ -41,15 +42,7 @@ public class ClientApiController {
     this.clientRepository = clientRepository;
   }
 
-  /**
-   * Get available rooms for specific dates and criteria.
-   *
-   * @param checkIn Check-in date
-   * @param checkOut Check-out date
-   * @param adults Number of adults
-   * @param children Number of children
-   * @return List of available rooms with details
-   */
+  // Return rooms available for the requested stay and occupancy.
   @GetMapping("/rooms")
   public ResponseEntity<List<Map<String, Object>>> getAvailableRooms(
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkIn,
@@ -66,11 +59,7 @@ public class ClientApiController {
     }
   }
 
-  /**
-   * Get all room types for display.
-   *
-   * @return List of all room types with basic information
-   */
+  // Return every room type for browsing screens.
   @GetMapping("/rooms/all")
   public ResponseEntity<List<Map<String, Object>>> getAllRooms() {
     try {
@@ -81,14 +70,7 @@ public class ClientApiController {
     }
   }
 
-  /**
-   * Get validated guest reviews for the "Livret d'Or". Only returns reviews that have been
-   * validated by an admin.
-   *
-   * @param offset Number of reviews to skip (for pagination)
-   * @param limit Maximum number of reviews to return
-   * @return List of validated reviews
-   */
+  // Return validated guest reviews with basic pagination.
   @GetMapping("/reviews")
   public ResponseEntity<List<Map<String, Object>>> getValidatedReviews(
       @RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "6") int limit) {
@@ -101,12 +83,7 @@ public class ClientApiController {
     }
   }
 
-  /**
-   * Get latest validated reviews (most recent first).
-   *
-   * @param limit Maximum number of reviews to return
-   * @return List of latest validated reviews
-   */
+  // Return the most recent validated reviews.
   @GetMapping("/reviews/latest")
   public ResponseEntity<List<Map<String, Object>>> getLatestReviews(
       @RequestParam(defaultValue = "6") int limit) {
@@ -119,12 +96,7 @@ public class ClientApiController {
     }
   }
 
-  /**
-   * Create a reservation request.
-   *
-   * @param reservationData Reservation details
-   * @return Reservation confirmation
-   */
+  // Create a reservation request from client-side form data.
   @GetMapping("/reservation/create")
   public ResponseEntity<Map<String, Object>> createReservation(
       @RequestParam Map<String, Object> reservationData) {
@@ -137,11 +109,7 @@ public class ClientApiController {
     }
   }
 
-  /**
-   * Get hotel information and statistics.
-   *
-   * @return Hotel information including basic stats
-   */
+  // Return hotel summary information and stats.
   @GetMapping("/hotel/info")
   public ResponseEntity<Map<String, Object>> getHotelInfo() {
     try {
@@ -152,11 +120,7 @@ public class ClientApiController {
     }
   }
 
-  /**
-   * Get current user profile information.
-   *
-   * @return Current user's profile data
-   */
+  // Return the current authenticated user's profile data.
   @GetMapping("/profile")
   public ResponseEntity<Map<String, Object>> getCurrentUserProfile() {
     try {

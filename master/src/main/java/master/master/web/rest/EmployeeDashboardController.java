@@ -24,32 +24,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Enhanced REST controller for the Employee Dashboard.
- *
- * <p>This controller provides comprehensive API endpoints for the employee dashboard including
- * employee management, schedule management, leave requests, room management, and review system
- * functionality. *
- *
- * <h3>Employee Management Endpoints:</h3>
- *
- * <ul>
- *   <li><b>GET /api/v1/employees</b>: Retrieve all employees
- *   <li><b>POST /api/dashboard/employees</b>: Create new employee (dashboard)
- *   <li><b>GET /api/v1/employees/{id}</b>: Get specific employee
- *   <li><b>PUT /api/v1/employees/{id}</b>: Update employee
- *   <li><b>DELETE /api/v1/employees/{id}</b>: Delete employee
- * </ul>
- *
- * <h3>Schedule Management Endpoints:</h3>
- *
- * <ul>
- *   <li><b>GET /api/schedules/weekly</b>: Get weekly schedules for all employees
- *   <li><b>GET /api/schedules/monthly</b>: Get monthly schedules for all employees
- *   <li><b>GET /api/schedules/range</b>: Get schedules for date range
- * </ul>
- *
- * @author Hotel Reservation System
- * @version 2.0
+ * REST controller for the employee dashboard.
+ * Exposes employee management and schedule endpoints used by staff screens.
  */
 @RestController
 @CrossOrigin(origins = "*")
@@ -62,6 +38,7 @@ public class EmployeeDashboardController {
   //    private final RoomService roomService;
   //    private final ReviewService reviewService;
 
+  // Wire the dashboard services for employee, schedule, and workday operations.
   public EmployeeDashboardController(
       EmployeeService employeeService,
       EmployeeWorkdayService workdayService,
@@ -79,7 +56,7 @@ public class EmployeeDashboardController {
   // EMPLOYEE MANAGEMENT ENDPOINTS
   // =============================================================================
 
-  /** Create a new employee. Used by the "Add Employee" form in the dashboard. */
+  // Create a new employee. Used by the "Add Employee" form in the dashboard.
   @PostMapping("/api/dashboard/employees")
   public ResponseEntity<Employee> createEmployee(@RequestBody CreateEmployeeRequestDto request) {
     try {
@@ -90,7 +67,7 @@ public class EmployeeDashboardController {
     }
   }
 
-  /** Get a specific employee by ID. */
+  // Get a specific employee by ID.
   @GetMapping("/api/dashboard/employees/{id}")
   public ResponseEntity<Employee> getEmployee(@PathVariable Long id) {
     try {
@@ -101,13 +78,13 @@ public class EmployeeDashboardController {
     }
   }
 
-  /** Get all employees. Used to populate employee dropdowns in the dashboard. */
+  // Get all employees. Used to populate employee dropdowns in the dashboard.
   @GetMapping("/api/dashboard/employees")
   public ResponseEntity<List<Employee>> getAllEmployees() {
     return ResponseEntity.ok(employeeService.getAllEmployees());
   }
 
-  /** Update an existing employee. Used by the "Edit Employee" form in the dashboard. */
+  // Update an existing employee. Used by the "Edit Employee" form in the dashboard.
   @PutMapping("/api/dashboard/employees/{id}")
   public ResponseEntity<Employee> updateEmployee(
       @PathVariable Long id, @RequestBody CreateEmployeeRequestDto request) {
@@ -119,7 +96,7 @@ public class EmployeeDashboardController {
     }
   }
 
-  /** Delete an employee. Used by the "Delete Employee" form in the dashboard. */
+  // Delete an employee. Used by the "Delete Employee" form in the dashboard.
   @DeleteMapping("/api/dashboard/employees/{id}")
   public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
     try {
@@ -134,10 +111,8 @@ public class EmployeeDashboardController {
   // SCHEDULE MANAGEMENT ENDPOINTS
   // =============================================================================
 
-  /**
-   * Get weekly schedules for all employees. Returns data in format expected by the weekly schedule
-   * table.
-   */
+  // Get weekly schedules for all employees. Returns data in format expected by the weekly schedule
+  // table.
   @GetMapping("/api/dashboard/schedules/weekly")
   public ResponseEntity<List<WeeklyScheduleDto>> getWeeklySchedules() {
     try {
@@ -148,10 +123,8 @@ public class EmployeeDashboardController {
     }
   }
 
-  /**
-   * Get monthly schedules for all employees. Returns data in format expected by the monthly
-   * schedule table.
-   */
+  // Get monthly schedules for all employees. Returns data in format expected by the monthly
+  // schedule table.
   @GetMapping("/api/dashboard/schedules/monthly")
   public ResponseEntity<List<MonthlyScheduleDto>> getMonthlySchedules() {
     try {
@@ -162,7 +135,7 @@ public class EmployeeDashboardController {
     }
   }
 
-  /** Get schedules for a specific date range. Used by the date range schedule view. */
+  // Get schedules for a specific date range. Used by the date range schedule view.
   @GetMapping("/api/dashboard/schedules/range")
   public ResponseEntity<List<DateRangeScheduleDto>> getSchedulesByDateRange(
       @RequestParam("start") String startDate, @RequestParam("end") String endDate) {
@@ -176,7 +149,7 @@ public class EmployeeDashboardController {
     }
   }
 
-  /** Get or set workdays for a specific employee. */
+  // Get or set workdays for a specific employee.
   @GetMapping("/api/dashboard/employees/{id}/workdays")
   public ResponseEntity<List<Integer>> getEmployeeWorkdays(@PathVariable Long id) {
     try {
@@ -202,7 +175,7 @@ public class EmployeeDashboardController {
   // EXPORT AND UTILITY ENDPOINTS
   // =============================================================================
 
-  /** Export timesheet data. Used by the "Export Data" button in Time & Attendance. */
+  // Export timesheet data. Used by the "Export Data" button in Time & Attendance.
   @GetMapping("/api/dashboard/export/timesheet")
   public ResponseEntity<byte[]> exportTimesheet() {
     try {

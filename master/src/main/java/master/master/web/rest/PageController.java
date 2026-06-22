@@ -14,22 +14,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
- * Controller responsible for handling page navigation and rendering views for the Overlook Hotel
+ * MVC controller that routes browser requests to the Thymeleaf pages used by the Overlook Hotel
  * application.
- *
- * <p>This controller maps HTTP GET requests to their corresponding view templates, such as login
- * pages, registration page, and employee dashboard.
- *
- * <ul>
- *   <li>{@code "/"} - Displays the home login page.
- *   <li>{@code "/clientLogin"} - Displays the client login page.
- *   <li>{@code "/employeeLogin"} - Displays the employee login page.
- *   <li>{@code "/register"} - Displays the registration page.
- *   <li>{@code "/employeeDashboard"} - Displays the employee dashboard page.
- *   <li>{@code "/roomManagement"} - Displays the employee room management page.
- * </ul>
- *
- * Each method adds a "title" attribute to the model where appropriate, to be used in the view.
+ * It also prepares the minimal model data required by those views, especially for employee
+ * dashboard and planning pages.
  */
 @Controller
 public class PageController {
@@ -38,46 +26,46 @@ public class PageController {
   private final EmployeeService employeeService;
   private final EmployeePlanningService employeePlanningService;
 
+  // Wires the page controller to the employee services it needs for model data.
   public PageController(
       EmployeeService employeeService, EmployeePlanningService employeePlanningService) {
     this.employeeService = employeeService;
     this.employeePlanningService = employeePlanningService;
   }
 
-  // Home page that redirects to the login page
+  // Returns the landing page used for unauthenticated visitors.
   @GetMapping("/")
   public String homeLoginPage() {
     return "homeLoginPage";
   }
 
-  //  Client and Employee login pages
+  // Renders the client login page.
   @GetMapping("/clientLogin")
   public String clientLoginPage(Model model) {
     model.addAttribute("title", "Client Login");
     return "clientLoginPage";
   }
 
-  // Employee login page
+  // Renders the employee login page.
   @GetMapping("/employeeLogin")
   public String employeeLoginPage(Model model) {
     model.addAttribute("title", "Employee Login");
     return "employeeLoginPage";
   }
 
-  // Registration page for new users
+  // Renders the registration page for new accounts.
   @GetMapping("/register")
   public String registerPage(Model model) {
     model.addAttribute("title", "Register");
     return "registerPage";
   }
 
-  // Employee dashboard page
+  // Loads the employee dashboard view and its supporting model data.
   @GetMapping("/employeeDashboard")
   public String employeeDashboardPage(Model model) {
-    // Add title
     model.addAttribute("title", "Employee Dashboard");
 
-    // Add actual employees from database
+    // Load employee data for dashboard widgets and summaries.
     try {
       var employees = employeeService.getAllEmployees();
       model.addAttribute("employees", employees);
@@ -87,30 +75,30 @@ public class PageController {
       model.addAttribute("employees", java.util.Collections.emptyList());
     }
 
-    // Add empty collections to prevent template errors
+    // Seed empty collections so the template can render without null checks.
     model.addAttribute("leaveRequests", java.util.Collections.emptyList());
     model.addAttribute("myLeaveRequests", java.util.Collections.emptyList());
     model.addAttribute("room", java.util.Collections.emptyList());
     model.addAttribute("reviews", java.util.Collections.emptyList());
 
-    // Get current authenticated user information
+    // Attach the current authenticated user when available.
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication != null && authentication.isAuthenticated()) {
       java.util.Map<String, String> currentUser = new java.util.HashMap<>();
       currentUser.put("email", authentication.getName());
 
-      // Get user role from authorities
+      // Resolve the user role from the granted authorities.
       String role = authentication.getAuthorities().iterator().next().getAuthority();
       currentUser.put("role", role);
 
-      // Set default names (you might want to fetch these from a User entity later)
+      // Provide placeholder names until the profile source is wired in.
       currentUser.put("firstName", "Current");
       currentUser.put("lastName", "User");
 
       model.addAttribute("currentUser", currentUser);
       log.info("Current user: {} with role: {}", authentication.getName(), role);
     } else {
-      // Fallback for testing (should not happen with proper security config)
+      // Use a fallback user payload when authentication is absent in tests.
       java.util.Map<String, String> currentUser = new java.util.HashMap<>();
       currentUser.put("firstName", "Test");
       currentUser.put("lastName", "User");
@@ -122,14 +110,14 @@ public class PageController {
     return "employeeDashboard";
   }
 
-  // Room management page for employees
+  // Renders the room management page for staff users.
   @GetMapping("/roomManagement")
   public String roomManagementPage(Model model) {
     model.addAttribute("title", "Room Management");
     return "roomManagement";
   }
 
-  // Handle employee registration from form submission
+  // Handles the employee registration form submission and redirects back to the dashboard.
   @PostMapping("/employees")
   public String registerEmployee(
       @RequestParam String firstName,
@@ -142,7 +130,7 @@ public class PageController {
         "Received form submission for employee registration: {} {} {}", firstName, lastName, email);
 
     try {
-      // Create the DTO for the employee service
+      // Build the service request payload from the form values.
       CreateEmployeeRequestDto requestDto =
           CreateEmployeeRequestDto.builder()
               .firstName(firstName)
@@ -151,7 +139,7 @@ public class PageController {
               .password(password)
               .build();
 
-      // Create the employee using the service
+      // Delegate persistence and validation to the service layer.
       var createdEmployee = employeeService.createEmployee(requestDto);
 
       log.info("Successfully created employee with ID: {}", createdEmployee.getUserId());
@@ -164,23 +152,22 @@ public class PageController {
 
     log.info("Redirecting back to employee dashboard");
 
-    // Redirect back to employee dashboard
     return "redirect:/employeeDashboard";
   }
 
-  // Employee Planning Management endpoints
+  // Renders the employee planning management page.
   @GetMapping("/planning")
   public String planningPage(Model model) {
     model.addAttribute("title", "Employee Planning Management");
 
-    // Add current user for access control
+    // Supply a lightweight current-user payload for the view.
     java.util.Map<String, String> currentUser = new java.util.HashMap<>();
     currentUser.put("firstName", "Manager");
     currentUser.put("lastName", "User");
-    currentUser.put("role", "ADMIN"); // Only ADMIN can manage planning
+    currentUser.put("role", "ADMIN");
     model.addAttribute("currentUser", currentUser);
 
-    // Load all employees for planning management
+    // Load the employee roster used by the planning page.
     try {
       var employees = employeeService.getAllEmployees();
       model.addAttribute("employees", employees);
@@ -190,7 +177,7 @@ public class PageController {
       model.addAttribute("employees", java.util.Collections.emptyList());
     }
 
-    // Load existing plannings
+    // Load the existing planning data for the schedule editor.
     try {
       var plannings = employeePlanningService.getAllEmployeePlannings();
       model.addAttribute("plannings", plannings);
@@ -203,7 +190,7 @@ public class PageController {
     return "employeePlanning";
   }
 
-  // Endpoint to create default planning for an employee
+  // Creates a default planning template for the selected employee.
   @PostMapping("/planning/create-default")
   public String createDefaultPlanning(@RequestParam Long employeeId, Model model) {
     log.info("Creating default 35h/week planning for employee ID: {}", employeeId);
@@ -220,20 +207,19 @@ public class PageController {
     return "redirect:/planning";
   }
 
-  // Endpoint to view the current user's planning
+  // Renders the current user's planning page.
   @GetMapping("/my-planning")
   public String myPlanningPage(Model model) {
     model.addAttribute("title", "My Work Schedule");
 
-    // Add current user (in real app, get from security context)
+    // Placeholder user data for the current planning view.
     java.util.Map<String, String> currentUser = new java.util.HashMap<>();
     currentUser.put("firstName", "John");
     currentUser.put("lastName", "Doe");
     currentUser.put("role", "EMPLOYEE");
     model.addAttribute("currentUser", currentUser);
 
-    // For demo purposes, we'll show planning for employee ID 1
-    // In a real app, get the employee ID from the authenticated user
+    // Demo data only; this should come from the authenticated user in production.
     Long employeeId = 1L;
 
     try {

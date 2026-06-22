@@ -26,11 +26,12 @@ public class TimeTrackingController {
 
   private final TimeTrackingService timeTrackingService;
 
+  // Inject the time tracking service used by all attendance endpoints.
   public TimeTrackingController(TimeTrackingService timeTrackingService) {
     this.timeTrackingService = timeTrackingService;
   }
 
-  /** Employee clock in. POST /api/time-tracking/employees/{employeeId}/clock-in */
+  // Clock an employee in for the selected work date.
   @PostMapping("/employees/{employeeId}/clock-in")
   public ResponseEntity<TimeTrackingDto> clockIn(
       @PathVariable Long employeeId, @RequestParam(required = false) LocalDate date) {
@@ -43,7 +44,7 @@ public class TimeTrackingController {
     }
   }
 
-  /** Employee clock out. POST /api/time-tracking/employees/{employeeId}/clock-out */
+  // Clock an employee out for the selected work date.
   @PostMapping("/employees/{employeeId}/clock-out")
   public ResponseEntity<TimeTrackingDto> clockOut(
       @PathVariable Long employeeId, @RequestParam(required = false) LocalDate date) {
@@ -57,10 +58,7 @@ public class TimeTrackingController {
     }
   }
 
-  /**
-   * Get time tracking for a specific employee and date. GET
-   * /api/time-tracking/employees/{employeeId}
-   */
+  // Return one employee's time tracking for a selected day.
   @GetMapping("/employees/{employeeId}")
   public ResponseEntity<TimeTrackingDto> getEmployeeTimeTracking(
       @PathVariable Long employeeId, @RequestParam(required = false) LocalDate date) {
@@ -73,7 +71,7 @@ public class TimeTrackingController {
     }
   }
 
-  /** Get time tracking for all employees for a specific date. GET /api/time-tracking/daily */
+  // Return the day view for every employee.
   @GetMapping("/daily")
   public ResponseEntity<List<TimeTrackingDto>> getDailyTimeTracking(
       @RequestParam(required = false) LocalDate date) {
@@ -86,10 +84,7 @@ public class TimeTrackingController {
     }
   }
 
-  /**
-   * Get time tracking for an employee over a date range. GET
-   * /api/time-tracking/employees/{employeeId}/range
-   */
+  // Return one employee's time tracking over a date range.
   @GetMapping("/employees/{employeeId}/range")
   public ResponseEntity<List<TimeTrackingDto>> getEmployeeTimeTrackingRange(
       @PathVariable Long employeeId,
@@ -104,10 +99,7 @@ public class TimeTrackingController {
     }
   }
 
-  /**
-   * Update break duration for a specific work day. PUT
-   * /api/time-tracking/employees/{employeeId}/break
-   */
+  // Update the break duration for one work day.
   @PutMapping("/employees/{employeeId}/break")
   public ResponseEntity<TimeTrackingDto> updateBreakDuration(
       @PathVariable Long employeeId,
@@ -122,7 +114,7 @@ public class TimeTrackingController {
     }
   }
 
-  /** Get attendance summary for all employees. GET /api/time-tracking/attendance-summary */
+  // Return the attendance summary for the selected day.
   @GetMapping("/attendance-summary")
   public ResponseEntity<List<TimeTrackingDto>> getAttendanceSummary(
       @RequestParam(required = false) LocalDate date) {

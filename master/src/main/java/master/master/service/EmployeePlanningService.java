@@ -26,6 +26,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+/**
+ * Service responsible for creating, reading, and mutating employee work schedules.
+ * It translates planning requests into persisted work shifts and schedule summaries.
+ */
 @Service
 @Transactional
 public class EmployeePlanningService {
@@ -34,6 +38,7 @@ public class EmployeePlanningService {
   private final EmployeeRepository employeeRepository;
   private final MonthlyScheduleRepository monthlyScheduleRepository;
 
+  // Wires the planning service to the repositories that persist schedules and shifts.
   public EmployeePlanningService(
       WorkShiftRepository workShiftRepository,
       EmployeeRepository employeeRepository,
@@ -43,6 +48,7 @@ public class EmployeePlanningService {
     this.monthlyScheduleRepository = monthlyScheduleRepository;
   }
 
+  // Creates the default five-day planning template for an employee.
   public EmployeePlanningDto createDefaultPlanning(Long employeeId) {
     CreatePlanningRequestDto request =
         CreatePlanningRequestDto.builder()
@@ -60,6 +66,7 @@ public class EmployeePlanningService {
     return createOrUpdatePlanning(request);
   }
 
+  // Rebuilds the weekly planning for an employee from the request payload.
   public EmployeePlanningDto createOrUpdatePlanning(CreatePlanningRequestDto request) {
     Employee employee = getEmployee(request.getEmployeeId());
     workShiftRepository.deleteByEmployeeId(employee.getId());
@@ -108,6 +115,7 @@ public class EmployeePlanningService {
         .build();
   }
 
+  // Returns the current planning summary for one employee.
   public EmployeePlanningDto getEmployeePlanning(Long employeeId) {
     Employee employee = getEmployee(employeeId);
     List<WorkShift> shifts = workShiftRepository.findByEmployeeId(employeeId);
@@ -147,26 +155,32 @@ public class EmployeePlanningService {
         .build();
   }
 
+  // Returns planning summaries for every employee in the system.
   public List<EmployeePlanningDto> getAllEmployeePlannings() {
     return employeeRepository.findAll().stream().map(employee -> getEmployeePlanning(employee.getId())).toList();
   }
 
+  // Deletes all work shifts for the selected employee.
   public void deleteEmployeePlanning(Long employeeId) {
     workShiftRepository.deleteByEmployeeId(employeeId);
   }
 
+  // Keeps the hourly planning API compatible with the day-based planner.
   public EmployeePlanningDto createOrUpdateHourlyPlanning(HourlyPlanningRequestDto request) {
     return getEmployeePlanning(request.getEmployeeId());
   }
 
+  // Placeholder hook for saving the weekly hourly planning payload.
   public boolean saveHourlyPlanning(WeeklyHourlyPlanningDto request) {
     return true;
   }
 
+  // Returns an empty hourly planning map until the hourly editor is fully implemented.
   public Map<String, List<Integer>> getHourlyPlanning(Long employeeId, String weekStart) {
     return new HashMap<>();
   }
 
+  // Collects the weekly schedule for all employees between the requested dates.
   public Map<Long, Map<String, List<Map<String, Object>>>> getWeeklyScheduleForPlanning(
       String startDateStr) {
     LocalDate start = LocalDate.parse(startDateStr);
@@ -189,6 +203,7 @@ public class EmployeePlanningService {
     return result;
   }
 
+  // Creates a single shift from a generic map payload.
   public Map<String, Object> createShiftFromMap(Map<String, Object> shiftData) {
     Long employeeId = Long.valueOf(shiftData.get("employeeId").toString());
     LocalDate date = LocalDate.parse(shiftData.get("date").toString());
@@ -198,6 +213,7 @@ public class EmployeePlanningService {
     return Map.of("success", true, "id", shift.getId(), "message", "Shift created successfully");
   }
 
+  // Replaces the existing shift for a day with the supplied payload.
   public Map<String, Object> updateShiftFromMap(
       Long employeeId, String dateStr, Map<String, Object> shiftData) {
     LocalDate date = LocalDate.parse(dateStr);
@@ -205,20 +221,24 @@ public class EmployeePlanningService {
     return createShiftFromMap(shiftData);
   }
 
+  // Deletes every shift assigned to the employee for the given date.
   public void deleteEmployeeWorkday(Long employeeId, LocalDate date) {
     workShiftRepository.deleteByEmployeeIdAndWorkDate(employeeId, date);
   }
 
+  // Deletes a specific shift; the current implementation removes the whole workday.
   public void deleteSpecificShift(Long employeeId, LocalDate date, Integer weekday) {
     deleteEmployeeWorkday(employeeId, date);
   }
 
+  // Loads an employee or raises a 404 when the identifier is unknown.
   private Employee getEmployee(Long employeeId) {
     return employeeRepository
         .findById(employeeId)
         .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Employee not found"));
   }
 
+  // Persists a work shift and links it to the monthly schedule for the selected date.
   private WorkShift saveShift(
       Employee employee, LocalDate date, LocalTime start, LocalTime end, Integer breakMinutes, ShiftType type) {
     WorkShift shift = new WorkShift();
@@ -232,10 +252,12 @@ public class EmployeePlanningService {
     return workShiftRepository.save(shift);
   }
 
+  // Resolves the next calendar date matching the requested weekday.
   private LocalDate nextDate(int day) {
     return LocalDate.now().with(java.time.temporal.TemporalAdjusters.nextOrSame(DayOfWeek.of(day)));
   }
 
+  // Loads the monthly schedule for a date or creates a draft one on demand.
   private MonthlySchedule scheduleFor(LocalDate date) {
     return monthlyScheduleRepository
         .findByScheduleMonthAndScheduleYear((short) date.getMonthValue(), (short) date.getYear())

@@ -5,10 +5,7 @@ import master.master.domain.RoleCode;
 
 /**
  * Data Transfer Object (DTO) representing a user response.
- *
- * <p>This class encapsulates user information to be sent in API responses.
- *
- * @author
+ * This class encapsulates user information to be sent in API responses.
  */
 @Getter
 public class UserResponseDto {

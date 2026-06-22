@@ -7,16 +7,21 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * REST controller for client feedback entries.
+ * Lets the app create guest feedback and list feedback for a given client.
+ */
 @RestController
 @RequestMapping("/api/v1/clients/{userId}/feedbacks")
 public class FeedbackController {
   private final FeedbackService service;
 
+  // Inject the feedback service used for persistence and lookup.
   public FeedbackController(FeedbackService service) {
     this.service = service;
   }
 
-  // Endpoint to create feedback for a specific user
+  // Create feedback for the targeted client.
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public FeedbackDto.Info create(
@@ -24,7 +29,7 @@ public class FeedbackController {
     return service.create(userId, dto);
   }
 
-  // Endpoint to retrieve all feedbacks for a specific user
+  // List all feedback entries for the targeted client.
   @GetMapping
   public List<FeedbackDto.Info> list(@PathVariable Long userId) {
     return service.findByUser(userId);

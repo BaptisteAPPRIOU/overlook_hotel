@@ -5,33 +5,37 @@ import java.security.Key;
 import java.util.Date;
 import java.util.function.Function;
 
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import master.master.config.JwtProperties;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 
+/**
+ * Utility component for creating and validating JWT tokens.
+ * It centralizes token parsing, claim extraction, and signature verification.
+ */
 @Component
 public class JwtUtil {
 
   private final Key signingKey;
   private final long expirationTime;
 
+  // Builds the JWT utility from the configured secret and expiration window.
   public JwtUtil(JwtProperties jwtProperties) {
     this.signingKey = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
     this.expirationTime = jwtProperties.getExpirationMs();
   }
 
-  // This method retrieves the signing key used for JWT.
+  // Returns the signing key used for JWT creation and parsing.
   private Key getSigningKey() {
     return signingKey;
   }
 
-  // This method generates a JWT token for the given email.
+  // Generates a signed JWT for the supplied email address.
   public String generateToken(String email) {
     Date now = new Date();
     return Jwts.builder()
@@ -42,23 +46,23 @@ public class JwtUtil {
         .compact();
   }
 
-  // This method extracts the username (email) from the JWT token.
+  // Extracts the subject, which is used as the username or email.
   public String extractUsername(String token) {
     return extractClaim(token, Claims::getSubject);
   }
 
-  // This method extracts the expiration date from the JWT token.
+  // Extracts the token expiration timestamp.
   public Date extractExpiration(String token) {
     return extractClaim(token, Claims::getExpiration);
   }
 
-  // This method extracts a specific claim from the JWT token.
+  // Extracts a single claim using the provided resolver function.
   public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
     final Claims claims = extractAllClaims(token);
     return claimsResolver.apply(claims);
   }
 
-  // This method extracts all claims from the JWT token.
+  // Parses the token and returns all claims after signature verification.
   private Claims extractAllClaims(String token) {
     return Jwts.parserBuilder()
         .setSigningKey(getSigningKey())
@@ -67,18 +71,18 @@ public class JwtUtil {
         .getBody();
   }
 
-  // This method checks if the token is expired.
+  // Checks whether the token expiration date is already in the past.
   private boolean isTokenExpired(String token) {
     return extractExpiration(token).before(new Date());
   }
 
-  // This method validates the token against the user details.
+  // Validates that the token belongs to the expected user and is still valid.
   public boolean validateToken(String token, UserDetails userDetails) {
     final String username = extractUsername(token);
     return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
   }
 
-  // This method checks if the token is valid without needing user details.
+  // Verifies the token signature and expiration without comparing user details.
   public boolean isTokenValid(String token) {
     try {
       extractAllClaims(token);

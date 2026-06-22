@@ -7,6 +7,7 @@ import lombok.Data;
 
 @Data
 public class RegisterRequestDto {
+  // Registration payload: validated fields required to create a new user account.
   @NotBlank @Email private String email;
 
   @NotBlank

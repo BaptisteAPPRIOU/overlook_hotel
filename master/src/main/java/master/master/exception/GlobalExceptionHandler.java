@@ -12,13 +12,13 @@ import org.springframework.web.server.ResponseStatusException;
 /**
  * Global exception handler for the application that provides centralized exception handling across
  * all controllers using Spring's @ControllerAdvice annotation.
- *
- * <p>This class intercepts exceptions thrown by controllers and converts them into appropriate HTTP
+ * This class intercepts exceptions thrown by controllers and converts them into appropriate HTTP
  * responses with structured error information.
  */
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+  // Convert REST status exceptions into a simple JSON body.
   @ExceptionHandler(ResponseStatusException.class)
   public ResponseEntity<Map<String, Object>> handleResponseStatusException(
       ResponseStatusException ex) {
@@ -27,6 +27,7 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(body, ex.getStatusCode());
   }
 
+  // Convert bean validation errors into a structured 400 response.
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<Map<String, Object>> handleValidationException(
       MethodArgumentNotValidException ex) {
@@ -43,6 +44,7 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
   }
 
+  // Fall back to a generic 500 response for uncaught errors.
   @ExceptionHandler(Exception.class)
   public ResponseEntity<Map<String, Object>> handleGeneralException(Exception ex) {
     Map<String, Object> body = new HashMap<>();

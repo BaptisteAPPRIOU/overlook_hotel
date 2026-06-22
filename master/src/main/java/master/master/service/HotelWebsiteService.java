@@ -21,8 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Service for handling hotel website functionality with real database integration. Provides methods
- * for room management, guest reviews, and reservation handling.
+ * Service for the public hotel website features.
+ * It serves room search, validated reviews, reservation creation, and hotel overview data.
  */
 @Service
 @Transactional(readOnly = true)
@@ -33,6 +33,7 @@ public class HotelWebsiteService {
   private final ReservationRepository reservationRepository;
   private final UserRepository userRepository;
 
+  // Wires the website service to the repositories used for public hotel data.
   public HotelWebsiteService(
       RoomRepository roomRepository,
       ReviewRepository reviewRepository,
@@ -44,10 +45,8 @@ public class HotelWebsiteService {
     this.userRepository = userRepository;
   }
 
-  /**
-   * Get available rooms for specific dates and guest count. Filters by room capacity and
-   * availability status.
-   */
+  // Returns available rooms for the requested stay and guest count.
+  // The result is mapped into simple API-friendly objects for the front end.
   public List<Map<String, Object>> getAvailableRooms(
       LocalDate checkIn, LocalDate checkOut, int adults, int children) {
     int totalGuests = adults + children;
@@ -63,7 +62,7 @@ public class HotelWebsiteService {
     return availableRooms.stream().map(this::convertRoomToMap).collect(Collectors.toList());
   }
 
-  /** Get all room types with basic information. */
+  // Returns every hotel room with its display data.
   public List<Map<String, Object>> getAllRoomTypes() {
     List<Room> allRooms =
         roomRepository.findAll().stream()
@@ -73,10 +72,8 @@ public class HotelWebsiteService {
     return allRooms.stream().map(this::convertRoomToMap).collect(Collectors.toList());
   }
 
-  /**
-   * Get validated guest reviews for the "Livret d'Or". Only returns reviews that have been verified
-   * by an admin.
-   */
+  // Returns verified guest reviews for the public showcase section.
+  // Results are sorted newest first and paginated in memory.
   public List<Map<String, Object>> getValidatedReviews(int offset, int limit) {
     List<RoomReview> verifiedReviews =
         reviewRepository.findAll().stream()
@@ -89,12 +86,12 @@ public class HotelWebsiteService {
     return verifiedReviews.stream().map(this::convertReviewToMap).collect(Collectors.toList());
   }
 
-  /** Get latest validated reviews (most recent first). */
+  // Returns the most recent verified reviews.
   public List<Map<String, Object>> getLatestValidatedReviews(int limit) {
     return getValidatedReviews(0, limit);
   }
 
-  /** Create a reservation request. */
+  // Creates a reservation request from a generic payload map.
   @Transactional
   public Map<String, Object> createReservationRequest(Map<String, Object> reservationData) {
     Map<String, Object> result = new HashMap<>();
@@ -155,7 +152,7 @@ public class HotelWebsiteService {
     return result;
   }
 
-  /** Get hotel information and statistics. */
+  // Returns the public hotel summary and a few aggregated statistics.
   public Map<String, Object> getHotelInformation() {
     Map<String, Object> hotelInfo = new HashMap<>();
 
@@ -188,7 +185,7 @@ public class HotelWebsiteService {
     return hotelInfo;
   }
 
-  /** Convert Room entity to Map for API response. */
+  // Converts a room entity into the structure expected by the front end.
   private Map<String, Object> convertRoomToMap(Room room) {
     Map<String, Object> roomMap = new HashMap<>();
     roomMap.put("id", room.getId());
@@ -236,7 +233,7 @@ public class HotelWebsiteService {
     return roomMap;
   }
 
-  /** Convert RoomReview entity to Map for API response. */
+  // Converts a review entity into the structure expected by the front end.
   private Map<String, Object> convertReviewToMap(RoomReview review) {
     Map<String, Object> reviewMap = new HashMap<>();
     reviewMap.put("id", review.getId());
@@ -272,7 +269,7 @@ public class HotelWebsiteService {
     return reviewMap;
   }
 
-  /** Calculate total price for a stay. */
+  // Calculates the stay total from the nightly rate and number of nights.
   private double calculateTotalPrice(Double roomPrice, LocalDate checkIn, LocalDate checkOut) {
     if (roomPrice == null) roomPrice = 150.0; // Default price
     long nights = checkIn.until(checkOut).getDays();

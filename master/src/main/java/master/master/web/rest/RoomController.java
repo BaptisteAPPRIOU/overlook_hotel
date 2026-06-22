@@ -12,19 +12,14 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * REST controller for managing Room entities.
- *
- * <p>Provides endpoints for listing, retrieving, creating, updating, and deleting rooms.
- *
- * <p>Access to these endpoints is restricted to users with the 'EMPLOYEE' authority.
- *
+ * Provides endpoints for listing, retrieving, creating, updating, and deleting rooms.
+ * Access to these endpoints is restricted to users with the 'EMPLOYEE' authority.
  * Endpoints:
- *   GET    /api/v1/rooms       – List all rooms.
- *   GET    /api/v1/rooms/{id}  – Retrieve a specific room by ID.
- *   POST   /api/v1/rooms       – Create a new room.
- *   PUT    /api/v1/rooms/{id}  – Update an existing room by ID.
- *   DELETE /api/v1/rooms/{id}  – Delete a room by ID.
- *
- * @author tiste
+ * GET    /api/v1/rooms       – List all rooms.
+ * GET    /api/v1/rooms/{id}  – Retrieve a specific room by ID.
+ * POST   /api/v1/rooms       – Create a new room.
+ * PUT    /api/v1/rooms/{id}  – Update an existing room by ID.
+ * DELETE /api/v1/rooms/{id}  – Delete a room by ID.
  */
 @RestController
 @RequestMapping("/api/v1/rooms")
@@ -32,15 +27,18 @@ public class RoomController {
 
   private final RoomRepository roomRepository;
 
+  // Inject the repository used for direct room CRUD operations.
   public RoomController(RoomRepository roomRepository) {
     this.roomRepository = roomRepository;
   }
 
+  // Return every room.
   @GetMapping
   public List<Room> listAll() {
     return roomRepository.findAll();
   }
 
+  // Return one room by ID.
   @GetMapping("/{id}")
   public ResponseEntity<Room> getOne(@PathVariable Long id) {
     return roomRepository
@@ -49,13 +47,7 @@ public class RoomController {
         .orElse(ResponseEntity.notFound().build());
   }
 
-  /**
-   * Create a new room. If the room already exists (e.g., same number), returns a 400 Bad Request
-   * response.
-   *
-   * @param dto the room data to create
-   * @return a ResponseEntity with the created room or a 400 Bad Request response
-   */
+  // Create a room from the submitted DTO.
   @PostMapping
   public Room create(@RequestBody RoomDto dto) {
     Room room = new Room();
@@ -88,14 +80,7 @@ public class RoomController {
     return roomRepository.save(room);
   }
 
-  /**
-   * Update an existing room by its ID. If the room does not exist, returns a 404 Not Found
-   * response.
-   *
-   * @param id the ID of the room to update
-   * @param dto the updated room data
-   * @return a ResponseEntity with the updated room or a 404 Not Found response
-   */
+  // Update one room by ID.
   @PutMapping("/{id}")
   public ResponseEntity<Room> update(@PathVariable Long id, @RequestBody RoomDto dto) {
     return roomRepository
@@ -116,12 +101,7 @@ public class RoomController {
         .orElse(ResponseEntity.notFound().build());
   }
 
-  /**
-   * Delete a room by its ID. If the room does not exist, returns a 404 Not Found response.
-   *
-   * @param id the ID of the room to delete
-   * @return a ResponseEntity indicating the result of the deletion
-   */
+  // Delete one room by ID.
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> delete(@PathVariable Long id) {
     return roomRepository
@@ -134,14 +114,7 @@ public class RoomController {
         .orElse(ResponseEntity.notFound().build());
   }
 
-  /**
-   * Handle DataIntegrityViolationException to provide a user-friendly error message. This is
-   * triggered when a room with the same number already exists or other integrity constraints are
-   * violated.
-   *
-   * @param e the exception thrown
-   * @return a ResponseEntity with a bad request status and an error message
-   */
+  // Convert integrity violations into a readable validation error.
   @ExceptionHandler(DataIntegrityViolationException.class)
   public ResponseEntity<String> handleConstraintViolation(DataIntegrityViolationException e) {
     Throwable rootCause = e.getRootCause();

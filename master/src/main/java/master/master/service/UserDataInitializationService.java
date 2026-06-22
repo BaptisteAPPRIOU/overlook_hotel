@@ -42,6 +42,7 @@ public class UserDataInitializationService implements ApplicationRunner {
   private final PasswordEncoder passwordEncoder;
   private final UserRoleService userRoleService;
 
+  // Wire the repositories and password encoder used by the seed runner.
   public UserDataInitializationService(
       UserRepository userRepository,
       ClientRepository clientRepository,
@@ -59,6 +60,7 @@ public class UserDataInitializationService implements ApplicationRunner {
     this.userRoleService = userRoleService;
   }
 
+  // Run the seed routines when application startup triggers this runner.
   @Override
   public void run(ApplicationArguments args) throws Exception {
     try {
@@ -71,7 +73,7 @@ public class UserDataInitializationService implements ApplicationRunner {
     }
   }
 
-  /** Initialize default users if none exist. */
+  // Initialize default users if none exist.
   public void initializeDefaultUsers() {
     // Check if users already exist
     if (userRepository.count() > 0) {
@@ -96,7 +98,7 @@ public class UserDataInitializationService implements ApplicationRunner {
     System.out.println("Default users created successfully");
   }
 
-  /** Initialize default rooms if none exist. */
+  // Initialize default rooms if none exist.
   public void initializeDefaultRooms() {
     // Check if rooms already exist
     if (roomRepository.count() > 0) {
@@ -113,7 +115,7 @@ public class UserDataInitializationService implements ApplicationRunner {
     System.out.println("Default rooms created successfully");
   }
 
-  /** Update existing rooms with image URLs if they're missing. */
+  // Update existing rooms with image URLs if they're missing.
   private void updateRoomsWithImageUrls() {
     List<Room> roomsWithoutImages =
         roomRepository.findAll().stream()
@@ -163,6 +165,7 @@ public class UserDataInitializationService implements ApplicationRunner {
     System.out.println("Finished updating rooms with image URLs");
   }
 
+  // Create the default admin account.
   private void createAdminUser() {
     User admin = new User();
     admin.setFirstName("Admin");
@@ -174,6 +177,7 @@ public class UserDataInitializationService implements ApplicationRunner {
     System.out.println("Created admin user: Admin@dev.com / admin123");
   }
 
+  // Create the built-in test employee account.
   private void createTestEmployeeUser() {
     User employee = new User();
     employee.setFirstName("John");
@@ -194,6 +198,7 @@ public class UserDataInitializationService implements ApplicationRunner {
     System.out.println("Created employee user: john.doe@olh.fr / employee123");
   }
 
+  // Create the built-in test client account.
   private void createTestClientUser() {
     User client = new User();
     client.setFirstName("Jane");
@@ -212,6 +217,7 @@ public class UserDataInitializationService implements ApplicationRunner {
     System.out.println("Created client user: jane.smith@olh.fr / client123");
   }
 
+  // Create the extra sample client accounts.
   private void createAdditionalClientUsers() {
     // Create Pierre Martin - a business traveler
     createClientUser("Pierre", "Martin", "pierre.martin@business.fr", "pierre123", 150);
@@ -226,6 +232,7 @@ public class UserDataInitializationService implements ApplicationRunner {
     createClientUser("Sophie", "Laurent", "sophie.laurent@vip.fr", "sophie123", 500);
   }
 
+  // Create one seeded client with the requested identity and balance.
   private void createClientUser(
       String firstName, String lastName, String email, String password, int fidelityPoints) {
     User client = new User();
@@ -252,6 +259,7 @@ public class UserDataInitializationService implements ApplicationRunner {
             + ")");
   }
 
+  // Create the default sample rooms used by the public hotel website.
   private void createSampleRooms() {
     // Create diverse room types with French hotel room images
 
@@ -383,6 +391,7 @@ public class UserDataInitializationService implements ApplicationRunner {
         Arrays.asList("Free WiFi", "Private terrace", "Fireplace", "Desk", "Kitchenette"));
   }
 
+  // Persist one room with the provided seed data.
   private void createRoom(
       String number,
       RoomType type,
@@ -412,12 +421,12 @@ public class UserDataInitializationService implements ApplicationRunner {
     System.out.println("Created room: " + number + " (" + type + ")");
   }
 
-  /** Initialize default validated reviews for demonstration. */
+  // Initialize default validated reviews for demonstration.
   private void initializeDefaultReviews() {
     System.out.println("Skipping demo review initialization for normalized reservation reviews.");
   }
 
-  /** Create a validated review (approved by admin). */
+  // Create a validated review (approved by admin).
   private void createValidatedReview(Long authorId, Long roomId, int rating, String comment) {
     // Reviews are now attached to reservations through RoomReview.
   }

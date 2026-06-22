@@ -13,6 +13,10 @@ import master.master.web.rest.dto.ClientDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Service that manages client accounts and loyalty data.
+ * It keeps the client profile in sync with the user account and exposes fidelity helpers.
+ */
 @Service
 @Transactional(readOnly = true)
 public class ClientService {
@@ -21,6 +25,7 @@ public class ClientService {
   private final ClientMapper mapper;
   private final ReservationRepository reservationRepository;
 
+  // Wires the client service to the persistence and mapping layers.
   public ClientService(
       ClientRepository repo, ClientMapper mapper, ReservationRepository reservationRepository) {
     this.repo = repo;
@@ -28,7 +33,7 @@ public class ClientService {
     this.reservationRepository = reservationRepository;
   }
 
-  // This method creates a new client from a User entity.
+  // Creates the client profile when a user is registered as a client.
   @Transactional
   public void createFromUser(User user) {
     if (user == null || user.getId() == null || repo.existsById(user.getId())) {
@@ -42,12 +47,12 @@ public class ClientService {
     }
   }
 
-  // This method retrieves all clients in the system.
+  // Returns every client profile known to the application.
   public List<ClientDto.Info> findAllClients() {
     return repo.findAllByUserRoleCode(RoleCode.CLIENT).stream().map(mapper::toDto).toList();
   }
 
-  // This method retrieves a specific client by their user ID.
+  // Loads a single client profile by user identifier.
   public ClientDto.Info findOneClient(Long userId) {
     Client c =
         repo.findByUserIdAndUserRoleCode(userId, RoleCode.CLIENT)
@@ -55,7 +60,7 @@ public class ClientService {
     return mapper.toDto(c);
   }
 
-  // This method updates an existing client's details.
+  // Applies the requested updates to an existing client profile.
   @Transactional
   public ClientDto.Info update(ClientDto.Update dto) {
     Client c =
@@ -65,7 +70,7 @@ public class ClientService {
     return mapper.toDto(c);
   }
 
-  // This method deletes a client and their associated User account.
+  // Deletes the client profile for the given user identifier.
   @Transactional
   public void delete(Long userId) {
     Client c =
@@ -77,8 +82,7 @@ public class ClientService {
   // ===============================
   // FIDELITY POINTS MANAGEMENT
   // ===============================
-
-  /** Get fidelity points for a specific client */
+  // Returns the current fidelity point balance for one client.
   public int getFidelityPoints(Long userId) {
     Client client =
         repo.findByUserIdAndUserRoleCode(userId, RoleCode.CLIENT)
@@ -86,12 +90,7 @@ public class ClientService {
     return client.getFidelityPoints();
   }
 
-  /**
-   * Add fidelity points to a client
-   *
-   * @param userId The client's user ID
-   * @param points Points to add (can be negative to subtract)
-   */
+  // Adds or removes fidelity points while preventing negative totals.
   @Transactional
   public int addFidelityPoints(Long userId, int points) {
     Client client =
@@ -106,10 +105,8 @@ public class ClientService {
     return newTotal;
   }
 
-  /**
-   * Calculate and award fidelity points based on a reservation Formula: 10 points per night + 50
-   * bonus points if reservation is > 7 nights
-   */
+  // Calculate and award fidelity points based on a reservation Formula: 10 points per night + 50
+  // bonus points if reservation is > 7 nights
   @Transactional
   public int awardPointsForReservation(Long userId, Reservation reservation) {
     if (!Boolean.TRUE.equals(reservation.getPaid())) {
@@ -139,13 +136,7 @@ public class ClientService {
     return addFidelityPoints(userId, pointsToAward);
   }
 
-  /**
-   * Redeem fidelity points for discounts
-   *
-   * @param userId The client's user ID
-   * @param pointsToRedeem Points to redeem
-   * @return true if redemption was successful, false if insufficient points
-   */
+  // Redeems the requested number of points when the balance is sufficient.
   @Transactional
   public boolean redeemFidelityPoints(Long userId, int pointsToRedeem) {
     Client client =
@@ -161,7 +152,7 @@ public class ClientService {
     return false;
   }
 
-  /** Get fidelity level based on points */
+  // Returns the textual fidelity tier derived from the current balance.
   public String getFidelityLevel(Long userId) {
     int points = getFidelityPoints(userId);
 
@@ -176,7 +167,7 @@ public class ClientService {
     }
   }
 
-  /** Get discount percentage based on fidelity level */
+  // Returns the discount percentage for the current fidelity tier.
   public double getDiscountPercentage(Long userId) {
     String level = getFidelityLevel(userId);
 
@@ -188,7 +179,7 @@ public class ClientService {
     };
   }
 
-  /** Get all reservations for a client (for fidelity calculation) */
+  // Returns all reservations used to compute fidelity points.
   public List<Reservation> getClientReservations(Long userId) {
     return reservationRepository.findByClientId(userId);
   }

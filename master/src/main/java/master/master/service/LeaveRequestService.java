@@ -11,6 +11,10 @@ import master.master.web.rest.dto.LeaveRequestDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Service that manages leave requests and their validation workflow.
+ * It handles creation, approval state changes, reporting, and leave balance lookups.
+ */
 @Service
 @Transactional
 public class LeaveRequestService {
@@ -18,12 +22,14 @@ public class LeaveRequestService {
   private final LeaveRequestRepository leaveRequestRepository;
   private final EmployeeService employeeService;
 
+  // Wires the leave service to request storage and employee lookup.
   public LeaveRequestService(
       LeaveRequestRepository leaveRequestRepository, EmployeeService employeeService) {
     this.leaveRequestRepository = leaveRequestRepository;
     this.employeeService = employeeService;
   }
 
+  // Validates and persists a new leave request.
   public LeaveRequestDto createLeaveRequest(CreateLeaveRequestDto request) {
     validateLeaveRequest(request);
     if (!leaveRequestRepository
@@ -42,6 +48,7 @@ public class LeaveRequestService {
     return mapToDto(leaveRequestRepository.save(leaveRequest));
   }
 
+  // Returns all pending leave requests ordered from newest to oldest.
   @Transactional(readOnly = true)
   public List<LeaveRequestDto> getPendingLeaveRequests() {
     return leaveRequestRepository.findByCurrentStatusOrderByRequestDateDesc(LeaveStatus.PENDING)
@@ -55,23 +62,27 @@ public class LeaveRequestService {
         .toList();
   }
 
+  // Counts the number of requests still waiting for a decision.
   @Transactional(readOnly = true)
   public Long getPendingLeaveRequestCount() {
     return leaveRequestRepository.countByCurrentStatus(LeaveStatus.PENDING);
   }
 
+  // Returns the leave requests submitted by one employee.
   @Transactional(readOnly = true)
   public List<LeaveRequestDto> getEmployeeLeaveRequests(Long employeeId) {
     return leaveRequestRepository.findByEmployeeRequesterIdOrderByRequestDateDesc(employeeId)
         .stream().map(this::mapToDto).toList();
   }
 
+  // Marks a leave request as approved.
   public LeaveRequestDto approveLeaveRequest(Long requestId, String approvedBy) {
     LeaveRequest leaveRequest = getLeaveRequest(requestId);
     leaveRequest.setCurrentStatus(LeaveStatus.APPROVED);
     return mapToDto(leaveRequestRepository.save(leaveRequest));
   }
 
+  // Marks a leave request as rejected.
   public LeaveRequestDto rejectLeaveRequest(
       Long requestId, String rejectedBy, String rejectionReason) {
     LeaveRequest leaveRequest = getLeaveRequest(requestId);
@@ -79,25 +90,30 @@ public class LeaveRequestService {
     return mapToDto(leaveRequestRepository.save(leaveRequest));
   }
 
+  // Loads a leave request by identifier and maps it to a DTO.
   @Transactional(readOnly = true)
   public LeaveRequestDto getLeaveRequestById(Long requestId) {
     return mapToDto(getLeaveRequest(requestId));
   }
 
+  // Deletes a leave request when the identifier exists.
   public void deleteLeaveRequest(Long requestId) {
     leaveRequestRepository.delete(getLeaveRequest(requestId));
   }
 
+  // Returns the default allocation for a given leave type.
   @Transactional(readOnly = true)
   public Double getLeaveBalance(Long employeeId, String leaveType) {
     return getDefaultLeaveAllocation(leaveType);
   }
 
+  // Checks whether the employee already has an overlapping leave period.
   @Transactional(readOnly = true)
   public boolean hasOverlappingLeave(Long employeeId, LocalDate startDate, LocalDate endDate) {
     return !leaveRequestRepository.findOverlappingLeaveRequests(employeeId, startDate, endDate).isEmpty();
   }
 
+  // Builds the current leave statistics payload for the dashboard.
   @Transactional(readOnly = true)
   public LeaveStatistics getLeaveStatistics() {
     return LeaveStatistics.builder()
@@ -107,12 +123,14 @@ public class LeaveRequestService {
         .build();
   }
 
+  // Loads a leave request or throws when it cannot be found.
   private LeaveRequest getLeaveRequest(Long requestId) {
     return leaveRequestRepository
         .findById(requestId)
         .orElseThrow(() -> new IllegalArgumentException("Leave request not found"));
   }
 
+  // Validates the leave request dates before saving.
   private void validateLeaveRequest(CreateLeaveRequestDto request) {
     if (request.getStartDate().isAfter(request.getEndDate())) {
       throw new IllegalArgumentException("Start date must be before or equal to end date");
@@ -122,6 +140,7 @@ public class LeaveRequestService {
     }
   }
 
+  // Returns the default number of days allocated for a leave type.
   private double getDefaultLeaveAllocation(String leaveType) {
     return switch (leaveType.toUpperCase()) {
       case "VACATION" -> 25.0;
@@ -133,6 +152,7 @@ public class LeaveRequestService {
     };
   }
 
+  // Maps the entity to its API representation.
   private LeaveRequestDto mapToDto(LeaveRequest leaveRequest) {
     Long employeeId =
         leaveRequest.getEmployeeRequester() == null ? null : leaveRequest.getEmployeeRequester().getId();
@@ -151,6 +171,7 @@ public class LeaveRequestService {
         .build();
   }
 
+  // Resolves the employee name for display in the UI.
   private String getEmployeeName(Long employeeId) {
     try {
       var employee = employeeService.getEmployee(employeeId);
@@ -160,6 +181,7 @@ public class LeaveRequestService {
     }
   }
 
+  // Lightweight statistics container for the leave dashboard.
   @lombok.Data
   @lombok.Builder
   public static class LeaveStatistics {

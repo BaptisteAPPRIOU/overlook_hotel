@@ -7,13 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 /**
  * Repository interface for managing User entities in the database. Extends JpaRepository to provide
  * standard CRUD operations for User entities.
- *
- * <p>This repository provides custom query methods for User-specific operations beyond the standard
+ * This repository provides custom query methods for User-specific operations beyond the standard
  * JPA repository functionality.
- *
- * @author Generated
- * @version 1.0
- * @since 1.0
  */
 public interface UserRepository extends JpaRepository<User, Long> {
   @EntityGraph(attributePaths = "roles")

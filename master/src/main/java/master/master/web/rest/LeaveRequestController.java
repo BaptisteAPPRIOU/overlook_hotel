@@ -30,7 +30,7 @@ public class LeaveRequestController {
 
   @Autowired private LeaveRequestService leaveRequestService;
 
-  /** Submit a new leave request. POST /api/v1/leave-requests/submit */
+  // Submit a new leave request. POST /api/v1/leave-requests/submit
   @PostMapping("/submit")
   public ResponseEntity<?> submitLeaveRequest(@RequestBody CreateLeaveRequestDto request) {
     try {
@@ -70,7 +70,7 @@ public class LeaveRequestController {
     }
   }
 
-  /** Get all leave requests for the current employee. GET /api/v1/leave-requests/my-requests */
+  // Return the current employee's leave requests.
   @GetMapping("/my-requests")
   public ResponseEntity<?> getMyLeaveRequests(@RequestParam(required = false) Long employeeId) {
     try {
@@ -88,9 +88,7 @@ public class LeaveRequestController {
     }
   }
 
-  /**
-   * Get all pending leave requests for approval (managers only). GET /api/v1/leave-requests/pending
-   */
+  // Return pending leave requests awaiting approval.
   @GetMapping("/pending")
   public ResponseEntity<?> getPendingLeaveRequests() {
     try {
@@ -107,7 +105,7 @@ public class LeaveRequestController {
     }
   }
 
-  /** Get all leave requests for admin oversight. GET /api/v1/leave-requests/all */
+  // Return all leave requests for oversight screens.
   @GetMapping("/all")
   public ResponseEntity<?> getAllLeaveRequests() {
     try {
@@ -124,7 +122,7 @@ public class LeaveRequestController {
     }
   }
 
-  /** Approve a leave request. PUT /api/v1/leave-requests/{requestId}/approve */
+  // Approve one leave request.
   @PutMapping("/{requestId}/approve")
   public ResponseEntity<?> approveLeaveRequest(@PathVariable Long requestId) {
     try {
@@ -154,7 +152,7 @@ public class LeaveRequestController {
     }
   }
 
-  /** Reject a leave request. PUT /api/v1/leave-requests/{requestId}/reject */
+  // Reject one leave request.
   @PutMapping("/{requestId}/reject")
   public ResponseEntity<?> rejectLeaveRequest(
       @PathVariable Long requestId,
@@ -187,10 +185,7 @@ public class LeaveRequestController {
     }
   }
 
-  /**
-   * Cancel a leave request (employee can cancel their own pending requests). DELETE
-   * /api/v1/leave-requests/{requestId}
-   */
+  // Cancel one leave request.
   @DeleteMapping("/{requestId}")
   public ResponseEntity<?> cancelLeaveRequest(@PathVariable Long requestId) {
     try {

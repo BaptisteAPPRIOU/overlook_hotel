@@ -33,6 +33,7 @@ public class TimeTrackingService {
   private final EmployeeRepository employeeRepository;
   private final MonthlyScheduleRepository monthlyScheduleRepository;
 
+  // Wire the shift, attendance, employee, and schedule repositories.
   public TimeTrackingService(
       WorkShiftRepository workShiftRepository,
       EmployeeTimeEntryRepository timeEntryRepository,
@@ -44,6 +45,7 @@ public class TimeTrackingService {
     this.monthlyScheduleRepository = monthlyScheduleRepository;
   }
 
+  // Record an employee arrival time and mark them present.
   public TimeTrackingDto clockIn(Long employeeId, LocalDate workDate, LocalTime clockInTime) {
     WorkShift shift = findOrCreateShift(employeeId, workDate);
     EmployeeTimeEntry entry = findOrCreateEntry(shift);
@@ -53,6 +55,7 @@ public class TimeTrackingService {
     return toDto(shift, entry);
   }
 
+  // Record an employee departure time and keep the entry consistent.
   public TimeTrackingDto clockOut(Long employeeId, LocalDate workDate, LocalTime clockOutTime) {
     WorkShift shift = findOrCreateShift(employeeId, workDate);
     EmployeeTimeEntry entry = findOrCreateEntry(shift);
@@ -64,11 +67,13 @@ public class TimeTrackingService {
     return toDto(shift, entry);
   }
 
+  // Return one day of time tracking for one employee.
   public TimeTrackingDto getTimeTracking(Long employeeId, LocalDate workDate) {
     WorkShift shift = findOrCreateShift(employeeId, workDate);
     return toDto(shift, findOrCreateEntry(shift));
   }
 
+  // Return the selected day for every employee.
   public List<TimeTrackingDto> getDailyTimeTracking(LocalDate workDate) {
     List<TimeTrackingDto> result = new ArrayList<>();
     for (Employee employee : employeeRepository.findAll()) {
@@ -77,6 +82,7 @@ public class TimeTrackingService {
     return result;
   }
 
+  // Return a contiguous date range for one employee.
   public List<TimeTrackingDto> getTimeTrackingRange(
       Long employeeId, LocalDate startDate, LocalDate endDate) {
     List<TimeTrackingDto> result = new ArrayList<>();
@@ -86,6 +92,7 @@ public class TimeTrackingService {
     return result;
   }
 
+  // Update the stored break duration for one work day.
   public TimeTrackingDto updateBreakDuration(
       Long employeeId, LocalDate workDate, Integer breakMinutes) {
     WorkShift shift = findOrCreateShift(employeeId, workDate);
@@ -95,10 +102,12 @@ public class TimeTrackingService {
     return toDto(shift, entry);
   }
 
+  // Return the attendance summary as a daily snapshot.
   public List<TimeTrackingDto> getAttendanceSummary(LocalDate workDate) {
     return getDailyTimeTracking(workDate);
   }
 
+  // Find an existing shift or create a default one for the date.
   private WorkShift findOrCreateShift(Long employeeId, LocalDate workDate) {
     return workShiftRepository.findByEmployeeIdAndWorkDate(employeeId, workDate).stream()
         .findFirst()
@@ -120,6 +129,7 @@ public class TimeTrackingService {
             });
   }
 
+  // Find an existing entry for the shift or create a blank one.
   private EmployeeTimeEntry findOrCreateEntry(WorkShift shift) {
     return timeEntryRepository
         .findByWorkShiftId(shift.getId())
@@ -133,6 +143,7 @@ public class TimeTrackingService {
             });
   }
 
+  // Convert the shift and entry pair into the API DTO.
   private TimeTrackingDto toDto(WorkShift shift, EmployeeTimeEntry entry) {
     LocalTime arrival =
         entry.getActualArrivalTime() == null ? null : entry.getActualArrivalTime().toLocalTime();
@@ -171,6 +182,7 @@ public class TimeTrackingService {
         .build();
   }
 
+  // Resolve or create the monthly schedule that owns the shift.
   private MonthlySchedule scheduleFor(LocalDate date) {
     return monthlyScheduleRepository
         .findByScheduleMonthAndScheduleYear((short) date.getMonthValue(), (short) date.getYear())

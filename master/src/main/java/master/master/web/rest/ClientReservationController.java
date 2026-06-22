@@ -28,6 +28,7 @@ public class ClientReservationController {
   private final ReservationRepository reservationRepository;
   private final UserRepository userRepository;
 
+  // Wire the reservation and user repositories plus the DTO mapping service.
   public ClientReservationController(
       ReservationService reservationService,
       ReservationRepository reservationRepository,
@@ -37,7 +38,7 @@ public class ClientReservationController {
     this.userRepository = userRepository;
   }
 
-  /** Get current client's reservations */
+  // Return the current client's reservations as maps.
   @GetMapping("/me/reservations")
   public ResponseEntity<List<Map<String, Object>>> getCurrentClientReservations() {
     try {
@@ -53,7 +54,7 @@ public class ClientReservationController {
     }
   }
 
-  /** Get current client's reservations (DTO version) */
+  // Return the current client's reservations as DTOs.
   @GetMapping("/me/reservations/dto")
   public ResponseEntity<List<ReservationDto.Info>> getCurrentClientReservationsDto() {
     try {
@@ -65,7 +66,7 @@ public class ClientReservationController {
     }
   }
 
-  /** Convert Reservation to Map for JSON response */
+  // Convert one reservation into a JSON-friendly map.
   private Map<String, Object> convertReservationToMap(Reservation reservation) {
     return Map.of(
         "userId", reservation.getClient() != null ? reservation.getClient().getId() : null,
@@ -82,7 +83,7 @@ public class ClientReservationController {
         "createdAt", reservation.getCreatedAt() != null ? reservation.getCreatedAt().toString() : null);
   }
 
-  /** Determine reservation status */
+  // Derive a display status from payment and stay dates.
   private String getReservationStatus(Reservation reservation) {
     if (!Boolean.TRUE.equals(reservation.getPaid())) {
       return "PENDING_PAYMENT";
@@ -98,7 +99,7 @@ public class ClientReservationController {
     }
   }
 
-  /** Get the current authenticated user's ID */
+  // Resolve the current authenticated user's ID.
   private Long getCurrentUserId() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || !authentication.isAuthenticated()) {

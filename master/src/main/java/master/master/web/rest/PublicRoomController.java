@@ -11,14 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Public REST controller for room information accessible to clients.
- *
- * <p>Provides endpoints for clients to view available rooms without authentication.
- *
- * <ul>
- *   <li><b>GET /api/public/rooms</b>: List all available rooms.
- *   <li><b>GET /api/public/rooms/{id}</b>: Get details of a specific room.
- * </ul>
+ * Public REST controller for room information.
+ * Lets visitors browse room data without authentication.
  */
 @RestController
 @RequestMapping("/api/public/rooms")
@@ -26,26 +20,18 @@ public class PublicRoomController {
 
   private final RoomRepository roomRepository;
 
+  // Inject the room repository used for public room browsing.
   public PublicRoomController(RoomRepository roomRepository) {
     this.roomRepository = roomRepository;
   }
 
-  /**
-   * Get all available rooms for public viewing
-   *
-   * @return List of all rooms
-   */
+  // Return every room available for public viewing.
   @GetMapping
   public List<Room> getAllRooms() {
     return roomRepository.findAll();
   }
 
-  /**
-   * Get available rooms by type
-   *
-   * @param type Room type filter
-   * @return List of rooms matching the type
-   */
+  // Return rooms filtered by type.
   @GetMapping("/type/{type}")
   public List<Room> getRoomsByType(@PathVariable String type) {
     try {
@@ -56,23 +42,13 @@ public class PublicRoomController {
     }
   }
 
-  /**
-   * Get room details by ID
-   *
-   * @param id Room ID
-   * @return Room details or empty if not found
-   */
+  // Return one room by ID.
   @GetMapping("/{id}")
   public Optional<Room> getRoomById(@PathVariable Long id) {
     return roomRepository.findById(id);
   }
 
-  /**
-   * Search rooms by capacity
-   *
-   * @param minCapacity Minimum capacity required
-   * @return List of rooms with at least the specified capacity
-   */
+  // Return rooms that meet the minimum capacity.
   @GetMapping("/capacity/{minCapacity}")
   public List<Room> getRoomsByCapacity(@PathVariable Integer minCapacity) {
     return roomRepository.findByCapacityGreaterThanEqualOrderByCapacityAsc(minCapacity);

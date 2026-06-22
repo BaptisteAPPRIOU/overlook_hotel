@@ -19,13 +19,14 @@ public class FeedbackService {
   private final UserRepository userRepo;
   private final FeedbackMapper mapper;
 
+  // Wire the repositories and mapper used to persist and list feedback.
   public FeedbackService(FeedbackRepository repo, UserRepository userRepo, FeedbackMapper mapper) {
     this.repo = repo;
     this.userRepo = userRepo;
     this.mapper = mapper;
   }
 
-  // This method creates a new feedback entry for a user.
+  // Create a feedback entry for one user.
   @Transactional
   public FeedbackDto.Info create(Long userId, FeedbackDto.Create dto) {
     User user =
@@ -37,7 +38,7 @@ public class FeedbackService {
     return mapper.toDto(repo.save(fb));
   }
 
-  // This method retrieves all feedback entries made by a specific user.
+  // Return all feedback entries for one user.
   public List<FeedbackDto.Info> findByUser(Long userId) {
     return repo.findByUser_Id(userId).stream().map(mapper::toDto).toList();
   }

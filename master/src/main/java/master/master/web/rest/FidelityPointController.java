@@ -24,13 +24,14 @@ public class FidelityPointController {
   private final FidelityPointService fidelityPointService;
   private final UserRepository userRepository;
 
+  // Wire the loyalty service and user lookup repository.
   public FidelityPointController(
       FidelityPointService fidelityPointService, UserRepository userRepository) {
     this.fidelityPointService = fidelityPointService;
     this.userRepository = userRepository;
   }
 
-  /** Get current fidelity summary for authenticated client */
+  // Return the authenticated client's full loyalty summary.
   @GetMapping("/summary")
   public ResponseEntity<FidelityPointService.FidelitySummary> getFidelitySummary() {
     try {
@@ -46,7 +47,7 @@ public class FidelityPointController {
     }
   }
 
-  /** Get current fidelity points */
+  // Return the authenticated client's current points total.
   @GetMapping("/points")
   public ResponseEntity<Map<String, Integer>> getCurrentPoints() {
     Long userId = getCurrentUserId();
@@ -54,7 +55,7 @@ public class FidelityPointController {
     return ResponseEntity.ok(Map.of("points", points));
   }
 
-  /** Get fidelity level information */
+  // Return the authenticated client's loyalty tier.
   @GetMapping("/level")
   public ResponseEntity<Map<String, Object>> getFidelityLevel() {
     Long userId = getCurrentUserId();
@@ -74,7 +75,7 @@ public class FidelityPointController {
             pointsToNext));
   }
 
-  /** Redeem fidelity points */
+  // Redeem a client points balance.
   @PostMapping("/redeem")
   public ResponseEntity<Map<String, Object>> redeemPoints(
       @RequestBody Map<String, Object> request) {
@@ -111,7 +112,7 @@ public class FidelityPointController {
     }
   }
 
-  /** Get available redemption options */
+  // Return the available redemption options for the current points balance.
   @GetMapping("/redemption-options")
   public ResponseEntity<java.util.List<Map<String, Object>>> getRedemptionOptions() {
     try {
@@ -172,7 +173,7 @@ public class FidelityPointController {
     }
   }
 
-  /** Recalculate points based on reservation history */
+  // Recalculate the client's points from reservation history.
   @PostMapping("/recalculate")
   public ResponseEntity<Map<String, Object>> recalculatePoints() {
     Long userId = getCurrentUserId();
@@ -182,7 +183,7 @@ public class FidelityPointController {
         Map.of("success", true, "message", "Points recalculated successfully", "newTotal", newTotal));
   }
 
-  /** Get the current authenticated user's ID */
+  // Resolve the current authenticated user's ID.
   private Long getCurrentUserId() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || !authentication.isAuthenticated()) {

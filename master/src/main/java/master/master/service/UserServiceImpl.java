@@ -23,6 +23,7 @@ public class UserServiceImpl implements UserService {
   private final UserRoleService userRoleService;
   private final ClientService clientService;
 
+  // Wire the repositories, security helpers, and client bootstrap service.
   public UserServiceImpl(
       UserRepository userRepo,
       PasswordEncoder encoder,
@@ -38,7 +39,7 @@ public class UserServiceImpl implements UserService {
     this.clientService = clientService;
   }
 
-  // This method registers a new user with the provided details.
+  // Register a new client user and create the linked client record.
   @Override
   @Transactional
   public User register(RegisterRequestDto dto) {
@@ -53,7 +54,7 @@ public class UserServiceImpl implements UserService {
     return savedUser;
   }
 
-  // This method authenticates a user and returns a JWT token.
+  // Authenticate the credentials and return a JWT token.
   @Override
   public String authenticateAndGetToken(LoginRequestDto dto) {
     authManager.authenticate(
@@ -61,7 +62,7 @@ public class UserServiceImpl implements UserService {
     return jwtUtil.generateToken(dto.getEmail());
   }
 
-  // This method retrieves a user by their email address.
+  // Resolve a user by email or fail fast.
   @Override
   public User findByEmail(String email) {
     User user = userRepo.findByEmail(email);

@@ -62,6 +62,7 @@ public class AuthController {
   private final UserRoleService userRoleService;
   private final ClientService clientService;
 
+  // Wire the authentication, user, and client services used by login, signup, and logout.
   public AuthController(
       UserRepository userRepository,
       PasswordEncoder passwordEncoder,
@@ -79,7 +80,7 @@ public class AuthController {
     this.clientService = clientService;
   }
 
-  // Handle user registration requests
+  // Register a new client account and create the matching client profile.
   @PostMapping("/register")
   public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequestDto request) {
     // Check if email is already registered
@@ -101,7 +102,7 @@ public class AuthController {
     return ResponseEntity.ok("User registered successfully");
   }
 
-  // Handle user login requests
+  // Authenticate credentials and return a JWT plus the user role.
   @PostMapping("/login")
   public ResponseEntity<?> loginUser(@Valid @RequestBody LoginRequestDto request) {
     try {
@@ -130,7 +131,7 @@ public class AuthController {
     }
   }
 
-  // Handle user logout requests
+  // Blacklist the presented JWT and clear the security context.
   @PostMapping("/logout")
   public ResponseEntity<AuthResponseDto> logout(HttpServletRequest request) {
     String header = request.getHeader("Authorization");

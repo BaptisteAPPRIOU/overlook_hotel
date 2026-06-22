@@ -35,14 +35,13 @@ public class EmployeePlanningController {
   private static final Logger logger = LoggerFactory.getLogger(EmployeePlanningController.class);
   private final EmployeePlanningService planningService;
 
+  // Inject the planning service used to read and mutate schedules.
   public EmployeePlanningController(EmployeePlanningService planningService) {
     this.planningService = planningService;
   }
 
-  /**
-   * Create default 35h/week planning for an employee. POST
-   * /api/planning/employees/{employeeId}/default
-   */
+  // Create default 35h/week planning for an employee. POST
+  // /api/planning/employees/{employeeId}/default
   @PostMapping("/employees/{employeeId}/default")
   public ResponseEntity<EmployeePlanningDto> createDefaultPlanning(@PathVariable Long employeeId) {
     try {
@@ -53,7 +52,7 @@ public class EmployeePlanningController {
     }
   }
 
-  /** Create or update custom planning for an employee. POST /api/planning/employees */
+  // Create or update custom planning for an employee. POST /api/planning/employees
   @PostMapping("/employees")
   public ResponseEntity<EmployeePlanningDto> createOrUpdatePlanning(
       @RequestBody CreatePlanningRequestDto request) {
@@ -65,7 +64,7 @@ public class EmployeePlanningController {
     }
   }
 
-  /** Get planning for a specific employee. GET /api/planning/employees/{employeeId} */
+  // Get planning for a specific employee. GET /api/planning/employees/{employeeId}
   @GetMapping("/employees/{employeeId}")
   public ResponseEntity<EmployeePlanningDto> getEmployeePlanning(@PathVariable Long employeeId) {
     try {
@@ -76,7 +75,7 @@ public class EmployeePlanningController {
     }
   }
 
-  /** Get all employee plannings. GET /api/planning/employees */
+  // Get all employee plannings. GET /api/planning/employees
   @GetMapping("/employees")
   public ResponseEntity<List<EmployeePlanningDto>> getAllEmployeePlannings() {
     try {
@@ -87,7 +86,7 @@ public class EmployeePlanningController {
     }
   }
 
-  /** Delete planning for an employee. DELETE /api/planning/employees/{employeeId} */
+  // Delete planning for an employee. DELETE /api/planning/employees/{employeeId}
   @DeleteMapping("/employees/{employeeId}")
   public ResponseEntity<Void> deleteEmployeePlanning(@PathVariable Long employeeId) {
     try {
@@ -98,10 +97,8 @@ public class EmployeePlanningController {
     }
   }
 
-  /**
-   * Create or update hourly planning for an employee. POST
-   * /api/planning/employees/{employeeId}/hourly
-   */
+  // Create or update hourly planning for an employee. POST
+  // /api/planning/employees/{employeeId}/hourly
   @PostMapping("/employees/{employeeId}/hourly")
   public ResponseEntity<EmployeePlanningDto> createOrUpdateHourlyPlanning(
       @PathVariable Long employeeId, @RequestBody HourlyPlanningRequestDto request) {
@@ -115,9 +112,7 @@ public class EmployeePlanningController {
     }
   }
 
-  /**
-   * Bulk create default planning for multiple employees. POST /api/planning/employees/bulk-default
-   */
+  // Bulk create default planning for multiple employees. POST /api/planning/employees/bulk-default
   @PostMapping("/employees/bulk-default")
   public ResponseEntity<List<EmployeePlanningDto>> createBulkDefaultPlanning(
       @RequestBody List<Long> employeeIds) {
@@ -130,7 +125,7 @@ public class EmployeePlanningController {
     }
   }
 
-  /** Save hourly planning for an employee for a specific week. POST /api/planning/hourly */
+  // Save hourly planning for an employee for a specific week. POST /api/planning/hourly
   @PostMapping("/hourly")
   public ResponseEntity<Map<String, Object>> saveHourlyPlanning(
       @RequestBody WeeklyHourlyPlanningDto request) {
@@ -148,10 +143,8 @@ public class EmployeePlanningController {
     }
   }
 
-  /**
-   * Get hourly planning for an employee for a specific week. GET
-   * /api/planning/employees/{employeeId}/hourly?weekStart=yyyy-MM-dd
-   */
+  // Get hourly planning for an employee for a specific week. GET
+  // /api/planning/employees/{employeeId}/hourly?weekStart=yyyy-MM-dd
   @GetMapping("/employees/{employeeId}/hourly")
   public ResponseEntity<Map<String, Object>> getHourlyPlanning(
       @PathVariable Long employeeId, @RequestParam String weekStart) {
@@ -168,7 +161,7 @@ public class EmployeePlanningController {
     }
   }
 
-  /** Get weekly schedule for all employees. GET /api/planning/week?start=yyyy-MM-dd */
+  // Get weekly schedule for all employees. GET /api/planning/week?start=yyyy-MM-dd
   @GetMapping("/week")
   public ResponseEntity<Map<Long, Map<String, List<Map<String, Object>>>>> getWeeklySchedule(
       @RequestParam String start) {
@@ -181,7 +174,7 @@ public class EmployeePlanningController {
     }
   }
 
-  /** Create a new shift. POST /api/planning/shifts */
+  // Create a new shift. POST /api/planning/shifts
   @PostMapping("/shifts")
   public ResponseEntity<Map<String, Object>> createShift(
       @RequestBody Map<String, Object> shiftData) {
@@ -196,7 +189,7 @@ public class EmployeePlanningController {
     }
   }
 
-  /** Update an existing shift. POST /api/planning/shifts/{employeeId}/{date} */
+  // Update an existing shift. POST /api/planning/shifts/{employeeId}/{date}
   @PostMapping("/shifts/{employeeId}/{date}")
   public ResponseEntity<Map<String, Object>> updateShift(
       @PathVariable Long employeeId,
@@ -233,7 +226,7 @@ public class EmployeePlanningController {
     }
   }
 
-  /** Delete a shift. DELETE /api/planning/shifts/{employeeId}/{date} */
+  // Delete a shift. DELETE /api/planning/shifts/{employeeId}/{date}
   @DeleteMapping("/shifts/{employeeId}/{date}")
   public ResponseEntity<Void> deleteShift(
       @PathVariable Long employeeId, @PathVariable String date) {
@@ -245,7 +238,7 @@ public class EmployeePlanningController {
     }
   }
 
-  /** Delete a specific shift by ID. DELETE /api/planning/shifts/{employeeId}/{date}/{weekday} */
+  // Delete a specific shift by ID. DELETE /api/planning/shifts/{employeeId}/{date}/{weekday}
   @DeleteMapping("/shifts/{employeeId}/{date}/{weekday}")
   public ResponseEntity<Map<String, Object>> deleteSpecificShift(
       @PathVariable Long employeeId, @PathVariable String date, @PathVariable Integer weekday) {
@@ -263,7 +256,7 @@ public class EmployeePlanningController {
     }
   }
 
-  /** Publish schedule and notify employees. POST /api/planning/publish */
+  // Publish schedule and notify employees. POST /api/planning/publish
   @PostMapping("/publish")
   public ResponseEntity<Map<String, Object>> publishSchedule() {
     try {

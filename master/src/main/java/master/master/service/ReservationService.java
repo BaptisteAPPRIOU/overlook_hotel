@@ -13,6 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+/**
+ * Service that creates and queries client reservations.
+ * It resolves the target client and room, then maps reservations to API DTOs.
+ */
 @Service
 @Transactional(readOnly = true)
 public class ReservationService {
@@ -22,6 +26,7 @@ public class ReservationService {
   private final RoomRepository roomRepo;
   private final ReservationMapper mapper;
 
+  // Wires the reservation service to repositories and the DTO mapper.
   public ReservationService(
       ReservationRepository repo,
       ClientRepository clientRepo,
@@ -33,7 +38,7 @@ public class ReservationService {
     this.mapper = mapper;
   }
 
-  // This method creates a new reservation for a user.
+  // Creates a new reservation for the authenticated client.
   @Transactional
   public ReservationDto.Info create(Long userId, ReservationDto.Create dto) {
     Client client =
@@ -56,7 +61,7 @@ public class ReservationService {
     return mapper.toDto(repo.save(ur));
   }
 
-  // This method retrieves all reservations made by a specific user.
+  // Returns every reservation made by one client.
   public List<ReservationDto.Info> findByUser(Long userId) {
     return repo.findByClientId(userId).stream().map(mapper::toDto).toList();
   }
