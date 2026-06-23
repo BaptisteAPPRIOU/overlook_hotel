@@ -3,7 +3,9 @@ package master.master.authentication.security;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import jakarta.servlet.FilterChain;
@@ -87,8 +89,23 @@ class SecurityAuthorizationTest {
   void employeeCannotDeleteClientAccounts() throws Exception {
     mockMvc
         .perform(delete("/api/v1/clients/42").with(user("employee@olh.fr").authorities(() -> "EMPLOYEE")))
-        .andExpect(status().isFound())
-        .andExpect(redirectedUrl("/?error=access_denied"));
+        .andExpect(status().isForbidden())
+        .andExpect(content().contentType("application/json;charset=UTF-8"))
+        .andExpect(jsonPath("$.code").value("ACCESS_DENIED"))
+        .andExpect(jsonPath("$.message").value("Access denied"));
+  }
+
+  // Type: Integration test.
+  // Verifies that protected API endpoints return JSON 401 responses
+  // instead of redirecting to the HTML login page.
+  @Test
+  void unauthenticatedApiRequestReturnsJsonUnauthorized() throws Exception {
+    mockMvc
+        .perform(get("/api/v1/fidelity/points"))
+        .andExpect(status().isUnauthorized())
+        .andExpect(content().contentType("application/json;charset=UTF-8"))
+        .andExpect(jsonPath("$.code").value("NOT_AUTHENTICATED"))
+        .andExpect(jsonPath("$.message").value("Authentication required"));
   }
 
   @Controller

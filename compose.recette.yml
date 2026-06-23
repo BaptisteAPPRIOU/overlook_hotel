@@ -15,6 +15,28 @@ services:
       timeout: 5s
       retries: 10
 
+  redis:
+    image: redis:7.4-alpine
+    command:
+      [
+        "redis-server",
+        "--appendonly",
+        "yes",
+        "--requirepass",
+        "${RECETTE_REDIS_PASSWORD:?RECETTE_REDIS_PASSWORD is required}"
+      ]
+    environment:
+      REDIS_PASSWORD: ${RECETTE_REDIS_PASSWORD:?RECETTE_REDIS_PASSWORD is required}
+    ports:
+      - "6379:6379"
+    volumes:
+      - recette-redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$${REDIS_PASSWORD}\" ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   app:
     image: overlook-hotel:recette
     build:
@@ -23,11 +45,16 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: recette
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${RECETTE_POSTGRES_DB:?RECETTE_POSTGRES_DB is required}
       SPRING_DATASOURCE_USERNAME: ${RECETTE_POSTGRES_USER:?RECETTE_POSTGRES_USER is required}
       SPRING_DATASOURCE_PASSWORD: ${RECETTE_POSTGRES_PASSWORD:?RECETTE_POSTGRES_PASSWORD is required}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_PASSWORD: ${RECETTE_REDIS_PASSWORD:?RECETTE_REDIS_PASSWORD is required}
       SPRING_SECURITY_USER_NAME: ${SPRING_SECURITY_USER_NAME:?SPRING_SECURITY_USER_NAME is required}
       SPRING_SECURITY_USER_PASSWORD: ${SPRING_SECURITY_USER_PASSWORD:?SPRING_SECURITY_USER_PASSWORD is required}
       APP_JWT_SECRET: ${APP_JWT_SECRET:?APP_JWT_SECRET is required}
@@ -38,3 +65,4 @@ services:
 
 volumes:
   recette-postgres-data:
+  recette-redis-data:

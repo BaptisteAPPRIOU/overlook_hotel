@@ -1,10 +1,15 @@
 package master.master.config;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import master.master.filter.JwtAuthenticationFilter;
 import master.master.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -110,12 +115,26 @@ public class SecurityConfig {
                 exceptions
                     .accessDeniedHandler(
                         (request, response, accessDeniedException) -> {
-                          // Redirect to login page with error message for access denied
+                          if (isApiRequest(request)) {
+                            writeApiError(
+                                response,
+                                HttpStatus.FORBIDDEN,
+                                "ACCESS_DENIED",
+                                "Access denied");
+                            return;
+                          }
                           response.sendRedirect("/?error=access_denied");
                         })
                     .authenticationEntryPoint(
                         (request, response, authException) -> {
-                          // Redirect to login page for unauthenticated requests
+                          if (isApiRequest(request)) {
+                            writeApiError(
+                                response,
+                                HttpStatus.UNAUTHORIZED,
+                                "NOT_AUTHENTICATED",
+                                "Authentication required");
+                            return;
+                          }
                           response.sendRedirect("/?error=not_authenticated");
                         }))
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
@@ -123,6 +142,26 @@ public class SecurityConfig {
         .httpBasic(basic -> basic.disable());
 
     return http.build();
+  }
+
+  private boolean isApiRequest(HttpServletRequest request) {
+    return request.getRequestURI().startsWith("/api/");
+  }
+
+  private void writeApiError(
+      HttpServletResponse response, HttpStatus status, String code, String message)
+      throws IOException {
+    response.setStatus(status.value());
+    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+    response.setCharacterEncoding("UTF-8");
+    response
+        .getWriter()
+        .write(
+            """
+            {"code":"%s","message":"%s"}
+            """
+                .formatted(code, message)
+                .trim());
   }
 
   // Bean for PasswordEncoder

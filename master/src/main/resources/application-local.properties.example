@@ -5,6 +5,11 @@ spring.datasource.url=jdbc:postgresql://localhost:5432/overlookhoteldb
 spring.datasource.username=postgres
 spring.datasource.password=your_db_password
 
+spring.data.redis.host=localhost
+spring.data.redis.port=redis_port
+spring.data.redis.password=
+spring.data.redis.timeout=2s
+
 spring.security.user.name=admin
 spring.security.user.password=your_admin_password
 
