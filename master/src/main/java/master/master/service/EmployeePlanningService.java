@@ -22,6 +22,9 @@ import master.master.web.rest.dto.CreatePlanningRequestDto;
 import master.master.web.rest.dto.EmployeePlanningDto;
 import master.master.web.rest.dto.HourlyPlanningRequestDto;
 import master.master.web.rest.dto.WeeklyHourlyPlanningDto;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -43,6 +46,13 @@ public class EmployeePlanningService {
     this.monthlyScheduleRepository = monthlyScheduleRepository;
   }
 
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = "employeePlanning", key = "#employeeId"),
+        @CacheEvict(cacheNames = "employeePlannings", allEntries = true),
+        @CacheEvict(cacheNames = "employeeWeeklySchedule", allEntries = true),
+        @CacheEvict(cacheNames = "employeeHourlyPlanning", allEntries = true)
+      })
   public EmployeePlanningDto createDefaultPlanning(Long employeeId) {
     CreatePlanningRequestDto request =
         CreatePlanningRequestDto.builder()
@@ -60,6 +70,13 @@ public class EmployeePlanningService {
     return createOrUpdatePlanning(request);
   }
 
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = "employeePlanning", key = "#request.employeeId"),
+        @CacheEvict(cacheNames = "employeePlannings", allEntries = true),
+        @CacheEvict(cacheNames = "employeeWeeklySchedule", allEntries = true),
+        @CacheEvict(cacheNames = "employeeHourlyPlanning", allEntries = true)
+      })
   public EmployeePlanningDto createOrUpdatePlanning(CreatePlanningRequestDto request) {
     Employee employee = getEmployee(request.getEmployeeId());
     workShiftRepository.deleteByEmployeeId(employee.getId());
@@ -108,6 +125,7 @@ public class EmployeePlanningService {
         .build();
   }
 
+  @Cacheable(cacheNames = "employeePlanning", key = "#employeeId")
   public EmployeePlanningDto getEmployeePlanning(Long employeeId) {
     Employee employee = getEmployee(employeeId);
     List<WorkShift> shifts = workShiftRepository.findByEmployeeId(employeeId);
@@ -147,26 +165,53 @@ public class EmployeePlanningService {
         .build();
   }
 
+  @Cacheable(cacheNames = "employeePlannings", key = "'all'")
   public List<EmployeePlanningDto> getAllEmployeePlannings() {
     return employeeRepository.findAll().stream().map(employee -> getEmployeePlanning(employee.getId())).toList();
   }
 
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = "employeePlanning", key = "#employeeId"),
+        @CacheEvict(cacheNames = "employeePlannings", allEntries = true),
+        @CacheEvict(cacheNames = "employeeWeeklySchedule", allEntries = true),
+        @CacheEvict(cacheNames = "employeeHourlyPlanning", allEntries = true)
+      })
   public void deleteEmployeePlanning(Long employeeId) {
     workShiftRepository.deleteByEmployeeId(employeeId);
   }
 
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = "employeePlanning", key = "#request.employeeId"),
+        @CacheEvict(cacheNames = "employeePlannings", allEntries = true),
+        @CacheEvict(cacheNames = "employeeWeeklySchedule", allEntries = true),
+        @CacheEvict(cacheNames = "employeeHourlyPlanning", allEntries = true)
+      })
   public EmployeePlanningDto createOrUpdateHourlyPlanning(HourlyPlanningRequestDto request) {
     return getEmployeePlanning(request.getEmployeeId());
   }
 
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = "employeePlanning", key = "#request.employeeId"),
+        @CacheEvict(cacheNames = "employeePlannings", allEntries = true),
+        @CacheEvict(cacheNames = "employeeWeeklySchedule", allEntries = true),
+        @CacheEvict(
+            cacheNames = "employeeHourlyPlanning",
+            key = "#request.employeeId + ':' + #request.weekStart",
+            condition = "#request.employeeId != null && #request.weekStart != null")
+      })
   public boolean saveHourlyPlanning(WeeklyHourlyPlanningDto request) {
     return true;
   }
 
+  @Cacheable(cacheNames = "employeeHourlyPlanning", key = "#employeeId + ':' + #weekStart")
   public Map<String, List<Integer>> getHourlyPlanning(Long employeeId, String weekStart) {
     return new HashMap<>();
   }
 
+  @Cacheable(cacheNames = "employeeWeeklySchedule", key = "#startDateStr")
   public Map<Long, Map<String, List<Map<String, Object>>>> getWeeklyScheduleForPlanning(
       String startDateStr) {
     LocalDate start = LocalDate.parse(startDateStr);
@@ -189,6 +234,15 @@ public class EmployeePlanningService {
     return result;
   }
 
+  @Caching(
+      evict = {
+        @CacheEvict(
+            cacheNames = "employeePlanning",
+            key = "T(java.lang.Long).valueOf(#shiftData['employeeId'].toString())"),
+        @CacheEvict(cacheNames = "employeePlannings", allEntries = true),
+        @CacheEvict(cacheNames = "employeeWeeklySchedule", allEntries = true),
+        @CacheEvict(cacheNames = "employeeHourlyPlanning", allEntries = true)
+      })
   public Map<String, Object> createShiftFromMap(Map<String, Object> shiftData) {
     Long employeeId = Long.valueOf(shiftData.get("employeeId").toString());
     LocalDate date = LocalDate.parse(shiftData.get("date").toString());
@@ -198,6 +252,13 @@ public class EmployeePlanningService {
     return Map.of("success", true, "id", shift.getId(), "message", "Shift created successfully");
   }
 
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = "employeePlanning", key = "#employeeId"),
+        @CacheEvict(cacheNames = "employeePlannings", allEntries = true),
+        @CacheEvict(cacheNames = "employeeWeeklySchedule", allEntries = true),
+        @CacheEvict(cacheNames = "employeeHourlyPlanning", allEntries = true)
+      })
   public Map<String, Object> updateShiftFromMap(
       Long employeeId, String dateStr, Map<String, Object> shiftData) {
     LocalDate date = LocalDate.parse(dateStr);
@@ -205,10 +266,24 @@ public class EmployeePlanningService {
     return createShiftFromMap(shiftData);
   }
 
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = "employeePlanning", key = "#employeeId"),
+        @CacheEvict(cacheNames = "employeePlannings", allEntries = true),
+        @CacheEvict(cacheNames = "employeeWeeklySchedule", allEntries = true),
+        @CacheEvict(cacheNames = "employeeHourlyPlanning", allEntries = true)
+      })
   public void deleteEmployeeWorkday(Long employeeId, LocalDate date) {
     workShiftRepository.deleteByEmployeeIdAndWorkDate(employeeId, date);
   }
 
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = "employeePlanning", key = "#employeeId"),
+        @CacheEvict(cacheNames = "employeePlannings", allEntries = true),
+        @CacheEvict(cacheNames = "employeeWeeklySchedule", allEntries = true),
+        @CacheEvict(cacheNames = "employeeHourlyPlanning", allEntries = true)
+      })
   public void deleteSpecificShift(Long employeeId, LocalDate date, Integer weekday) {
     deleteEmployeeWorkday(employeeId, date);
   }

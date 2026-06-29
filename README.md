@@ -94,6 +94,7 @@ spring.data.redis.host=localhost
 spring.data.redis.port=6379
 spring.data.redis.password=
 spring.data.redis.timeout=2s
+spring.cache.type=redis
 
 spring.security.user.name=admin
 spring.security.user.password=change-me
@@ -108,7 +109,7 @@ app.jwt.expiration-ms=86400000
 
 The project uses PostgreSQL and Flyway.
 
-Redis is used by the authentication layer to store JWT logout blacklist entries with a TTL matching the JWT lifetime.
+Redis is used by the authentication layer to store JWT logout blacklist entries with a TTL matching the JWT lifetime. It is also used as the Spring cache backend for client reservations and employee planning/schedule reads.
 
 Migration files are stored in:
 
