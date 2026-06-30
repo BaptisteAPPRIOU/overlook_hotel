@@ -148,7 +148,11 @@ cd master
 .\mvnw.cmd -B verify
 ```
 
-The current test suite is limited and should be expanded with service, security, integration and end-to-end tests.
+ The current unit test suite still needs cleanup, but the recette profile now supports dedicated black-box integration tests from:
+
+```text
+master/src/integrationTest/java
+```
 
 ## Docker
 
@@ -197,7 +201,7 @@ Current automation:
 
 - `dev` runs unit tests, packaging, formatting, coverage, PMD and SpotBugs/FindSecBugs.
 - `recette` runs the same quality gate, then starts a Docker Compose stack with PostgreSQL 17 and the application image.
-- `recette` checks `/actuator/health` and runs the Maven `integration` profile for future `*IT.java` tests.
+- `recette` checks `/actuator/health` and runs the Maven `integration` profile for dedicated `*IT.java` tests.
 - `prod` validates the candidate and publishes the Docker image to GHCR outside pull requests.
 
 Run the recette stack locally:
@@ -207,12 +211,14 @@ cp .env.recette.example .env.recette
 docker compose --env-file .env.recette -f compose.recette.yml up --build
 ```
 
-Run future integration tests against the local recette stack:
+Run integration tests against the local recette stack:
 
 ```bash
 cd master
 ./mvnw -B -Pintegration -Drecette.base-url=http://localhost:8080 verify
 ```
+
+Current recette integration coverage includes authentication, room authorization, client reservations and fidelity flows.
 
 Stop the recette stack:
 
