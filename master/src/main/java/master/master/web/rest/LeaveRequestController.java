@@ -97,7 +97,7 @@ public class LeaveRequestController {
    */
   @GetMapping("/pending")
   public ResponseEntity<?> getPendingLeaveRequests(Authentication authentication) {
-    authorizationService.requireAdmin(authentication);
+    authorizationService.requireManager(authentication);
     try {
       List<LeaveRequestDto> pendingRequests = leaveRequestService.getPendingLeaveRequests();
       return ResponseEntity.ok(Map.of("success", true, "data", pendingRequests));
@@ -115,7 +115,7 @@ public class LeaveRequestController {
   /** Get all leave requests for admin oversight. GET /api/v1/leave-requests/all */
   @GetMapping("/all")
   public ResponseEntity<?> getAllLeaveRequests(Authentication authentication) {
-    authorizationService.requireAdmin(authentication);
+    authorizationService.requireManager(authentication);
     try {
       List<LeaveRequestDto> allRequests = leaveRequestService.getAllLeaveRequests();
       return ResponseEntity.ok(Map.of("success", true, "data", allRequests));
@@ -134,7 +134,7 @@ public class LeaveRequestController {
   @PutMapping("/{requestId}/approve")
   public ResponseEntity<?> approveLeaveRequest(
       @PathVariable Long requestId, Authentication authentication) {
-    authorizationService.requireAdmin(authentication);
+    authorizationService.requireManager(authentication);
     try {
       LeaveRequestDto approvedRequest =
           leaveRequestService.approveLeaveRequest(requestId, authentication.getName());
@@ -165,7 +165,7 @@ public class LeaveRequestController {
       @PathVariable Long requestId,
       @RequestBody(required = false) Map<String, String> requestBody,
       Authentication authentication) {
-    authorizationService.requireAdmin(authentication);
+    authorizationService.requireManager(authentication);
     try {
       // Get rejection reason if provided
       String rejectionReason = requestBody != null ? requestBody.get("reason") : null;
@@ -202,7 +202,7 @@ public class LeaveRequestController {
   public ResponseEntity<?> cancelLeaveRequest(
       @PathVariable Long requestId, Authentication authentication) {
     LeaveRequestDto leaveRequest = leaveRequestService.getLeaveRequestById(requestId);
-    authorizationService.requireSelfOrAdmin(leaveRequest.getEmployeeId(), authentication);
+    authorizationService.requireSelfOrManager(leaveRequest.getEmployeeId(), authentication);
     try {
       leaveRequestService.deleteLeaveRequest(requestId);
       return ResponseEntity.ok(

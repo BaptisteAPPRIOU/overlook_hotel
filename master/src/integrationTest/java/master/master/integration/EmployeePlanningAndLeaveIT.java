@@ -16,36 +16,46 @@ import org.junit.jupiter.api.Test;
 class EmployeePlanningAndLeaveIT extends AbstractRecetteIT {
 
   @Test
-  void employeeCanCreateAndConsultOwnPlanningOnly()
+  void managerCreatesPlanningAndEmployeeConsultsOwnPlanningOnly()
       throws IOException, InterruptedException, SQLException {
     UserFixture employee =
         fixtures.createEmployeeUser(prefixedEmail("planning-employee"), "EMPLOYEE");
     UserFixture otherEmployee =
         fixtures.createEmployeeUser(prefixedEmail("planning-other"), "EMPLOYEE");
-    String token = login(employee.email(), employee.password());
+    UserFixture manager =
+        fixtures.createEmployeeUser(prefixedEmail("planning-manager"), "RESPONSABLE");
+    String employeeToken = login(employee.email(), employee.password());
+    String managerToken = login(manager.email(), manager.password());
     LocalDate shiftDate = LocalDate.now().plusDays(1);
 
     HttpResult createShift =
-        http.post(
-            "/api/planning/shifts",
-            Map.of(
-                "employeeId", employee.userId(),
-                "date", shiftDate.toString(),
-                "startTime", "09:00",
-                "endTime", "17:00"),
-            token);
+        createShift(
+            employee.userId(), shiftDate, "RECEPTION", "09:00", "17:00", managerToken);
     assertEquals(200, createShift.statusCode(), createShift.body());
     assertTrue(http.readTree(createShift.body()).path("success").asBoolean());
+    assertAccessDenied(
+        createShift(
+            employee.userId(),
+            shiftDate.plusDays(1),
+            "RECEPTION",
+            "09:00",
+            "17:00",
+            employeeToken));
 
     HttpResult employeePlanning =
-        http.get("/api/planning/employees/" + employee.userId(), token);
+        http.get("/api/planning/employees/" + employee.userId(), employeeToken);
     assertEquals(200, employeePlanning.statusCode(), employeePlanning.body());
     assertTrue(employeePlanning.body().contains("\"employeeId\":" + employee.userId()));
     assertTrue(employeePlanning.body().contains("\"isWorking\":true"));
+    assertTrue(employeePlanning.body().contains("\"startTime\":\"09:00:00\""));
+    assertTrue(employeePlanning.body().contains("\"endTime\":\"17:00:00\""));
+    assertTrue(employeePlanning.body().contains("\"shiftType\":\"FULL_DAY\""));
+    assertTrue(employeePlanning.body().contains("\"service\":\"RECEPTION\""));
 
     assertAccessDenied(
-        http.get("/api/planning/employees/" + otherEmployee.userId(), token));
-    assertAccessDenied(http.get("/api/planning/week?start=" + shiftDate, token));
+        http.get("/api/planning/employees/" + otherEmployee.userId(), employeeToken));
+    assertAccessDenied(
+        http.get("/api/planning/week?start=" + shiftDate, employeeToken));
   }
 
   @Test
@@ -92,7 +102,7 @@ class EmployeePlanningAndLeaveIT extends AbstractRecetteIT {
     UserFixture employeeB =
         fixtures.createEmployeeUser(prefixedEmail("leave-track-b"), "EMPLOYEE");
     UserFixture admin =
-        fixtures.createEmployeeUser(prefixedEmail("leave-track-admin"), "ADMIN");
+        fixtures.createEmployeeUser(prefixedEmail("leave-track-manager"), "RESPONSABLE");
     String employeeAToken = login(employeeA.email(), employeeA.password());
     String employeeBToken = login(employeeB.email(), employeeB.password());
     String adminToken = login(admin.email(), admin.password());
@@ -150,21 +160,43 @@ class EmployeePlanningAndLeaveIT extends AbstractRecetteIT {
   void adminTeamPlanningViewReturnsShiftsForMultipleEmployees()
       throws IOException, InterruptedException, SQLException {
     UserFixture manager =
-        fixtures.createEmployeeUser(prefixedEmail("team-manager"), "ADMIN");
+        fixtures.createEmployeeUser(prefixedEmail("team-manager"), "RESPONSABLE");
     UserFixture employeeA =
         fixtures.createEmployeeUser(prefixedEmail("team-employee-a"), "EMPLOYEE");
     UserFixture employeeB =
         fixtures.createEmployeeUser(prefixedEmail("team-employee-b"), "EMPLOYEE");
     String managerToken = login(manager.email(), manager.password());
+    String employeeBToken = login(employeeB.email(), employeeB.password());
     LocalDate weekStart = LocalDate.now().plusDays(3);
 
     HttpResult shiftA =
-        createShift(employeeA.userId(), weekStart, "08:00", "16:00", managerToken);
+        createShift(
+            employeeA.userId(), weekStart, "RECEPTION", "08:00", "16:00", managerToken);
     assertEquals(200, shiftA.statusCode(), shiftA.body());
     HttpResult shiftB =
         createShift(
-            employeeB.userId(), weekStart.plusDays(1), "10:00", "18:00", managerToken);
+            employeeB.userId(),
+            weekStart.plusDays(1),
+            "HOUSEKEEPING",
+            "10:00",
+            "18:00",
+            managerToken);
     assertEquals(200, shiftB.statusCode(), shiftB.body());
+
+    HttpResult leaveB =
+        submitLeave(
+            employeeB.userId(),
+            weekStart.plusDays(2),
+            weekStart.plusDays(2),
+            "Team absence",
+            "PERSONAL",
+            employeeBToken);
+    assertEquals(200, leaveB.statusCode(), leaveB.body());
+    long leaveBId = http.readTree(leaveB.body()).path("data").path("id").asLong();
+    HttpResult approveLeaveB =
+        http.putFormless(
+            "/api/v1/leave-requests/" + leaveBId + "/approve", managerToken);
+    assertEquals(200, approveLeaveB.statusCode(), approveLeaveB.body());
 
     HttpResult weeklySchedule =
         http.get("/api/planning/week?start=" + weekStart, managerToken);
@@ -173,13 +205,15 @@ class EmployeePlanningAndLeaveIT extends AbstractRecetteIT {
     assertTrue(weeklySchedule.body().contains("\"" + employeeB.userId() + "\""));
     assertTrue(weeklySchedule.body().contains(weekStart.toString()));
     assertTrue(weeklySchedule.body().contains(weekStart.plusDays(1).toString()));
+    assertTrue(weeklySchedule.body().contains("\"type\":\"ABSENCE\""));
+    assertTrue(weeklySchedule.body().contains("\"position\":\"PERSONAL\""));
   }
 
   @Test
   void adminCanApproveAndRejectPendingLeaveRequests()
       throws IOException, InterruptedException, SQLException {
     UserFixture manager =
-        fixtures.createEmployeeUser(prefixedEmail("leave-manager"), "ADMIN");
+        fixtures.createEmployeeUser(prefixedEmail("leave-manager"), "RESPONSABLE");
     UserFixture employeeA =
         fixtures.createEmployeeUser(prefixedEmail("leave-pending-a"), "EMPLOYEE");
     UserFixture employeeB =
@@ -274,13 +308,19 @@ class EmployeePlanningAndLeaveIT extends AbstractRecetteIT {
   }
 
   private HttpResult createShift(
-      long employeeId, LocalDate date, String startTime, String endTime, String token)
+      long employeeId,
+      LocalDate date,
+      String service,
+      String startTime,
+      String endTime,
+      String token)
       throws IOException, InterruptedException {
     return http.post(
         "/api/planning/shifts",
         Map.of(
             "employeeId", employeeId,
             "date", date.toString(),
+            "position", service,
             "startTime", startTime,
             "endTime", endTime),
         token);

@@ -53,7 +53,7 @@ public class EmployeePlanningController {
   @PostMapping("/employees/{employeeId}/default")
   public ResponseEntity<EmployeePlanningDto> createDefaultPlanning(
       @PathVariable Long employeeId, Authentication authentication) {
-    authorizationService.requireAdmin(authentication);
+    authorizationService.requireManager(authentication);
     try {
       EmployeePlanningDto planning = planningService.createDefaultPlanning(employeeId);
       return ResponseEntity.status(HttpStatus.CREATED).body(planning);
@@ -66,7 +66,7 @@ public class EmployeePlanningController {
   @PostMapping("/employees")
   public ResponseEntity<EmployeePlanningDto> createOrUpdatePlanning(
       @RequestBody CreatePlanningRequestDto request, Authentication authentication) {
-    authorizationService.requireAdmin(authentication);
+    authorizationService.requireManager(authentication);
     try {
       EmployeePlanningDto planning = planningService.createOrUpdatePlanning(request);
       return ResponseEntity.ok(planning);
@@ -79,7 +79,7 @@ public class EmployeePlanningController {
   @GetMapping("/employees/{employeeId}")
   public ResponseEntity<EmployeePlanningDto> getEmployeePlanning(
       @PathVariable Long employeeId, Authentication authentication) {
-    authorizationService.requireSelfOrAdmin(employeeId, authentication);
+    authorizationService.requireSelfOrManager(employeeId, authentication);
     try {
       EmployeePlanningDto planning = planningService.getEmployeePlanning(employeeId);
       return ResponseEntity.ok(planning);
@@ -92,7 +92,7 @@ public class EmployeePlanningController {
   @GetMapping("/employees")
   public ResponseEntity<List<EmployeePlanningDto>> getAllEmployeePlannings(
       Authentication authentication) {
-    authorizationService.requireAdmin(authentication);
+    authorizationService.requireManager(authentication);
     try {
       List<EmployeePlanningDto> plannings = planningService.getAllEmployeePlannings();
       return ResponseEntity.ok(plannings);
@@ -105,7 +105,7 @@ public class EmployeePlanningController {
   @DeleteMapping("/employees/{employeeId}")
   public ResponseEntity<Void> deleteEmployeePlanning(
       @PathVariable Long employeeId, Authentication authentication) {
-    authorizationService.requireAdmin(authentication);
+    authorizationService.requireManager(authentication);
     try {
       planningService.deleteEmployeePlanning(employeeId);
       return ResponseEntity.noContent().build();
@@ -123,7 +123,7 @@ public class EmployeePlanningController {
       @PathVariable Long employeeId,
       @RequestBody HourlyPlanningRequestDto request,
       Authentication authentication) {
-    authorizationService.requireAdmin(authentication);
+    authorizationService.requireManager(authentication);
     try {
       // Ensure the employee ID matches
       request.setEmployeeId(employeeId);
@@ -140,7 +140,7 @@ public class EmployeePlanningController {
   @PostMapping("/employees/bulk-default")
   public ResponseEntity<List<EmployeePlanningDto>> createBulkDefaultPlanning(
       @RequestBody List<Long> employeeIds, Authentication authentication) {
-    authorizationService.requireAdmin(authentication);
+    authorizationService.requireManager(authentication);
     try {
       List<EmployeePlanningDto> plannings =
           employeeIds.stream().map(planningService::createDefaultPlanning).toList();
@@ -154,7 +154,7 @@ public class EmployeePlanningController {
   @PostMapping("/hourly")
   public ResponseEntity<Map<String, Object>> saveHourlyPlanning(
       @RequestBody WeeklyHourlyPlanningDto request, Authentication authentication) {
-    authorizationService.requireAdmin(authentication);
+    authorizationService.requireManager(authentication);
     try {
       boolean success = planningService.saveHourlyPlanning(request);
       Map<String, Object> response = new HashMap<>();
@@ -178,7 +178,7 @@ public class EmployeePlanningController {
       @PathVariable Long employeeId,
       @RequestParam String weekStart,
       Authentication authentication) {
-    authorizationService.requireSelfOrAdmin(employeeId, authentication);
+    authorizationService.requireSelfOrManager(employeeId, authentication);
     try {
       Map<String, List<Integer>> schedule =
           planningService.getHourlyPlanning(employeeId, weekStart);
@@ -196,7 +196,7 @@ public class EmployeePlanningController {
   @GetMapping("/week")
   public ResponseEntity<Map<Long, Map<String, List<Map<String, Object>>>>> getWeeklySchedule(
       @RequestParam String start, Authentication authentication) {
-    authorizationService.requireAdmin(authentication);
+    authorizationService.requireManager(authentication);
     try {
       Map<Long, Map<String, List<Map<String, Object>>>> schedule =
           planningService.getWeeklyScheduleForPlanning(start);
@@ -211,8 +211,7 @@ public class EmployeePlanningController {
   public ResponseEntity<Map<String, Object>> createShift(
       @RequestBody Map<String, Object> shiftData, Authentication authentication) {
     try {
-      Long employeeId = Long.valueOf(shiftData.get("employeeId").toString());
-      authorizationService.requireSelfOrAdmin(employeeId, authentication);
+      authorizationService.requireManager(authentication);
       Map<String, Object> result = planningService.createShiftFromMap(shiftData);
       return ResponseEntity.ok(result);
     } catch (AccessDeniedException e) {
@@ -232,7 +231,7 @@ public class EmployeePlanningController {
       @PathVariable String date,
       @RequestBody Map<String, Object> shiftData,
       Authentication authentication) {
-    authorizationService.requireSelfOrAdmin(employeeId, authentication);
+    authorizationService.requireManager(authentication);
     try {
       // Validate inputs
       if (employeeId == null || employeeId <= 0) {
@@ -270,7 +269,7 @@ public class EmployeePlanningController {
       @PathVariable Long employeeId,
       @PathVariable String date,
       Authentication authentication) {
-    authorizationService.requireSelfOrAdmin(employeeId, authentication);
+    authorizationService.requireManager(authentication);
     try {
       planningService.deleteEmployeeWorkday(employeeId, LocalDate.parse(date));
       return ResponseEntity.ok().build();
@@ -286,7 +285,7 @@ public class EmployeePlanningController {
       @PathVariable String date,
       @PathVariable Integer weekday,
       Authentication authentication) {
-    authorizationService.requireSelfOrAdmin(employeeId, authentication);
+    authorizationService.requireManager(authentication);
     try {
       planningService.deleteSpecificShift(employeeId, LocalDate.parse(date), weekday);
       Map<String, Object> response = new HashMap<>();
@@ -304,7 +303,7 @@ public class EmployeePlanningController {
   /** Publish schedule and notify employees. POST /api/planning/publish */
   @PostMapping("/publish")
   public ResponseEntity<Map<String, Object>> publishSchedule(Authentication authentication) {
-    authorizationService.requireAdmin(authentication);
+    authorizationService.requireManager(authentication);
     try {
       // TODO: Implement actual publish functionality
       // For now, just return a placeholder response

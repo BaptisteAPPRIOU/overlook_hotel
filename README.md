@@ -6,7 +6,7 @@ Welcome to **Overlook Hotel**, a Spring Boot–based hotel management applicatio
 
 1. **Authentication & Roles**
    - Separate login pages for **Clients** and **Employee**
-   - Role‐based access control (CLIENT vs. ADMIN vs. EMPLOYEE)
+   - Role‐based access control (CLIENT, EMPLOYEE, RESPONSABLE and ADMIN)
 
 2. **Room Management**
    - CRUD API for rooms (add, edit, delete, list)

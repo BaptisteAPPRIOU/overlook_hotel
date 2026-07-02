@@ -10,12 +10,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import master.master.domain.Employee;
+import master.master.domain.LeaveStatus;
 import master.master.domain.MonthlySchedule;
 import master.master.domain.ScheduleStatus;
 import master.master.domain.ShiftStatus;
 import master.master.domain.ShiftType;
 import master.master.domain.WorkShift;
 import master.master.repository.EmployeeRepository;
+import master.master.repository.LeaveRequestRepository;
 import master.master.repository.MonthlyScheduleRepository;
 import master.master.repository.WorkShiftRepository;
 import master.master.web.rest.dto.CreatePlanningRequestDto;
@@ -36,14 +38,17 @@ public class EmployeePlanningService {
   private final WorkShiftRepository workShiftRepository;
   private final EmployeeRepository employeeRepository;
   private final MonthlyScheduleRepository monthlyScheduleRepository;
+  private final LeaveRequestRepository leaveRequestRepository;
 
   public EmployeePlanningService(
       WorkShiftRepository workShiftRepository,
       EmployeeRepository employeeRepository,
-      MonthlyScheduleRepository monthlyScheduleRepository) {
+      MonthlyScheduleRepository monthlyScheduleRepository,
+      LeaveRequestRepository leaveRequestRepository) {
     this.workShiftRepository = workShiftRepository;
     this.employeeRepository = employeeRepository;
     this.monthlyScheduleRepository = monthlyScheduleRepository;
+    this.leaveRequestRepository = leaveRequestRepository;
   }
 
   @Caching(
@@ -101,7 +106,14 @@ public class EmployeePlanningService {
       double hours = working ? Math.max(0, java.time.Duration.between(start, end).toMinutes() - breakMinutes) / 60.0 : 0.0;
       weeklyHours += hours;
       if (working) {
-        saveShift(employee, nextDate(day), start, end, breakMinutes, ShiftType.FULL_DAY);
+        saveShift(
+            employee,
+            nextDate(day),
+            start,
+            end,
+            breakMinutes,
+            ShiftType.FULL_DAY,
+            "EMPLOYEE");
       }
       days.add(
           EmployeePlanningDto.WorkDayPlanningDto.builder()
@@ -110,6 +122,8 @@ public class EmployeePlanningService {
               .isWorking(working)
               .startTime(working ? start : null)
               .endTime(working ? end : null)
+              .shiftType(working ? ShiftType.FULL_DAY.name() : null)
+              .service(working ? "EMPLOYEE" : null)
               .breakDurationMinutes(working ? breakMinutes : null)
               .dailyHours(hours)
               .build());
@@ -151,6 +165,11 @@ public class EmployeePlanningService {
               .isWorking(working)
               .startTime(working ? shift.getPlannedStartTime() : null)
               .endTime(working ? shift.getPlannedEndTime() : null)
+              .shiftType(working ? shift.getShiftType().name() : null)
+              .service(
+                  working
+                      ? (shift.getService() != null ? shift.getService() : "EMPLOYEE")
+                      : null)
               .breakDurationMinutes(null)
               .dailyHours(hours)
               .build());
@@ -231,6 +250,31 @@ public class EmployeePlanningService {
                   "endTime", shift.getPlannedEndTime().toString(),
                   "status", shift.getShiftStatus().name()));
     }
+    leaveRequestRepository.findLeaveRequestsInDateRange(start, end).stream()
+        .filter(leave -> leave.getCurrentStatus() == LeaveStatus.APPROVED)
+        .forEach(
+            leave -> {
+              LocalDate absenceStart =
+                  leave.getStartDate().isBefore(start) ? start : leave.getStartDate();
+              LocalDate absenceEnd =
+                  leave.getEndDate().isAfter(end) ? end : leave.getEndDate();
+              for (LocalDate date = absenceStart;
+                  !date.isAfter(absenceEnd);
+                  date = date.plusDays(1)) {
+                result
+                    .computeIfAbsent(
+                        leave.getEmployeeRequester().getId(), ignored -> new HashMap<>())
+                    .computeIfAbsent(date.toString(), ignored -> new ArrayList<>())
+                    .add(
+                        Map.of(
+                            "id", -leave.getId(),
+                            "type", "ABSENCE",
+                            "position", leave.getLeaveType().name(),
+                            "startTime", "",
+                            "endTime", "",
+                            "status", leave.getCurrentStatus().name()));
+              }
+            });
     return result;
   }
 
@@ -248,7 +292,17 @@ public class EmployeePlanningService {
     LocalDate date = LocalDate.parse(shiftData.get("date").toString());
     LocalTime start = LocalTime.parse(shiftData.get("startTime").toString());
     LocalTime end = LocalTime.parse(shiftData.get("endTime").toString());
-    WorkShift shift = saveShift(getEmployee(employeeId), date, start, end, 60, ShiftType.FULL_DAY);
+    String service =
+        shiftData.get("position") != null ? shiftData.get("position").toString() : "EMPLOYEE";
+    WorkShift shift =
+        saveShift(
+            getEmployee(employeeId),
+            date,
+            start,
+            end,
+            60,
+            ShiftType.FULL_DAY,
+            service);
     return Map.of("success", true, "id", shift.getId(), "message", "Shift created successfully");
   }
 
@@ -295,7 +349,13 @@ public class EmployeePlanningService {
   }
 
   private WorkShift saveShift(
-      Employee employee, LocalDate date, LocalTime start, LocalTime end, Integer breakMinutes, ShiftType type) {
+      Employee employee,
+      LocalDate date,
+      LocalTime start,
+      LocalTime end,
+      Integer breakMinutes,
+      ShiftType type,
+      String service) {
     WorkShift shift = new WorkShift();
     shift.setEmployee(employee);
     shift.setMonthlySchedule(scheduleFor(date));
@@ -303,6 +363,7 @@ public class EmployeePlanningService {
     shift.setPlannedStartTime(start);
     shift.setPlannedEndTime(end);
     shift.setShiftType(type);
+    shift.setService(service);
     shift.setShiftStatus(ShiftStatus.PLANNED);
     return workShiftRepository.save(shift);
   }

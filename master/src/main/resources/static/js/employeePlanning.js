@@ -7,6 +7,7 @@ function planningData() {
     shifts: {
       EMPLOYEE: { color: "#0d6efd", name: "Employee" },
       MANAGER: { color: "#198754", name: "Manager" },
+      ABSENCE: { color: "#dc3545", name: "Absence" },
       // Default color for any unrecognized shift type
       default: { color: "#6c757d", name: "Employee" }, // Default to Employee for any unknown type
     },
@@ -291,12 +292,16 @@ function planningData() {
                 const normalizedShift = { ...shift };
 
                 // Normalize the shift type - strictly enforce only EMPLOYEE or MANAGER
-                normalizedShift.type =
-                  normalizedShift.position ||
-                  normalizedShift.type ||
-                  "EMPLOYEE";
-                normalizedShift.type =
-                  normalizedShift.type === "MANAGER" ? "MANAGER" : "EMPLOYEE";
+                if (normalizedShift.type !== "ABSENCE") {
+                  normalizedShift.type =
+                    normalizedShift.position ||
+                    normalizedShift.type ||
+                    "EMPLOYEE";
+                  normalizedShift.type =
+                    normalizedShift.type === "MANAGER"
+                      ? "MANAGER"
+                      : "EMPLOYEE";
+                }
 
                 // Ensure each shift has a unique ID - use the ID from backend if available
                 if (!normalizedShift.id) {
@@ -414,6 +419,26 @@ function planningData() {
         return this.schedule[employeeId][dateStr];
       }
       return [];
+    },
+    getCoverageStatus(date) {
+      const dateStr = date.toISOString().split("T")[0];
+      let planned = 0;
+      let absent = 0;
+      this.employees.forEach((employee) => {
+        const employeeId = employee.userId || employee.employeeId;
+        const entries = this.schedule[employeeId]?.[dateStr] || [];
+        if (entries.some((entry) => entry.type !== "ABSENCE")) {
+          planned++;
+        }
+        if (entries.some((entry) => entry.type === "ABSENCE")) {
+          absent++;
+        }
+      });
+      return {
+        planned,
+        absent,
+        gap: planned === 0,
+      };
     },
     async addShift(employeeId, date, shiftType, startTime, endTime) {
       // Normalize shift type to ensure we only have EMPLOYEE or MANAGER
