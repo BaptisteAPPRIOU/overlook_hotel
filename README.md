@@ -161,6 +161,22 @@ The current test suite is limited and should be expanded with service, security,
 
 ## Docker
 
+Start a local Redis container for the application cache/session store:
+
+```bash
+docker run --name overlook-redis --rm -p 6379:6379 redis:7.4-alpine
+```
+
+This command creates a temporary Redis 7.4 container named `overlook-redis` and exposes Redis on local port `6379`. The container is automatically removed when it stops because of `--rm`.
+
+Inspect the keys currently stored in Redis:
+
+```bash
+docker exec -it overlook-redis redis-cli keys "*"
+```
+
+This command opens `redis-cli` inside the running `overlook-redis` container and lists all Redis keys.
+
 Build the image from the repository root:
 
 ```bash
