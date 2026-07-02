@@ -53,6 +53,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/api/v1/login", "/api/v1/register", "/error")
                     .permitAll()
+                    .requestMatchers("/api/public/**")
+                    .permitAll()
                     .requestMatchers("/api/v1/logout")
                     .authenticated()
                     .requestMatchers(HttpMethod.DELETE, "/api/v1/clients/**")

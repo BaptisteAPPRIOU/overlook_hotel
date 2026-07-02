@@ -1,5 +1,6 @@
 package master.master.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -16,6 +17,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "rooms")
+@JsonIgnoreProperties({"amenities", "photos", "unavailabilities", "reservations", "imageUrl"})
 public class Room implements Serializable {
 
   @Id
