@@ -2,10 +2,7 @@ package master.master.web.rest;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import master.master.domain.Reservation;
 import master.master.domain.User;
-import master.master.repository.ReservationRepository;
 import master.master.repository.UserRepository;
 import master.master.service.ReservationService;
 import master.master.web.rest.dto.ReservationDto;
@@ -25,15 +22,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class ClientReservationController {
 
   private final ReservationService reservationService;
-  private final ReservationRepository reservationRepository;
   private final UserRepository userRepository;
 
   public ClientReservationController(
-      ReservationService reservationService,
-      ReservationRepository reservationRepository,
-      UserRepository userRepository) {
+      ReservationService reservationService, UserRepository userRepository) {
     this.reservationService = reservationService;
-    this.reservationRepository = reservationRepository;
     this.userRepository = userRepository;
   }
 
@@ -42,12 +35,7 @@ public class ClientReservationController {
   public ResponseEntity<List<Map<String, Object>>> getCurrentClientReservations() {
     try {
       Long userId = getCurrentUserId();
-      List<Reservation> reservations = reservationRepository.findByClientId(userId);
-
-      List<Map<String, Object>> reservationData =
-          reservations.stream().map(this::convertReservationToMap).collect(Collectors.toList());
-
-      return ResponseEntity.ok(reservationData);
+      return ResponseEntity.ok(reservationService.findReservationDataByUser(userId));
     } catch (Exception e) {
       return ResponseEntity.internalServerError().build();
     }
@@ -62,39 +50,6 @@ public class ClientReservationController {
       return ResponseEntity.ok(reservations);
     } catch (Exception e) {
       return ResponseEntity.internalServerError().build();
-    }
-  }
-
-  /** Convert Reservation to Map for JSON response */
-  private Map<String, Object> convertReservationToMap(Reservation reservation) {
-    return Map.of(
-        "userId", reservation.getClient() != null ? reservation.getClient().getId() : null,
-        "roomId", reservation.getRoom() != null ? reservation.getRoom().getId() : null,
-        "roomName", reservation.getRoom() != null ? reservation.getRoom().getName() : "Unknown",
-        "roomType", reservation.getRoom() != null ? reservation.getRoom().getType() : "Unknown",
-        "reservationDateStart", reservation.getStartDatetime().toLocalDate().toString(),
-        "reservationDateEnd", reservation.getEndDatetime().toLocalDate().toString(),
-        "payed", Boolean.TRUE.equals(reservation.getPaid()),
-        "nights",
-            java.time.Duration.between(reservation.getStartDatetime(), reservation.getEndDatetime())
-                .toDays(),
-        "status", getReservationStatus(reservation),
-        "createdAt", reservation.getCreatedAt() != null ? reservation.getCreatedAt().toString() : null);
-  }
-
-  /** Determine reservation status */
-  private String getReservationStatus(Reservation reservation) {
-    if (!Boolean.TRUE.equals(reservation.getPaid())) {
-      return "PENDING_PAYMENT";
-    }
-
-    java.time.LocalDate today = java.time.LocalDate.now();
-    if (reservation.getEndDatetime().toLocalDate().isBefore(today)) {
-      return "COMPLETED";
-    } else if (reservation.getStartDatetime().toLocalDate().isAfter(today)) {
-      return "CONFIRMED";
-    } else {
-      return "ACTIVE";
     }
   }
 

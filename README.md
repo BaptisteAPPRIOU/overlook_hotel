@@ -53,6 +53,7 @@ Welcome to **Overlook Hotel**, a Spring Boot–based hotel management applicatio
 - Spring Boot 3.5
 - Maven Wrapper
 - PostgreSQL 17
+- Redis
 - Flyway
 - Spring Security
 - Thymeleaf
@@ -89,6 +90,12 @@ spring.datasource.url=jdbc:postgresql://localhost:5432/overlookhoteldb
 spring.datasource.username=postgres
 spring.datasource.password=change-me
 
+spring.data.redis.host=localhost
+spring.data.redis.port=6379
+spring.data.redis.password=
+spring.data.redis.timeout=2s
+spring.cache.type=redis
+
 spring.security.user.name=admin
 spring.security.user.password=change-me
 
@@ -101,6 +108,8 @@ app.jwt.expiration-ms=86400000
 ## Database
 
 The project uses PostgreSQL and Flyway.
+
+Redis is used by the authentication layer to store JWT logout blacklist entries with a TTL matching the JWT lifetime. It is also used as the Spring cache backend for client reservations and employee planning/schedule reads.
 
 Migration files are stored in:
 
@@ -165,6 +174,8 @@ docker run --rm -p 8080:8080 \
   -e SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/overlookhoteldb \
   -e SPRING_DATASOURCE_USERNAME=postgres \
   -e SPRING_DATASOURCE_PASSWORD=change-me \
+  -e SPRING_DATA_REDIS_HOST=host.docker.internal \
+  -e SPRING_DATA_REDIS_PORT=6379 \
   -e SPRING_SECURITY_USER_NAME=admin \
   -e SPRING_SECURITY_USER_PASSWORD=change-me \
   -e APP_JWT_SECRET=change-me-with-at-least-32-characters \

@@ -1,5 +1,6 @@
 package master.master.web.rest.dto;
 
+import java.io.Serializable;
 import java.time.LocalTime;
 import java.util.List;
 import lombok.Builder;
@@ -11,7 +12,9 @@ import lombok.Data;
  */
 @Data
 @Builder
-public class EmployeePlanningDto {
+public class EmployeePlanningDto implements Serializable {
+  private static final long serialVersionUID = 1L;
+
   private Long employeeId;
   private String employeeName;
   private List<WorkDayPlanningDto> workDays;
@@ -21,7 +24,9 @@ public class EmployeePlanningDto {
 
   @Data
   @Builder
-  public static class WorkDayPlanningDto {
+  public static class WorkDayPlanningDto implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private Integer dayOfWeek; // 1=Monday, 7=Sunday
     private String dayName; // MONDAY, TUESDAY, etc.
     private LocalTime startTime;
