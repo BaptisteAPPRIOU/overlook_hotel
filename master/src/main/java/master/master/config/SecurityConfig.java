@@ -80,6 +80,10 @@ public class SecurityConfig {
                     .hasAnyAuthority("EMPLOYEE", "ADMIN")
                     .requestMatchers("/planning/**")
                     .hasAnyAuthority("EMPLOYEE", "ADMIN")
+                    .requestMatchers("/api/planning/**")
+                    .hasAnyAuthority("EMPLOYEE", "ADMIN")
+                    .requestMatchers("/api/v1/leave-requests/**")
+                    .hasAnyAuthority("EMPLOYEE", "ADMIN")
 
                     // Time tracking endpoints - Only EMPLOYEE and ADMIN can access
                     .requestMatchers("/api/v1/time-tracking/**")

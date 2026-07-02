@@ -229,7 +229,7 @@ cd master
 ./mvnw -B -Pintegration -Drecette.base-url=http://localhost:8080 verify
 ```
 
-Current recette integration coverage includes authentication and logout, room authorization and browsing, client reservations and fidelity flows. The tests require the dedicated recette PostgreSQL and Redis services.
+Current recette integration coverage includes authentication and logout, room authorization and browsing, client reservations, fidelity, employee planning and leave request flows. The tests require the dedicated recette PostgreSQL and Redis services.
 
 Stop the recette stack:
 
