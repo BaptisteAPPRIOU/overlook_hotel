@@ -123,6 +123,13 @@ jobs:
         working-directory: master
         run: chmod +x mvnw
 
+      - name: Generate ephemeral Redis password
+        shell: bash
+        run: |
+          redis_password="$(openssl rand -hex 32)"
+          echo "::add-mask::${redis_password}"
+          echo "RECETTE_REDIS_PASSWORD=${redis_password}" >> "$GITHUB_ENV"
+
       - name: Build and start recette stack
         run: |
           docker compose -f compose.recette.yml build
