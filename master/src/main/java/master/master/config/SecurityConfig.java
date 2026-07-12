@@ -53,6 +53,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/api/v1/login", "/api/v1/register", "/error")
                     .permitAll()
+                    .requestMatchers("/api/public/**")
+                    .permitAll()
                     .requestMatchers("/api/v1/logout")
                     .authenticated()
                     .requestMatchers(HttpMethod.DELETE, "/api/v1/clients/**")
@@ -61,13 +63,13 @@ public class SecurityConfig {
                     // Employee Dashboard and related pages - Only EMPLOYEE and ADMIN can
                     // access
                     .requestMatchers("/employeeDashboard")
-                    .hasAnyAuthority("EMPLOYEE", "ADMIN")
+                    .hasAnyAuthority("EMPLOYEE", "RESPONSABLE", "ADMIN")
                     .requestMatchers("/roomManagement")
                     .hasAnyAuthority("EMPLOYEE", "ADMIN")
                     .requestMatchers("/planning")
-                    .hasAnyAuthority("EMPLOYEE", "ADMIN")
+                    .hasAnyAuthority("RESPONSABLE", "ADMIN")
                     .requestMatchers("/my-planning")
-                    .hasAnyAuthority("EMPLOYEE", "ADMIN")
+                    .hasAnyAuthority("EMPLOYEE", "RESPONSABLE", "ADMIN")
 
                     // Employee API endpoints - Only EMPLOYEE and ADMIN can access
                     .requestMatchers("/api/v1/employees/**")
@@ -77,7 +79,11 @@ public class SecurityConfig {
                     .requestMatchers("/api/dashboard/**")
                     .hasAnyAuthority("EMPLOYEE", "ADMIN")
                     .requestMatchers("/planning/**")
-                    .hasAnyAuthority("EMPLOYEE", "ADMIN")
+                    .hasAnyAuthority("RESPONSABLE", "ADMIN")
+                    .requestMatchers("/api/planning/**")
+                    .hasAnyAuthority("EMPLOYEE", "RESPONSABLE", "ADMIN")
+                    .requestMatchers("/api/v1/leave-requests/**")
+                    .hasAnyAuthority("EMPLOYEE", "RESPONSABLE", "ADMIN")
 
                     // Time tracking endpoints - Only EMPLOYEE and ADMIN can access
                     .requestMatchers("/api/v1/time-tracking/**")

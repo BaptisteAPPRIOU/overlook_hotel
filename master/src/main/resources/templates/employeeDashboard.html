@@ -37,15 +37,34 @@
             Room Booking
           </button>
           <button class="nav-btn" data-cat="leave">Leave Request</button>
-          <button class="nav-btn" data-cat="schedule">Work Schedule</button>
-          <button class="nav-btn" data-cat="attendance">
+          <button
+            class="nav-btn"
+            onclick="window.location.href = '/my-planning'"
+          >
+            Work Schedule
+          </button>
+          <button
+            class="nav-btn"
+            data-cat="attendance"
+            th:if="${currentUser.role == 'RESPONSABLE' or currentUser.role == 'ADMIN'}"
+          >
             Planning Management
           </button>
           <button class="nav-btn" data-cat="reviews">Room Reviews</button>
-          <button class="nav-btn" data-cat="employees">
+          <button
+            class="nav-btn"
+            data-cat="employees"
+            th:if="${currentUser.role == 'ADMIN'}"
+          >
             Employee Management
           </button>
-          <button class="nav-btn" data-cat="approval">Leave Approval</button>
+          <button
+            class="nav-btn"
+            data-cat="approval"
+            th:if="${currentUser.role == 'RESPONSABLE' or currentUser.role == 'ADMIN'}"
+          >
+            Leave Approval
+          </button>
           <hr style="margin: 20px 15px; border-color: #c0d4e5" />
           <button class="nav-btn" onclick="window.location.href = '/settings'">
             Settings
@@ -324,19 +343,12 @@
             </div>
           </section>
 
-          <!-- 3) Work Schedule -->
-          <section class="main-card hidden" data-cat="schedule">
-            <div class="card">
-              <h4>My Work Schedule</h4>
-              <div class="calendar-placeholder" id="work-calendar">
-                <i class="fas fa-calendar-alt fa-3x mb-3"></i>
-                <p>Work Schedule Calendar Coming Soon</p>
-              </div>
-            </div>
-          </section>
-
           <!-- 4) Employee Planning Management -->
-          <section class="main-card hidden" data-cat="attendance">
+          <section
+            class="main-card hidden"
+            data-cat="attendance"
+            th:if="${currentUser.role == 'RESPONSABLE' or currentUser.role == 'ADMIN'}"
+          >
             <div class="card">
               <div
                 class="card-header d-flex justify-content-between align-items-center">
@@ -449,6 +461,13 @@
                                 class="fw-bold"
                                 x-text="formatDate(day)"
                               ></div>
+                              <small
+                                class="badge mt-1"
+                                :class="getCoverageStatus(day).gap ? 'bg-danger' : 'bg-success'"
+                                x-text="getCoverageStatus(day).gap
+                                  ? 'Coverage gap'
+                                  : getCoverageStatus(day).planned + ' planned / ' + getCoverageStatus(day).absent + ' absent'"
+                              ></small>
                             </th>
                           </template>
                         </tr>
@@ -580,7 +599,11 @@
           </section>
 
           <!-- 6) Employee Management -->
-          <section class="main-card hidden" data-cat="employees">
+          <section
+            class="main-card hidden"
+            data-cat="employees"
+            th:if="${currentUser.role == 'ADMIN'}"
+          >
             <div class="card">
               <h4>Add Employee</h4>
               <form id="registerForm" method="post" th:action="@{/employees}">
@@ -710,7 +733,11 @@
           </section>
 
           <!-- 7) Leave Approval -->
-          <section class="main-card hidden" data-cat="approval">
+          <section
+            class="main-card hidden"
+            data-cat="approval"
+            th:if="${currentUser.role == 'RESPONSABLE' or currentUser.role == 'ADMIN'}"
+          >
             <div class="card">
               <h4>Pending Leave Requests</h4>
               <div class="table-responsive">

@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import master.master.service.EmployeeAuthorizationService;
 import master.master.service.EmployeePlanningService;
 import master.master.web.rest.dto.CreatePlanningRequestDto;
 import master.master.web.rest.dto.EmployeePlanningDto;
@@ -13,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,9 +37,13 @@ public class EmployeePlanningController {
 
   private static final Logger logger = LoggerFactory.getLogger(EmployeePlanningController.class);
   private final EmployeePlanningService planningService;
+  private final EmployeeAuthorizationService authorizationService;
 
-  public EmployeePlanningController(EmployeePlanningService planningService) {
+  public EmployeePlanningController(
+      EmployeePlanningService planningService,
+      EmployeeAuthorizationService authorizationService) {
     this.planningService = planningService;
+    this.authorizationService = authorizationService;
   }
 
   /**
@@ -44,7 +51,9 @@ public class EmployeePlanningController {
    * /api/planning/employees/{employeeId}/default
    */
   @PostMapping("/employees/{employeeId}/default")
-  public ResponseEntity<EmployeePlanningDto> createDefaultPlanning(@PathVariable Long employeeId) {
+  public ResponseEntity<EmployeePlanningDto> createDefaultPlanning(
+      @PathVariable Long employeeId, Authentication authentication) {
+    authorizationService.requireManager(authentication);
     try {
       EmployeePlanningDto planning = planningService.createDefaultPlanning(employeeId);
       return ResponseEntity.status(HttpStatus.CREATED).body(planning);
@@ -56,7 +65,8 @@ public class EmployeePlanningController {
   /** Create or update custom planning for an employee. POST /api/planning/employees */
   @PostMapping("/employees")
   public ResponseEntity<EmployeePlanningDto> createOrUpdatePlanning(
-      @RequestBody CreatePlanningRequestDto request) {
+      @RequestBody CreatePlanningRequestDto request, Authentication authentication) {
+    authorizationService.requireManager(authentication);
     try {
       EmployeePlanningDto planning = planningService.createOrUpdatePlanning(request);
       return ResponseEntity.ok(planning);
@@ -67,7 +77,9 @@ public class EmployeePlanningController {
 
   /** Get planning for a specific employee. GET /api/planning/employees/{employeeId} */
   @GetMapping("/employees/{employeeId}")
-  public ResponseEntity<EmployeePlanningDto> getEmployeePlanning(@PathVariable Long employeeId) {
+  public ResponseEntity<EmployeePlanningDto> getEmployeePlanning(
+      @PathVariable Long employeeId, Authentication authentication) {
+    authorizationService.requireSelfOrManager(employeeId, authentication);
     try {
       EmployeePlanningDto planning = planningService.getEmployeePlanning(employeeId);
       return ResponseEntity.ok(planning);
@@ -78,7 +90,9 @@ public class EmployeePlanningController {
 
   /** Get all employee plannings. GET /api/planning/employees */
   @GetMapping("/employees")
-  public ResponseEntity<List<EmployeePlanningDto>> getAllEmployeePlannings() {
+  public ResponseEntity<List<EmployeePlanningDto>> getAllEmployeePlannings(
+      Authentication authentication) {
+    authorizationService.requireManager(authentication);
     try {
       List<EmployeePlanningDto> plannings = planningService.getAllEmployeePlannings();
       return ResponseEntity.ok(plannings);
@@ -89,7 +103,9 @@ public class EmployeePlanningController {
 
   /** Delete planning for an employee. DELETE /api/planning/employees/{employeeId} */
   @DeleteMapping("/employees/{employeeId}")
-  public ResponseEntity<Void> deleteEmployeePlanning(@PathVariable Long employeeId) {
+  public ResponseEntity<Void> deleteEmployeePlanning(
+      @PathVariable Long employeeId, Authentication authentication) {
+    authorizationService.requireManager(authentication);
     try {
       planningService.deleteEmployeePlanning(employeeId);
       return ResponseEntity.noContent().build();
@@ -104,7 +120,10 @@ public class EmployeePlanningController {
    */
   @PostMapping("/employees/{employeeId}/hourly")
   public ResponseEntity<EmployeePlanningDto> createOrUpdateHourlyPlanning(
-      @PathVariable Long employeeId, @RequestBody HourlyPlanningRequestDto request) {
+      @PathVariable Long employeeId,
+      @RequestBody HourlyPlanningRequestDto request,
+      Authentication authentication) {
+    authorizationService.requireManager(authentication);
     try {
       // Ensure the employee ID matches
       request.setEmployeeId(employeeId);
@@ -120,7 +139,8 @@ public class EmployeePlanningController {
    */
   @PostMapping("/employees/bulk-default")
   public ResponseEntity<List<EmployeePlanningDto>> createBulkDefaultPlanning(
-      @RequestBody List<Long> employeeIds) {
+      @RequestBody List<Long> employeeIds, Authentication authentication) {
+    authorizationService.requireManager(authentication);
     try {
       List<EmployeePlanningDto> plannings =
           employeeIds.stream().map(planningService::createDefaultPlanning).toList();
@@ -133,7 +153,8 @@ public class EmployeePlanningController {
   /** Save hourly planning for an employee for a specific week. POST /api/planning/hourly */
   @PostMapping("/hourly")
   public ResponseEntity<Map<String, Object>> saveHourlyPlanning(
-      @RequestBody WeeklyHourlyPlanningDto request) {
+      @RequestBody WeeklyHourlyPlanningDto request, Authentication authentication) {
+    authorizationService.requireManager(authentication);
     try {
       boolean success = planningService.saveHourlyPlanning(request);
       Map<String, Object> response = new HashMap<>();
@@ -154,7 +175,10 @@ public class EmployeePlanningController {
    */
   @GetMapping("/employees/{employeeId}/hourly")
   public ResponseEntity<Map<String, Object>> getHourlyPlanning(
-      @PathVariable Long employeeId, @RequestParam String weekStart) {
+      @PathVariable Long employeeId,
+      @RequestParam String weekStart,
+      Authentication authentication) {
+    authorizationService.requireSelfOrManager(employeeId, authentication);
     try {
       Map<String, List<Integer>> schedule =
           planningService.getHourlyPlanning(employeeId, weekStart);
@@ -171,7 +195,8 @@ public class EmployeePlanningController {
   /** Get weekly schedule for all employees. GET /api/planning/week?start=yyyy-MM-dd */
   @GetMapping("/week")
   public ResponseEntity<Map<Long, Map<String, List<Map<String, Object>>>>> getWeeklySchedule(
-      @RequestParam String start) {
+      @RequestParam String start, Authentication authentication) {
+    authorizationService.requireManager(authentication);
     try {
       Map<Long, Map<String, List<Map<String, Object>>>> schedule =
           planningService.getWeeklyScheduleForPlanning(start);
@@ -184,10 +209,13 @@ public class EmployeePlanningController {
   /** Create a new shift. POST /api/planning/shifts */
   @PostMapping("/shifts")
   public ResponseEntity<Map<String, Object>> createShift(
-      @RequestBody Map<String, Object> shiftData) {
+      @RequestBody Map<String, Object> shiftData, Authentication authentication) {
     try {
+      authorizationService.requireManager(authentication);
       Map<String, Object> result = planningService.createShiftFromMap(shiftData);
       return ResponseEntity.ok(result);
+    } catch (AccessDeniedException e) {
+      throw e;
     } catch (Exception e) {
       Map<String, Object> response = new HashMap<>();
       response.put("success", false);
@@ -201,7 +229,9 @@ public class EmployeePlanningController {
   public ResponseEntity<Map<String, Object>> updateShift(
       @PathVariable Long employeeId,
       @PathVariable String date,
-      @RequestBody Map<String, Object> shiftData) {
+      @RequestBody Map<String, Object> shiftData,
+      Authentication authentication) {
+    authorizationService.requireManager(authentication);
     try {
       // Validate inputs
       if (employeeId == null || employeeId <= 0) {
@@ -236,7 +266,10 @@ public class EmployeePlanningController {
   /** Delete a shift. DELETE /api/planning/shifts/{employeeId}/{date} */
   @DeleteMapping("/shifts/{employeeId}/{date}")
   public ResponseEntity<Void> deleteShift(
-      @PathVariable Long employeeId, @PathVariable String date) {
+      @PathVariable Long employeeId,
+      @PathVariable String date,
+      Authentication authentication) {
+    authorizationService.requireManager(authentication);
     try {
       planningService.deleteEmployeeWorkday(employeeId, LocalDate.parse(date));
       return ResponseEntity.ok().build();
@@ -248,7 +281,11 @@ public class EmployeePlanningController {
   /** Delete a specific shift by ID. DELETE /api/planning/shifts/{employeeId}/{date}/{weekday} */
   @DeleteMapping("/shifts/{employeeId}/{date}/{weekday}")
   public ResponseEntity<Map<String, Object>> deleteSpecificShift(
-      @PathVariable Long employeeId, @PathVariable String date, @PathVariable Integer weekday) {
+      @PathVariable Long employeeId,
+      @PathVariable String date,
+      @PathVariable Integer weekday,
+      Authentication authentication) {
+    authorizationService.requireManager(authentication);
     try {
       planningService.deleteSpecificShift(employeeId, LocalDate.parse(date), weekday);
       Map<String, Object> response = new HashMap<>();
@@ -265,7 +302,8 @@ public class EmployeePlanningController {
 
   /** Publish schedule and notify employees. POST /api/planning/publish */
   @PostMapping("/publish")
-  public ResponseEntity<Map<String, Object>> publishSchedule() {
+  public ResponseEntity<Map<String, Object>> publishSchedule(Authentication authentication) {
+    authorizationService.requireManager(authentication);
     try {
       // TODO: Implement actual publish functionality
       // For now, just return a placeholder response

@@ -44,11 +44,16 @@ document
       }
 
       localStorage.setItem("jwtToken", token);
+      localStorage.setItem("userRole", role);
 
       // Also set as cookie for server-side pages (remove secure flag for localhost)
       document.cookie = `jwtToken=${token}; path=/; samesite=strict`;
 
-      if (role === "EMPLOYEE" || role === "ADMIN") {
+      if (
+        role === "EMPLOYEE" ||
+        role === "RESPONSABLE" ||
+        role === "ADMIN"
+      ) {
         window.location.href = "/employeeDashboard";
       } else if (role === "CLIENT") {
         window.location.href = "/clientDashboard";

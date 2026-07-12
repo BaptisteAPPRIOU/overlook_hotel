@@ -31,6 +31,8 @@ public class EmployeePlanningDto implements Serializable {
     private String dayName; // MONDAY, TUESDAY, etc.
     private LocalTime startTime;
     private LocalTime endTime;
+    private String shiftType;
+    private String service;
     private Integer breakDurationMinutes; // Default: 60 minutes
     private Boolean isWorking; // true if employee works this day
     private Double dailyHours; // Calculated hours for this day

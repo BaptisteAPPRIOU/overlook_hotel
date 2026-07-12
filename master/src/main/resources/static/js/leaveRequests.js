@@ -661,10 +661,8 @@ function calculateLeaveDuration(startDate, endDate) {
 }
 
 function isCurrentUserAdmin() {
-  // Check if current user has admin role
-  // For now, return true to enable admin functionality for testing
-  // You can implement proper role checking later
-  return true;
+  const role = localStorage.getItem("userRole");
+  return role === "RESPONSABLE" || role === "ADMIN";
 }
 
 function showNotification(message, type = "info") {
