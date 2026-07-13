@@ -1,0 +1,29 @@
+﻿<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <div
+      class="user-header d-flex justify-content-between align-items-center"
+      th:fragment="staffHeader">
+      <a class="employee-brand" href="/employeeDashboard" aria-label="Overlook Hotel">
+        <img
+          th:src="@{/image/logo_noBg.png}"
+          alt="Overlookhostel"
+          width="230"
+          height="64"
+        />
+      </a>
+      <div class="d-flex align-items-center gap-3">
+        <span
+          id="employeeHeaderName"
+          class="fw-bold"
+          th:text="${currentUser != null ? currentUser.firstName + ' ' + currentUser.lastName : 'Admin User'}"
+          >Admin User</span>
+        <img
+          alt="Admin"
+          class="user-avatar"
+          th:src="@{/image/Employee_logo.png}"
+        />
+      </div>
+    </div>
+  </body>
+</html>

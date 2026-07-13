@@ -1,0 +1,142 @@
+﻿<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <div th:fragment="roomManagementSection">
+<!-- 1) Room Booking -->
+          <section class="main-card" data-cat="booking">
+            <div class="employee-rooms-card">
+              <h1>Rooms Management</h1>
+
+              <div class="employee-rooms-table" role="table" aria-label="Rooms management">
+                <div class="employee-rooms-header" role="row">
+                  <span role="columnheader">Number</span>
+                  <span role="columnheader">Type</span>
+                  <span role="columnheader">Capacity</span>
+                  <span role="columnheader">Features</span>
+                  <span role="columnheader">Price</span>
+                  <span role="columnheader">Status</span>
+                  <span role="columnheader">Actions</span>
+                </div>
+                <div
+                  class="employee-rooms-body"
+                  id="roomsTableBody"
+                  role="rowgroup"
+                  aria-live="polite">
+                  <div class="employee-rooms-empty">Loading rooms...</div>
+                </div>
+              </div>
+
+              <form id="roomForm" class="employee-room-form">
+                <label>
+                  <span class="visually-hidden">Number</span>
+                  <input
+                    id="roomNumber"
+                    type="text"
+                    placeholder="n"
+                    required
+                  />
+                </label>
+
+                <label>
+                  <span class="visually-hidden">Type</span>
+                  <select
+                    id="roomType"
+                    required>
+                    <option value="">Type</option>
+                    <option value="STANDARD">Standard Room</option>
+                    <option value="SUPERIOR">Superior Room</option>
+                    <option value="DELUXE">Deluxe Room</option>
+                    <option value="JUNIOR_SUITE">Junior Suite</option>
+                    <option value="SUITE">Suite</option>
+                    <option value="PRESIDENTIAL_SUITE">
+                      Presidential Suite
+                    </option>
+                    <option value="FAMILY_ROOM">Family Room</option>
+                    <option value="TWIN">Twin Room</option>
+                    <option value="DOUBLE">Double Room</option>
+                    <option value="SINGLE">Single Room</option>
+                    <option value="PENTHOUSE">Penthouse</option>
+                  </select>
+                </label>
+
+                <label>
+                  <span class="visually-hidden">Capacity</span>
+                  <input
+                    id="roomCapacity"
+                    type="number"
+                    min="1"
+                    placeholder="Cap."
+                    required
+                  />
+                </label>
+
+                <label>
+                  <span class="visually-hidden">Price</span>
+                  <input
+                    id="roomPrice"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="Price"
+                    required
+                  />
+                </label>
+
+                <div class="employee-room-toggles">
+                  <label><input id="hasProjector" type="checkbox" />Projector</label>
+                  <label><input id="hasWhiteboard" type="checkbox" />Whiteboard</label>
+                  <label><input id="hasVideoConference" type="checkbox" />Video</label>
+                  <label><input id="hasAirConditioning" type="checkbox" />A/C</label>
+                  <label><input id="isOccupied" type="checkbox" />Occupied</label>
+                </div>
+
+                <button type="submit" class="employee-room-submit">
+                  Create
+                </button>
+              </form>
+
+              <div
+                class="employee-room-delete-modal"
+                id="employeeRoomDeleteModal"
+                aria-hidden="true">
+                <div
+                  class="employee-room-delete-backdrop"
+                  data-room-delete-close></div>
+                <section
+                  class="employee-room-delete-card"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="employeeRoomDeleteTitle">
+                  <img
+                    class="employee-room-delete-logo"
+                    th:src="@{/image/logo_noBg.png}"
+                    alt="Overlookhostel"
+                    width="246"
+                    height="68"
+                  />
+                  <div
+                    class="employee-room-delete-message"
+                    id="employeeRoomDeleteTitle">
+                    Delete this room?
+                  </div>
+                  <div class="employee-room-delete-actions">
+                    <button
+                      class="employee-room-delete-button light"
+                      type="button"
+                      data-room-delete-close>
+                      Cancel
+                    </button>
+                    <button
+                      class="employee-room-delete-button gold"
+                      type="button"
+                      id="confirmEmployeeRoomDelete">
+                      Delete
+                    </button>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </section>
+    </div>
+  </body>
+</html>

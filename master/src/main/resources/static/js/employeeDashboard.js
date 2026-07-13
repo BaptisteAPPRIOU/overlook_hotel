@@ -18,6 +18,7 @@ buttons.forEach((btn) => {
 // Handle Add Shift form submission
 document.addEventListener("DOMContentLoaded", function () {
   const addShiftForm = document.getElementById("addShiftForm");
+  setupEmployeeLogout();
 
   if (addShiftForm) {
     addShiftForm.addEventListener("submit", async function (e) {
@@ -122,6 +123,34 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 });
+
+function setupEmployeeLogout() {
+  document.querySelectorAll("[data-logout-link]").forEach((logoutLink) => {
+    logoutLink.addEventListener("click", async function (event) {
+      event.preventDefault();
+      const token = localStorage.getItem("jwtToken");
+
+      if (token) {
+        try {
+          await fetch("/api/v1/logout", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+        } catch (error) {
+          console.error("Logout request failed:", error);
+        }
+      }
+
+      localStorage.removeItem("jwtToken");
+      localStorage.removeItem("userRole");
+      document.cookie = "jwtToken=; path=/; max-age=0; samesite=strict";
+      window.location.href = "/";
+    });
+  });
+}
 
 // Global utility functions for leave requests and other features
 window.showNotification = function (message, type) {

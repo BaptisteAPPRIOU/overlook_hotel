@@ -206,6 +206,24 @@ public class EmployeePlanningController {
     }
   }
 
+  /** Get weekly schedule for the current employee. GET /api/planning/me/week?start=yyyy-MM-dd */
+  @GetMapping("/me/week")
+  public ResponseEntity<Map<String, Object>> getCurrentEmployeeWeeklySchedule(
+      @RequestParam String start, Authentication authentication) {
+    Long employeeId = authorizationService.requireCurrentEmployee(authentication);
+    try {
+      Map<Long, Map<String, List<Map<String, Object>>>> schedule =
+          planningService.getWeeklyScheduleForPlanning(start);
+      Map<String, Object> response = new HashMap<>();
+      response.put("employeeId", employeeId);
+      response.put("weekStart", start);
+      response.put("schedule", schedule.getOrDefault(employeeId, Map.of()));
+      return ResponseEntity.ok(response);
+    } catch (Exception e) {
+      return ResponseEntity.internalServerError().build();
+    }
+  }
+
   /** Create a new shift. POST /api/planning/shifts */
   @PostMapping("/shifts")
   public ResponseEntity<Map<String, Object>> createShift(

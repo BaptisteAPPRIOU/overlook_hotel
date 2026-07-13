@@ -1,0 +1,172 @@
+﻿<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <div th:fragment="planningManagementSection">
+<!-- 4) Employee Planning Management -->
+          <section
+            class="main-card hidden"
+            data-cat="attendance"
+            th:if="${currentUser.role == 'RESPONSABLE' or currentUser.role == 'ADMIN'}"
+          >
+            <div class="employee-planning-page">
+              <div class="employee-planning-heading">
+                <div>
+                  <p>Team schedule</p>
+                  <h1>Planning Management</h1>
+                </div>
+                <button
+                  class="employee-planning-add"
+                  type="button"
+                  data-bs-target="#addShiftModal"
+                  data-bs-toggle="modal">
+                  + Add Shift
+                </button>
+              </div>
+
+              <div
+                class="schedule-container employee-planning-card"
+                id="planningInterface"
+                x-data="planningData()"
+                x-init="loadEmployees(); loadSchedule(); setupShiftModalHandlers()">
+                <div class="employee-planning-toolbar">
+                  <div>
+                    <p>Schedule</p>
+                    <h2 x-text="formatWeekRange()">Current week</h2>
+                  </div>
+
+                  <div class="employee-planning-nav">
+                    <button
+                      class="employee-planning-nav-button"
+                      type="button"
+                      @click="previousWeek()"
+                      aria-label="Previous week">
+                      <span aria-hidden="true">&#8249;</span>
+                    </button>
+                    <button
+                      class="employee-planning-nav-button"
+                      type="button"
+                      @click="nextWeek()"
+                      aria-label="Next week">
+                      <span aria-hidden="true">&#8250;</span>
+                    </button>
+                    <button
+                      class="employee-planning-today"
+                      type="button"
+                      @click="goToToday()">
+                      Today
+                    </button>
+                  </div>
+                </div>
+
+                <div class="position-filters employee-planning-legend">
+                  <strong>Shift colors</strong>
+                  <div class="employee-planning-legend-list">
+                    <template x-for="(shift, key) in shifts" :key="key">
+                      <div class="position-legend employee-planning-legend-item">
+                        <span
+                          class="position-color"
+                          :style="'background-color: ' + shift.color"
+                        ></span>
+                        <span x-text="shift.name"></span>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+
+                <div class="schedule-grid employee-planning-grid">
+                  <div class="schedule-table-container employee-planning-table-wrap">
+                    <table class="schedule-table employee-planning-table">
+                      <thead>
+                        <tr>
+                          <th class="employee-planning-employee-head">
+                            <div>Employees</div>
+                          </th>
+
+                          <template
+                            x-for="day in getWeekDays()"
+                            :key="day.getTime()">
+                            <th class="employee-planning-day-head">
+                              <div x-text="formatDate(day)"></div>
+                              <small
+                                class="employee-planning-coverage"
+                                :class="getCoverageStatus(day).gap ? 'is-gap' : 'is-covered'"
+                                x-text="getCoverageStatus(day).gap
+                                  ? 'Coverage gap'
+                                  : getCoverageStatus(day).planned + ' planned / ' + getCoverageStatus(day).absent + ' absent'"
+                              ></small>
+                            </th>
+                          </template>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <template
+                          x-for="employee in employees.filter(e => selectedEmployees.length === 0 || selectedEmployees.includes(e.userId || e.employeeId))"
+                          :key="employee.userId || employee.employeeId">
+                          <tr
+                            class="employee-planning-row"
+                            :class="isEmployeeSelected(employee.employeeId || employee.userId) ? 'is-selected' : ''">
+                            <td
+                              class="employee-cell employee-planning-employee-cell">
+                              <button
+                                type="button"
+                                class="employee-planning-employee"
+                                @click="toggleEmployee(employee.employeeId || employee.userId)"
+                                aria-label="Toggle employee">
+                                <div
+                                  class="employee-avatar employee-planning-avatar">
+                                  <span
+                                    x-text="getEmployeeInitials(employee)"
+                                  ></span>
+                                </div>
+                                <div class="employee-details">
+                                  <div
+                                    class="employee-name"
+                                    x-text="getEmployeeName(employee)"
+                                  ></div>
+                                  <div
+                                    class="employee-hours"
+                                    x-text="getEmployeeHours(employee)"
+                                  ></div>
+                                </div>
+                              </button>
+                            </td>
+
+                            <template
+                              x-for="day in getWeekDays()"
+                              :key="day.getTime()">
+                              <td
+                                class="day-cell employee-planning-day-cell"
+                                @dragover.prevent
+                                @drop="addShift((employee.userId || employee.employeeId), day, 'EMPLOYEE', '09:00', '17:00')">
+                                <template
+                                  x-for="shift in getEmployeeSchedule((employee.userId || employee.employeeId), day)"
+                                  :key="shift.id">
+                                  <div
+                                    class="shift-block employee-planning-shift"
+                                    :style="'background-color: ' + (shifts[shift.type]?.color || shifts.default.color)"
+                                    @click="openEditShiftModal(shift, employee, day)"
+                                    draggable="true">
+                                    <div
+                                      class="shift-time"
+                                      x-text="shift.startTime + ' - ' + shift.endTime"
+                                    ></div>
+                                    <div
+                                      class="shift-type"
+                                      x-text="shift.type === 'MANAGER' ? 'Manager' : 'Employee'"
+                                    ></div>
+                                  </div>
+                                </template>
+                              </td>
+                            </template>
+                          </tr>
+                        </template>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+    </div>
+  </body>
+</html>

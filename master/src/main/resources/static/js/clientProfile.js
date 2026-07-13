@@ -11,6 +11,7 @@ let currentFilter = "all";
 // Initialize page when DOM is loaded
 document.addEventListener("DOMContentLoaded", function () {
   initializePage();
+  setupProfileLogout();
   loadUserProfile();
   loadReservations();
   loadReviews();
@@ -30,6 +31,34 @@ function initializePage() {
 
   // Review form setup
   setupReviewForm();
+}
+
+function setupProfileLogout() {
+  document.querySelectorAll("[data-logout-link]").forEach((logoutLink) => {
+    logoutLink.addEventListener("click", async function (event) {
+      event.preventDefault();
+      const token = localStorage.getItem("jwtToken");
+
+      if (token) {
+        try {
+          await fetch("/api/v1/logout", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+        } catch (error) {
+          console.error("Logout request failed:", error);
+        }
+      }
+
+      localStorage.removeItem("jwtToken");
+      localStorage.removeItem("userRole");
+      document.cookie = "jwtToken=; path=/; max-age=0; samesite=strict";
+      window.location.href = "/";
+    });
+  });
 }
 
 // Load user profile information

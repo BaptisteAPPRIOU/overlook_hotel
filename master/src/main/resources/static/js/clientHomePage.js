@@ -375,7 +375,7 @@ function showReservationConfirmation() {
 }
 
 function setupLogout() {
-  const logoutLink = document.getElementById("logoutLink");
+  const logoutLink = document.querySelector("[data-logout-link]");
 
   if (!logoutLink) {
     return;
@@ -401,7 +401,8 @@ function setupLogout() {
 
     localStorage.removeItem("jwtToken");
     localStorage.removeItem("userRole");
-    window.location.href = "/clientLogin";
+    document.cookie = "jwtToken=; path=/; max-age=0; samesite=strict";
+    window.location.href = "/";
   });
 }
 
