@@ -1,6 +1,7 @@
 package master.master.service;
 
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import master.master.domain.*;
@@ -77,19 +78,25 @@ public class ReservationService {
   }
 
   private Map<String, Object> convertReservationToMap(Reservation reservation) {
-    return Map.of(
-        "userId", reservation.getClient() != null ? reservation.getClient().getId() : null,
-        "roomId", reservation.getRoom() != null ? reservation.getRoom().getId() : null,
-        "roomName", reservation.getRoom() != null ? reservation.getRoom().getName() : "Unknown",
-        "roomType", reservation.getRoom() != null ? reservation.getRoom().getType() : "Unknown",
-        "reservationDateStart", reservation.getStartDatetime().toLocalDate().toString(),
-        "reservationDateEnd", reservation.getEndDatetime().toLocalDate().toString(),
-        "payed", Boolean.TRUE.equals(reservation.getPaid()),
+    Map<String, Object> data = new LinkedHashMap<>();
+    data.put("id", reservation.getId());
+    data.put("userId", reservation.getClient() != null ? reservation.getClient().getId() : null);
+    data.put("roomId", reservation.getRoom() != null ? reservation.getRoom().getId() : null);
+    data.put("roomName", reservation.getRoom() != null ? reservation.getRoom().getName() : "Unknown");
+    data.put("roomType", reservation.getRoom() != null ? reservation.getRoom().getType() : "Unknown");
+    data.put("roomImage", reservation.getRoom() != null ? reservation.getRoom().getImageUrl() : null);
+    data.put("totalAmount", reservation.getTotalAmount());
+    data.put("reservationDateStart", reservation.getStartDatetime().toLocalDate().toString());
+    data.put("reservationDateEnd", reservation.getEndDatetime().toLocalDate().toString());
+    data.put("payed", Boolean.TRUE.equals(reservation.getPaid()));
+    data.put(
         "nights",
-            java.time.Duration.between(reservation.getStartDatetime(), reservation.getEndDatetime())
-                .toDays(),
-        "status", getReservationStatus(reservation),
+        java.time.Duration.between(reservation.getStartDatetime(), reservation.getEndDatetime())
+            .toDays());
+    data.put("status", getReservationStatus(reservation));
+    data.put(
         "createdAt", reservation.getCreatedAt() != null ? reservation.getCreatedAt().toString() : null);
+    return data;
   }
 
   private String getReservationStatus(Reservation reservation) {

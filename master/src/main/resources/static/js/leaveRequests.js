@@ -27,9 +27,13 @@ async function fetchWithAuth(url, options = {}) {
 
   const response = await fetch(url, { ...options, headers });
 
-  if (response.status === 403) {
-    alert("Access denied. Please login again.");
+  if (response.status === 401) {
+    alert("Session expired. Please login again.");
     window.location.href = "/employeeLogin";
+    throw new Error("Unauthorized");
+  }
+
+  if (response.status === 403) {
     throw new Error("Forbidden");
   }
 
@@ -41,7 +45,10 @@ async function fetchWithAuth(url, options = {}) {
  */
 document.addEventListener("DOMContentLoaded", function () {
   initializeLeaveRequestSection();
-  loadMyLeaveRequests();
+
+  if (localStorage.getItem("userRole") !== "ADMIN") {
+    loadMyLeaveRequests();
+  }
 
   // If user is admin, also load pending requests for approval
   if (isCurrentUserAdmin()) {
@@ -54,12 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
  * Initialize the leave request form and event listeners
  */
 function initializeLeaveRequestSection() {
-  const submitButton = document.getElementById("submitLeaveRequestBtn");
   const leaveRequestForm = document.getElementById("leaveRequestForm");
-
-  if (submitButton) {
-    submitButton.addEventListener("click", handleSubmitLeaveRequest);
-  }
 
   if (leaveRequestForm) {
     leaveRequestForm.addEventListener("submit", function (e) {
@@ -67,6 +69,24 @@ function initializeLeaveRequestSection() {
       handleSubmitLeaveRequest();
     });
   }
+
+  document.querySelectorAll("[data-date-picker]").forEach((button) => {
+    button.addEventListener("click", function () {
+      const dateInput = document.getElementById(this.dataset.datePicker);
+
+      if (!dateInput) return;
+
+      if (typeof dateInput.showPicker === "function") {
+        try {
+          dateInput.showPicker();
+        } catch (error) {
+          dateInput.focus();
+        }
+      } else {
+        dateInput.focus();
+      }
+    });
+  });
 
   // Initialize date validation
   const startDateInput = document.getElementById("leaveStartDate");
@@ -83,6 +103,8 @@ function initializeLeaveRequestSection() {
   if (endDateInput) {
     endDateInput.addEventListener("change", validateLeaveDates);
   }
+
+  updateLeaveDateDisplays();
 
   // Initialize character counter for reason textarea
   const reasonTextarea = document.getElementById("leaveReason");
@@ -113,7 +135,10 @@ async function handleSubmitLeaveRequest() {
     // Get form data
     const startDate = document.getElementById("leaveStartDate").value;
     const endDate = document.getElementById("leaveEndDate").value;
-    const reason = document.getElementById("leaveReason").value;
+    const reasonInput = document.getElementById("leaveReason");
+    const startPeriod = document.getElementById("leaveStartPeriod")?.value;
+    const endPeriod = document.getElementById("leaveEndPeriod")?.value;
+    const reason = buildLeaveReason(reasonInput?.value, startPeriod, endPeriod);
     const type = document.getElementById("leaveType").value;
 
     // Validate form data
@@ -131,9 +156,9 @@ async function handleSubmitLeaveRequest() {
 
     // Show loading state
     const submitButton = document.getElementById("submitLeaveRequestBtn");
-    const originalText = submitButton.textContent;
+    const originalText = submitButton.dataset.defaultText || submitButton.textContent;
     submitButton.disabled = true;
-    submitButton.textContent = "Submitting...";
+    submitButton.textContent = "Saving...";
 
     // Submit leave request
     const response = await fetchWithAuth("/api/v1/leave-requests/submit", {
@@ -165,8 +190,18 @@ async function handleSubmitLeaveRequest() {
     // Reset button state
     const submitButton = document.getElementById("submitLeaveRequestBtn");
     submitButton.disabled = false;
-    submitButton.textContent = "Submit Request";
+    submitButton.textContent = submitButton.dataset.defaultText || "Save";
   }
+}
+
+function buildLeaveReason(reason, startPeriod, endPeriod) {
+  const baseReason = (reason || "").trim();
+  const periodSummary =
+    startPeriod || endPeriod
+      ? `Starting from ${startPeriod || "-"}; up to ${endPeriod || "-"}.`
+      : "";
+
+  return [periodSummary, baseReason].filter(Boolean).join(" ");
 }
 
 /**
@@ -240,6 +275,30 @@ function validateLeaveDates() {
       endDateInput.value = "";
     }
   }
+
+  updateLeaveDateDisplays();
+}
+
+function updateLeaveDateDisplays() {
+  updateLeaveDateDisplay("leaveStartDate", "leaveStartDateDisplay");
+  updateLeaveDateDisplay("leaveEndDate", "leaveEndDateDisplay");
+}
+
+function updateLeaveDateDisplay(inputId, displayId) {
+  const input = document.getElementById(inputId);
+  const display = document.getElementById(displayId);
+
+  if (!input || !display) return;
+
+  display.value = input.value ? formatDateForInput(input.value) : "";
+}
+
+function formatDateForInput(value) {
+  const [year, month, day] = value.split("-");
+
+  if (!year || !month || !day) return value;
+
+  return `${day} / ${month} / ${year}`;
 }
 
 /**
@@ -260,7 +319,9 @@ async function loadMyLeaveRequests() {
       displayMyLeaveRequests([]);
     }
   } catch (error) {
-    console.error("Error loading leave requests:", error);
+    if (error.message !== "Forbidden") {
+      console.error("Error loading leave requests:", error);
+    }
     displayMyLeaveRequests([]);
   }
 }
@@ -282,7 +343,9 @@ async function loadPendingLeaveRequests() {
       displayPendingLeaveRequests([]);
     }
   } catch (error) {
-    console.error("Error loading pending requests:", error);
+    if (error.message !== "Forbidden") {
+      console.error("Error loading pending requests:", error);
+    }
     displayPendingLeaveRequests([]);
   }
 }
@@ -304,7 +367,9 @@ async function loadAllLeaveRequests() {
       displayAllLeaveRequests([]);
     }
   } catch (error) {
-    console.error("Error loading all requests:", error);
+    if (error.message !== "Forbidden") {
+      console.error("Error loading all requests:", error);
+    }
     displayAllLeaveRequests([]);
   }
 }
@@ -368,6 +433,26 @@ function displayMyLeaveRequests(requests) {
  * Display pending leave requests for admin approval
  */
 function displayPendingLeaveRequests(requests) {
+  const list = document.getElementById("pendingLeaveRequestsList");
+  const pendingCount = document.getElementById("pendingLeaveCount");
+
+  if (pendingCount) {
+    pendingCount.textContent = requests.length;
+  }
+
+  if (list) {
+    if (requests.length === 0) {
+      list.innerHTML =
+        '<div class="employee-leave-approval-empty">No pending requests.</div>';
+      return;
+    }
+
+    list.innerHTML = requests
+      .map((request) => renderLeaveApprovalItem(request, "pending"))
+      .join("");
+    return;
+  }
+
   const tableBody = document.querySelector("#pendingLeaveRequestsTable tbody");
   if (!tableBody) return;
 
@@ -428,6 +513,26 @@ function displayPendingLeaveRequests(requests) {
  * Display all leave requests for admin oversight
  */
 function displayAllLeaveRequests(requests) {
+  const list = document.getElementById("allLeaveRequestsList");
+  const allCount = document.getElementById("allLeaveCount");
+
+  if (allCount) {
+    allCount.textContent = requests.length;
+  }
+
+  if (list) {
+    if (requests.length === 0) {
+      list.innerHTML =
+        '<div class="employee-leave-approval-empty">No leave requests found.</div>';
+      return;
+    }
+
+    list.innerHTML = requests
+      .map((request) => renderLeaveApprovalItem(request, "all"))
+      .join("");
+    return;
+  }
+
   const tableBody = document.querySelector("#allLeaveRequestsTable tbody");
   if (!tableBody) return;
 
@@ -495,6 +600,77 @@ function displayAllLeaveRequests(requests) {
       actionsCell.innerHTML = `<span class="text-muted">Processed</span>`;
     }
   });
+}
+
+function renderLeaveApprovalItem(request, mode) {
+  const employeeName =
+    request.employeeName || `Employee ${request.employeeId || "-"}`;
+  const dates = `${formatDate(request.startDate)} - ${formatDate(request.endDate)}`;
+  const duration = `${calculateLeaveDuration(request.startDate, request.endDate)} days`;
+  const status = request.status || "PENDING";
+  const processedBy =
+    status === "APPROVED"
+      ? request.approvedBy || "-"
+      : status === "REJECTED"
+        ? request.rejectedBy || "-"
+        : "-";
+
+  if (mode === "pending") {
+    return `
+      <article class="employee-leave-approval-item">
+        ${leaveApprovalField("Employee", employeeName)}
+        ${leaveApprovalField("Type", formatLeaveType(request.type))}
+        ${leaveApprovalField("Dates", dates)}
+        ${leaveApprovalField("Reason", request.reason || "-")}
+        ${leaveApprovalActions(request)}
+      </article>
+    `;
+  }
+
+  return `
+    <article class="employee-leave-approval-item compact">
+      ${leaveApprovalField("Employee", employeeName)}
+      ${leaveApprovalField("Dates", dates)}
+      ${leaveApprovalField("Duration", duration)}
+      <div class="employee-leave-approval-field">
+        <span class="employee-leave-approval-label">Status</span>
+        <span class="employee-leave-status ${status.toLowerCase()}">${escapeHtml(status)}</span>
+      </div>
+      ${
+        status === "PENDING"
+          ? leaveApprovalActions(request)
+          : leaveApprovalField("Processed by", processedBy)
+      }
+    </article>
+  `;
+}
+
+function leaveApprovalField(label, value) {
+  return `
+    <div class="employee-leave-approval-field">
+      <span class="employee-leave-approval-label">${escapeHtml(label)}</span>
+      <span class="employee-leave-approval-value">${escapeHtml(value)}</span>
+    </div>
+  `;
+}
+
+function leaveApprovalActions(request) {
+  return `
+    <div class="employee-leave-approval-actions">
+      <button
+        class="employee-leave-action approve"
+        type="button"
+        onclick="approveLeaveRequest(${Number(request.id)})">
+        Approve
+      </button>
+      <button
+        class="employee-leave-action reject"
+        type="button"
+        onclick="rejectLeaveRequest(${Number(request.id)})">
+        Reject
+      </button>
+    </div>
+  `;
 }
 
 /**
@@ -611,6 +787,18 @@ function resetLeaveRequestForm() {
   document.getElementById("leaveEndDate").value = "";
   document.getElementById("leaveReason").value = "";
   document.getElementById("leaveType").selectedIndex = 0;
+  const startPeriod = document.getElementById("leaveStartPeriod");
+  const endPeriod = document.getElementById("leaveEndPeriod");
+
+  if (startPeriod) {
+    startPeriod.value = "Noon";
+  }
+
+  if (endPeriod) {
+    endPeriod.value = "Morning";
+  }
+
+  updateLeaveDateDisplays();
 }
 
 /**
@@ -658,6 +846,15 @@ function calculateLeaveDuration(startDate, endDate) {
   const diffTime = Math.abs(end - start);
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
   return diffDays;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 function isCurrentUserAdmin() {

@@ -45,6 +45,8 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers("/", "/clientLogin", "/employeeLogin", "/register")
                     .permitAll()
+                    .requestMatchers("/logout")
+                    .permitAll()
                     .requestMatchers("/css/**", "/js/**", "/image/**", "/favicon.ico")
                     .permitAll()
                     .requestMatchers("/actuator/health", "/actuator/health/**")
@@ -56,6 +58,8 @@ public class SecurityConfig {
                     .requestMatchers("/api/public/**")
                     .permitAll()
                     .requestMatchers("/api/v1/logout")
+                    .authenticated()
+                    .requestMatchers("/api/v1/users/**")
                     .authenticated()
                     .requestMatchers(HttpMethod.DELETE, "/api/v1/clients/**")
                     .hasAuthority("ADMIN")
@@ -92,6 +96,8 @@ public class SecurityConfig {
                     // Room management API - Only EMPLOYEE and ADMIN can access
                     .requestMatchers("/api/v1/rooms/**")
                     .hasAnyAuthority("EMPLOYEE", "ADMIN")
+                    .requestMatchers("/api/v1/room-reviews/**")
+                    .hasAnyAuthority("EMPLOYEE", "RESPONSABLE", "ADMIN")
 
                     // Client API endpoints
                     .requestMatchers("/api/v1/clients/**")

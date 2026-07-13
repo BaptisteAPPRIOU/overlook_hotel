@@ -1,5 +1,7 @@
 package master.master.web.rest;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import master.master.service.EmployeePlanningService;
 import master.master.service.EmployeeAuthorizationService;
 import master.master.service.EmployeeService;
@@ -52,6 +54,15 @@ public class PageController {
   @GetMapping("/")
   public String homeLoginPage() {
     return "homeLoginPage";
+  }
+
+  @GetMapping("/logout")
+  public String logoutPage(HttpServletResponse response) {
+    Cookie jwtCookie = new Cookie("jwtToken", "");
+    jwtCookie.setPath("/");
+    jwtCookie.setMaxAge(0);
+    response.addCookie(jwtCookie);
+    return "redirect:/";
   }
 
   //  Client and Employee login pages
@@ -107,6 +118,10 @@ public class PageController {
       model.addAttribute("employees", java.util.Collections.emptyList());
     }
 
+    if ("ADMIN".equals(role) || "RESPONSABLE".equals(role)) {
+      return "adminDashboard";
+    }
+
     return "employeeDashboard";
   }
 
@@ -153,6 +168,44 @@ public class PageController {
     log.info("Redirecting back to employee dashboard");
 
     // Redirect back to employee dashboard
+    return "redirect:/employeeDashboard";
+  }
+
+  @PostMapping("/employees/update")
+  public String updateEmployee(
+      @RequestParam Long id,
+      @RequestParam String firstName,
+      @RequestParam String lastName,
+      Model model) {
+    try {
+      var employee = employeeService.getEmployee(id);
+      CreateEmployeeRequestDto requestDto =
+          CreateEmployeeRequestDto.builder()
+              .firstName(firstName == null || firstName.isBlank() ? employee.getFirstName() : firstName)
+              .lastName(lastName == null || lastName.isBlank() ? employee.getLastName() : lastName)
+              .email(employee.getEmail())
+              .build();
+
+      employeeService.updateEmployee(id, requestDto);
+      model.addAttribute("message", "Employee updated successfully");
+    } catch (Exception e) {
+      log.error("Error updating employee: ", e);
+      model.addAttribute("error", "Failed to update employee: " + e.getMessage());
+    }
+
+    return "redirect:/employeeDashboard";
+  }
+
+  @PostMapping("/employees/delete")
+  public String deleteEmployee(@RequestParam Long id, Model model) {
+    try {
+      employeeService.deleteEmployee(id);
+      model.addAttribute("message", "Employee deleted successfully");
+    } catch (Exception e) {
+      log.error("Error deleting employee: ", e);
+      model.addAttribute("error", "Failed to delete employee: " + e.getMessage());
+    }
+
     return "redirect:/employeeDashboard";
   }
 

@@ -1,0 +1,56 @@
+﻿<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <div th:fragment="leaveApprovalSection">
+<!-- 7) Leave Approval -->
+          <section
+            class="main-card hidden"
+            data-cat="approval"
+            th:if="${currentUser.role == 'RESPONSABLE' or currentUser.role == 'ADMIN'}"
+          >
+            <div class="employee-approval-page">
+              <div class="employee-approval-heading">
+                <div>
+                  <p>Leave validation</p>
+                  <h1>Leave Approval</h1>
+                </div>
+                <div class="employee-approval-summary" aria-label="Leave request summary">
+                  <article>
+                    <span id="pendingLeaveCount">0</span>
+                    <p>Pending</p>
+                  </article>
+                  <article>
+                    <span id="allLeaveCount">0</span>
+                    <p>Total</p>
+                  </article>
+                </div>
+              </div>
+
+              <div class="employee-approval-card">
+                <div class="employee-approval-card-title">
+                  <h2>Pending Leave Requests</h2>
+                </div>
+                <div
+                  class="employee-leave-approval-list"
+                  id="pendingLeaveRequestsList"
+                  aria-live="polite">
+                  <div class="employee-leave-approval-empty">Loading requests...</div>
+                </div>
+              </div>
+
+              <div class="employee-approval-card">
+                <div class="employee-approval-card-title">
+                  <h2>All Leave Requests</h2>
+                </div>
+                <div
+                  class="employee-leave-approval-list"
+                  id="allLeaveRequestsList"
+                  aria-live="polite">
+                  <div class="employee-leave-approval-empty">Loading requests...</div>
+                </div>
+              </div>
+            </div>
+          </section>
+    </div>
+  </body>
+</html>

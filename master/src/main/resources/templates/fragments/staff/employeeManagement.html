@@ -1,0 +1,219 @@
+﻿<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <div th:fragment="employeeManagementSection">
+<!-- 6) Employee Management -->
+          <section
+            class="main-card hidden"
+            data-cat="employees"
+            th:if="${currentUser.role == 'ADMIN'}"
+          >
+            <div class="employee-management-page">
+              <div class="employee-management-heading">
+                <div>
+                  <p>Staff administration</p>
+                  <h1>Employee Management</h1>
+                </div>
+                <article>
+                  <span th:text="${#lists.size(employees)}">0</span>
+                  <p>Employees</p>
+                </article>
+              </div>
+
+              <div class="employee-management-grid">
+                <article class="employee-management-card employee-management-card-large">
+                  <h2>Add Employee</h2>
+                  <form
+                    id="registerForm"
+                    class="employee-management-form"
+                    method="post"
+                    th:action="@{/employees}">
+                    <div class="employee-management-two-columns">
+                      <label>
+                        <span>First name</span>
+                        <input
+                          id="firstName"
+                          name="firstName"
+                          placeholder="First Name"
+                          required
+                        />
+                      </label>
+
+                      <label>
+                        <span>Last name</span>
+                        <input
+                          id="lastName"
+                          name="lastName"
+                          placeholder="Last Name"
+                          required
+                        />
+                      </label>
+                    </div>
+
+                    <label>
+                      <span>Email</span>
+                      <div class="employee-management-email">
+                        <input
+                          id="emailPrefix"
+                          autocomplete="off"
+                          placeholder="Enter email prefix"
+                          required
+                        />
+                        <strong>@olh.fr</strong>
+                      </div>
+                    </label>
+                    <input id="email" name="email" type="hidden" />
+
+                    <label>
+                      <span>Password</span>
+                      <input
+                        id="password"
+                        name="password"
+                        placeholder="Password"
+                        required
+                        type="password"
+                      />
+                    </label>
+
+                    <button class="employee-management-primary" type="submit">
+                      Register Employee
+                    </button>
+                  </form>
+                  <div class="employee-management-message" id="message"></div>
+                </article>
+
+                <article class="employee-management-card">
+                  <h2>Edit Employee</h2>
+                  <form
+                    class="employee-management-form"
+                    method="post"
+                    th:action="@{/employees/update}">
+                    <label>
+                      <span>Select employee</span>
+                      <select id="employeeManagementEditId" name="id" required>
+                        <option value="">Select employee to edit</option>
+                        <option
+                          th:each="e : ${employees}"
+                          th:text="${e.firstName + ' ' + e.lastName}"
+                          th:value="${e.userId}"
+                          th:attr="data-first-name=${e.firstName},data-last-name=${e.lastName},data-email=${e.email}"
+                        ></option>
+                      </select>
+                    </label>
+
+                    <div class="employee-management-two-columns">
+                      <label>
+                        <span>New first name</span>
+                        <input
+                          id="newFirstName"
+                          name="firstName"
+                          placeholder="New First Name"
+                        />
+                      </label>
+
+                      <label>
+                        <span>New last name</span>
+                        <input
+                          id="newLastName"
+                          name="lastName"
+                          placeholder="New Last Name"
+                        />
+                      </label>
+                    </div>
+
+                    <button class="employee-management-primary" type="submit">
+                      Update Employee
+                    </button>
+                  </form>
+                </article>
+
+                <article class="employee-management-card employee-management-danger-card">
+                  <h2>Delete Employee</h2>
+                  <form
+                    id="employeeDeleteForm"
+                    class="employee-management-form"
+                    method="post"
+                    th:action="@{/employees/delete}">
+                    <label>
+                      <span>Select employee</span>
+                      <select id="employeeManagementDeleteId" name="id" required>
+                        <option value="">Select employee to delete</option>
+                        <option
+                          th:each="e : ${employees}"
+                          th:text="${e.firstName + ' ' + e.lastName}"
+                          th:value="${e.userId}"
+                        ></option>
+                      </select>
+                    </label>
+                    <button
+                      id="employeeDeleteTrigger"
+                      class="employee-management-danger"
+                      type="button">
+                      Delete Employee
+                    </button>
+                  </form>
+                </article>
+
+                <article class="employee-management-card employee-management-directory">
+                  <div class="employee-management-directory-title">
+                    <h2>Employee Directory</h2>
+                    <span th:text="${#lists.size(employees)} + ' listed'">0 listed</span>
+                  </div>
+                  <div class="employee-management-list">
+                    <div
+                      class="employee-management-item"
+                      th:each="e : ${employees}">
+                      <div>
+                        <strong th:text="${e.firstName + ' ' + e.lastName}">
+                          John Doe
+                        </strong>
+                        <span th:text="${e.email}">john.doe@olh.fr</span>
+                      </div>
+                      <small th:text="${e.employeeStatus != null ? e.employeeStatus : 'ACTIVE'}">
+                        ACTIVE
+                      </small>
+                    </div>
+                    <div
+                      class="employee-management-empty"
+                      th:if="${#lists.isEmpty(employees)}">
+                      No employees yet.
+                    </div>
+                  </div>
+                </article>
+              </div>
+
+              <div
+                class="employee-management-modal"
+                id="employeeDeleteModal"
+                aria-hidden="true">
+                <div class="employee-management-modal-panel" role="dialog" aria-modal="true">
+                  <img
+                    th:src="@{/image/logo_noBg.png}"
+                    alt="Overlookhostel"
+                    width="230"
+                    height="64"
+                  />
+                  <p id="employeeDeleteModalText">
+                    Delete this employee account?
+                  </p>
+                  <div class="employee-management-modal-actions">
+                    <button
+                      class="employee-management-modal-cancel"
+                      type="button"
+                      data-employee-delete-cancel>
+                      Cancel
+                    </button>
+                    <button
+                      class="employee-management-modal-delete"
+                      form="employeeDeleteForm"
+                      type="submit">
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+    </div>
+  </body>
+</html>

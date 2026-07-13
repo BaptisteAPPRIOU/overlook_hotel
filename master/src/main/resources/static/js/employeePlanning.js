@@ -379,7 +379,7 @@ function planningData() {
       const end = days[6];
       return (
         start.toLocaleDateString("en-US", { month: "short", day: "numeric" }) +
-        " – " +
+        " - " +
         end.toLocaleDateString("en-US", { month: "short", day: "numeric" })
       );
     },
