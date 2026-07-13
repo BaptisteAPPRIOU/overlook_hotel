@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <aside
+      th:fragment="clientSidebar"
+      class="sidebar"
+      aria-label="Navigation client">
+      <a class="sidebar-logo" href="/clientHomePage" aria-label="Accueil client">
+        <img
+          th:src="@{/image/logo_noBg_no_name.png}"
+          alt=""
+          width="78"
+          height="78"
+        />
+      </a>
+
+      <nav class="sidebar-nav">
+        <button
+          class="nav-item active"
+          type="button"
+          data-dashboard-target="rooms">
+          Rooms reservation
+        </button>
+        <button
+          class="nav-item"
+          type="button"
+          data-dashboard-target="reservations">
+          View reservation
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span class="sidebar-separator"></span>
+        <button
+          class="nav-item"
+          type="button"
+          data-dashboard-target="settings">
+          Settings
+        </button>
+        <a class="nav-item nav-link" href="/logout" id="logoutLink">Log out</a>
+      </div>
+    </aside>
+  </body>
+</html>

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <section
+      th:fragment="roomReservationSection"
+      class="dashboard-panel active"
+      id="rooms"
+      data-dashboard-section>
+      <div class="panel-heading">
+        <div>
+          <h1>Rooms</h1>
+        </div>
+        <label class="search-box" for="roomSearchInput">
+          <span class="sr-only">Search a room</span>
+          <input
+            id="roomSearchInput"
+            type="search"
+            placeholder="..."
+            autocomplete="off"
+          />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#2D3130"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true">
+            <path d="m21 21-4.34-4.34"></path>
+            <circle cx="11" cy="11" r="8"></circle>
+          </svg>
+        </label>
+      </div>
+
+      <form class="booking-filters" id="bookingFilters">
+        <label>
+          <span>Arrival</span>
+          <input type="date" id="checkInDate" />
+        </label>
+        <label>
+          <span>Departure</span>
+          <input type="date" id="checkOutDate" />
+        </label>
+        <label>
+          <span>Adults</span>
+          <select id="adults">
+            <option value="1">1</option>
+            <option value="2" selected>2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+        </label>
+        <label>
+          <span>Children</span>
+          <select id="children">
+            <option value="0" selected>0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+          </select>
+        </label>
+        <button class="primary-action" type="submit">Search</button>
+      </form>
+
+      <div class="rooms-list" id="roomsContainer" aria-live="polite">
+        <div class="loading-row">Loading rooms...</div>
+      </div>
+    </section>
+  </body>
+</html>

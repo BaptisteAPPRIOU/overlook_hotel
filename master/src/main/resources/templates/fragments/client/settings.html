@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <section
+      th:fragment="settingsSection"
+      class="dashboard-panel settings-panel"
+      id="settings"
+      data-dashboard-section>
+      <form class="settings-page" id="settingsForm">
+        <div class="settings-user">
+          <img
+            class="settings-avatar"
+            id="settingsAvatar"
+            th:src="@{/image/Client_logo.png}"
+            alt=""
+            width="80"
+            height="80"
+          />
+          <h1 id="settingsDisplayName">Settings</h1>
+        </div>
+
+        <div class="settings-form-grid">
+          <label class="settings-field">
+            <span>First name</span>
+            <input
+              id="settingsFirstName"
+              name="firstName"
+              type="text"
+              autocomplete="given-name"
+              maxlength="100"
+              required
+            />
+          </label>
+
+          <label class="settings-field">
+            <span>Last name</span>
+            <input
+              id="settingsLastName"
+              name="lastName"
+              type="text"
+              autocomplete="family-name"
+              maxlength="100"
+              required
+            />
+          </label>
+
+          <label class="settings-field">
+            <span>Mail</span>
+            <input
+              id="settingsEmail"
+              name="email"
+              type="email"
+              autocomplete="email"
+              maxlength="255"
+              required
+            />
+          </label>
+
+          <div class="settings-field">
+            <span>Password</span>
+            <button
+              class="settings-password-trigger"
+              type="button"
+              id="openPasswordModal">
+              <strong>********</strong>
+            </button>
+          </div>
+        </div>
+
+        <button class="settings-save" id="settingsSaveButton" type="submit" disabled>
+          Save
+        </button>
+      </form>
+
+      <div class="settings-modal" id="passwordSettingsModal" aria-hidden="true">
+        <div class="settings-modal-backdrop" data-settings-modal-close></div>
+        <section
+          class="settings-modal-card"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="passwordSettingsTitle">
+          <img
+            class="settings-modal-logo"
+            th:src="@{/image/logo_noBg.png}"
+            alt="Overlookhostel"
+            width="260"
+            height="72"
+          />
+          <h2 class="sr-only" id="passwordSettingsTitle">Reset password</h2>
+
+          <form class="password-form" id="passwordSettingsForm">
+            <label class="settings-field wide">
+              <span>New password</span>
+              <input
+                id="settingsNewPassword"
+                name="newPassword"
+                type="password"
+                autocomplete="new-password"
+                minlength="8"
+                required
+              />
+            </label>
+
+            <label class="settings-field wide">
+              <span>Confirm password</span>
+              <input
+                id="settingsConfirmPassword"
+                name="confirmPassword"
+                type="password"
+                autocomplete="new-password"
+                minlength="8"
+                required
+              />
+            </label>
+
+            <button class="settings-modal-save" type="submit">
+              Save
+            </button>
+          </form>
+        </section>
+      </div>
+    </section>
+  </body>
+</html>

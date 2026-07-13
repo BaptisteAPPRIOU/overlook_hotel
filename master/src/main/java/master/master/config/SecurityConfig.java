@@ -57,6 +57,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/api/v1/logout")
                     .authenticated()
+                    .requestMatchers("/api/v1/users/**")
+                    .authenticated()
                     .requestMatchers(HttpMethod.DELETE, "/api/v1/clients/**")
                     .hasAuthority("ADMIN")
 
