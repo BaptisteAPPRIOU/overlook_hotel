@@ -33,6 +33,8 @@ replay_pid*
 .env
 .env.*
 !.env.example
+!.env.docker.example
+!.env.prod.example
 !.env.recette.example
 
 ###TEMP###

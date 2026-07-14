@@ -165,21 +165,65 @@ master/src/integrationTest/java
 
 ## Docker
 
-Start a local Redis container for the application cache/session store:
+### Local Docker stack
+
+Run the whole local stack with the application, PostgreSQL and Redis:
 
 ```bash
-docker run --name overlook-redis --rm -p 6379:6379 redis:7.4-alpine
+cp .env.docker.example .env.docker
+docker compose --env-file .env.docker up --build
 ```
 
-This command creates a temporary Redis 7.4 container named `overlook-redis` and exposes Redis on local port `6379`. The container is automatically removed when it stops because of `--rm`.
+On Windows PowerShell:
 
-Inspect the keys currently stored in Redis:
+```powershell
+copy .env.docker.example .env.docker
+docker compose --env-file .env.docker up --build
+```
+
+The application starts on:
+
+```text
+http://localhost:8080
+```
+
+Daily development commands:
 
 ```bash
-docker exec -it overlook-redis redis-cli keys "*"
+docker compose --env-file .env.docker up --build
+docker compose --env-file .env.docker up --build -d
+docker compose --env-file .env.docker ps
+docker compose --env-file .env.docker logs -f app
+docker compose --env-file .env.docker restart app
+docker compose --env-file .env.docker down
 ```
 
-This command opens `redis-cli` inside the running `overlook-redis` container and lists all Redis keys.
+Use `up --build` when Java/resources changed and the image must be rebuilt.
+Use `up --build -d` to run the stack in the background.
+
+Reset the local Docker database and Redis data:
+
+```bash
+docker compose --env-file .env.docker down -v
+docker compose --env-file .env.docker up --build
+```
+
+Check the application health endpoint:
+
+```bash
+curl http://localhost:8080/actuator/health/readiness
+```
+
+The same commands are available through the `Makefile`:
+
+```bash
+make docker-build
+make docker-up
+make docker-logs
+make docker-down
+```
+
+### Build the application image
 
 Build the image from the repository root:
 
@@ -187,19 +231,48 @@ Build the image from the repository root:
 docker build -f master/Dockerfile -t overlook-hotel:local master
 ```
 
-Run the container with the required environment variables:
+The image uses the `prod` profile by default. For a single-container run, provide
+external PostgreSQL and Redis endpoints:
 
 ```bash
 docker run --rm -p 8080:8080 \
-  -e SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/overlookhoteldb \
+  -e SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/overlook_hotel \
   -e SPRING_DATASOURCE_USERNAME=postgres \
   -e SPRING_DATASOURCE_PASSWORD=change-me \
   -e SPRING_DATA_REDIS_HOST=host.docker.internal \
   -e SPRING_DATA_REDIS_PORT=6379 \
+  -e SPRING_DATA_REDIS_PASSWORD= \
   -e SPRING_SECURITY_USER_NAME=admin \
   -e SPRING_SECURITY_USER_PASSWORD=change-me \
   -e APP_JWT_SECRET=change-me-with-at-least-32-characters \
   overlook-hotel:local
+```
+
+### Recette stack
+
+Run the production-like recette stack locally:
+
+```bash
+cp .env.recette.example .env.recette
+docker compose --env-file .env.recette -f compose.recette.yml up --build
+```
+
+The recette stack uses PostgreSQL 17, Redis 7.4 and the `recette` Spring profile.
+
+### Production compose
+
+Production compose expects an already built/published image and external
+PostgreSQL/Redis services:
+
+```bash
+cp .env.prod.example .env.prod
+docker compose --env-file .env.prod -f compose.prod.yml up -d
+```
+
+The application image includes a Docker healthcheck against:
+
+```text
+/actuator/health/readiness
 ```
 
 ## CI/CD
