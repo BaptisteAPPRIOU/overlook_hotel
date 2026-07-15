@@ -2,6 +2,7 @@ package master.master.web.rest;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import master.master.domain.RoleCode;
@@ -12,6 +13,7 @@ import master.master.security.TokenBlacklistService;
 import master.master.service.ClientService;
 import master.master.service.UserRoleService;
 import master.master.web.rest.dto.AuthResponseDto;
+import master.master.web.rest.dto.ErrorResponseDto;
 import master.master.web.rest.dto.LoginRequestDto;
 import master.master.web.rest.dto.RegisterRequestDto;
 import org.springframework.http.HttpStatus;
@@ -83,10 +85,15 @@ public class AuthController {
   // Handle user registration requests
   @Transactional
   @PostMapping("/register")
-  public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequestDto request) {
+  public ResponseEntity<?> registerUser(
+      @Valid @RequestBody RegisterRequestDto request, HttpServletRequest servletRequest) {
     // Check if email is already registered
     if (userRepository.findByEmail(request.getEmail()) != null) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email already exists");
+      return error(
+          HttpStatus.BAD_REQUEST,
+          "EMAIL_ALREADY_EXISTS",
+          "Email already exists",
+          servletRequest.getRequestURI());
     }
 
     // Create new user and encode password
@@ -105,7 +112,8 @@ public class AuthController {
 
   // Handle user login requests
   @PostMapping("/login")
-  public ResponseEntity<?> loginUser(@Valid @RequestBody LoginRequestDto request) {
+  public ResponseEntity<?> loginUser(
+      @Valid @RequestBody LoginRequestDto request, HttpServletRequest servletRequest) {
     try {
       // Authenticate user with provided email and password
       authenticationManager.authenticate(
@@ -128,7 +136,11 @@ public class AuthController {
 
     } catch (Exception ex) {
       // Return 401 Unauthorized if authentication fails
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+      return error(
+          HttpStatus.UNAUTHORIZED,
+          "INVALID_CREDENTIALS",
+          "Invalid email or password",
+          servletRequest.getRequestURI());
     }
   }
 
@@ -142,5 +154,18 @@ public class AuthController {
     }
     SecurityContextHolder.clearContext();
     return ResponseEntity.ok(AuthResponseDto.builder().token(null).message("Disconnected").build());
+  }
+
+  private ResponseEntity<ErrorResponseDto> error(
+      HttpStatus status, String code, String message, String path) {
+    return ResponseEntity.status(status)
+        .body(
+            ErrorResponseDto.builder()
+                .status(status.value())
+                .code(code)
+                .message(message)
+                .timestamp(LocalDateTime.now())
+                .path(path)
+                .build());
   }
 }

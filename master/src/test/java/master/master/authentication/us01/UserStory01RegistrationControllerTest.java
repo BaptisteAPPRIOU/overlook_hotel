@@ -1,6 +1,5 @@
 package master.master.authentication.us01;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -114,7 +113,10 @@ class UserStory01RegistrationControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isBadRequest())
-        .andExpect(content().string(containsString("Email already exists")));
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.code").value("EMAIL_ALREADY_EXISTS"))
+        .andExpect(jsonPath("$.message").value("Email already exists"))
+        .andExpect(jsonPath("$.path").value("/api/v1/register"));
 
     verify(userRepository, never()).save(any(User.class));
     verifyNoInteractions(passwordEncoder, userRoleService, clientService);
