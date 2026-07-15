@@ -1,18 +1,23 @@
 package master.master.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import master.master.filter.JwtAuthenticationFilter;
 import master.master.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -27,20 +32,22 @@ public class SecurityConfig {
 
   private final CustomUserDetailsService userDetailsService;
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
+  private final ObjectMapper objectMapper;
 
   public SecurityConfig(
       CustomUserDetailsService userDetailsService,
-      JwtAuthenticationFilter jwtAuthenticationFilter) {
+      JwtAuthenticationFilter jwtAuthenticationFilter,
+      ObjectMapper objectMapper) {
     this.userDetailsService = userDetailsService;
     this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    this.objectMapper = objectMapper;
   }
 
   // Security filter chain configuration
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http.csrf(
-            csrf ->
-                csrf.ignoringRequestMatchers("/api/**", "/employees", "/planning/create-default"))
+    http.csrf(csrf -> csrf.disable())
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
             auth ->
                 auth.requestMatchers("/", "/clientLogin", "/employeeLogin", "/register")
@@ -132,7 +139,8 @@ public class SecurityConfig {
                                 response,
                                 HttpStatus.FORBIDDEN,
                                 "ACCESS_DENIED",
-                                "Access denied");
+                                "Access denied",
+                                request.getRequestURI());
                             return;
                           }
                           response.sendRedirect("/?error=access_denied");
@@ -144,7 +152,8 @@ public class SecurityConfig {
                                 response,
                                 HttpStatus.UNAUTHORIZED,
                                 "NOT_AUTHENTICATED",
-                                "Authentication required");
+                                "Authentication required",
+                                request.getRequestURI());
                             return;
                           }
                           response.sendRedirect("/?error=not_authenticated");
@@ -161,19 +170,20 @@ public class SecurityConfig {
   }
 
   private void writeApiError(
-      HttpServletResponse response, HttpStatus status, String code, String message)
+      HttpServletResponse response, HttpStatus status, String code, String message, String path)
       throws IOException {
     response.setStatus(status.value());
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.setCharacterEncoding("UTF-8");
-    response
-        .getWriter()
-        .write(
-            """
-            {"code":"%s","message":"%s"}
-            """
-                .formatted(code, message)
-                .trim());
+
+    Map<String, Object> body = new LinkedHashMap<>();
+    body.put("status", status.value());
+    body.put("code", code);
+    body.put("message", message);
+    body.put("timestamp", LocalDateTime.now().toString());
+    body.put("path", path);
+
+    objectMapper.writeValue(response.getWriter(), body);
   }
 
   // Bean for PasswordEncoder

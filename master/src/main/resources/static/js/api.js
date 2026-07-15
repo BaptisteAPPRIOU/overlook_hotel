@@ -3,14 +3,15 @@
  *
  * Retrieves the JWT token from localStorage and adds it to the Authorization header.
  * If the token is missing, alerts the user and redirects to the login page.
- * If the response status is 403 (Forbidden), alerts the user and redirects to the login page.
+ * If the response status is 401, redirects to the login page.
+ * If the response status is 403, reports an access-denied error without hiding the real status.
  *
  * @async
  * @param {string} url - The URL to fetch.
  * @param {Object} [options={}] - Optional fetch options.
  * @param {Object} [options.headers] - Additional headers to include in the request.
  * @returns {Promise<Response>} The fetch response object.
- * @throws {Error} If no JWT token is found or if access is forbidden.
+ * @throws {Error} If no JWT token is found, authentication expired or access is forbidden.
  */
 
 export async function fetchWithAuth(url, options = {}) {
@@ -29,9 +30,14 @@ export async function fetchWithAuth(url, options = {}) {
 
   const response = await fetch(url, { ...options, headers });
 
-  if (response.status === 403) {
-    alert("Access denied. Please login again.");
+  if (response.status === 401) {
+    alert("Session expired. Please login again.");
     window.location.href = "/clientLogin";
+    throw new Error("Unauthorized");
+  }
+
+  if (response.status === 403) {
+    alert("Access denied. You do not have permission to access this resource.");
     throw new Error("Forbidden");
   }
 
