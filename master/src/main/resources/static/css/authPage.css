@@ -7,7 +7,8 @@
 
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background-image: url("../image/home_bg_login_choice.png");
+  background-color: #020807;
+  background-image: url("../image/home_bg_login_choice_640.webp");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -15,18 +16,30 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  animation: fadeIn 1.5s ease-in;
+}
+
+@media (min-width: 768px) {
+  body {
+    background-image: url("../image/home_bg_login_choice_1024.webp");
+  }
+}
+
+@media (min-width: 1280px) {
+  body {
+    background-image: url("../image/home_bg_login_choice_1600.webp");
+  }
 }
 
 .logo {
-  max-width: 100px;
+  display: block;
+  width: 120px;
+  max-width: 120px;
+  height: auto !important;
+  margin-inline: auto;
   margin-bottom: 1.5rem;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
-  transition: transform 0.3s ease;
-}
-
-.logo:hover {
-  transform: scale(1.05);
+  object-fit: contain;
+  object-position: center;
+  filter: none;
 }
 
 /* Fade in animation */
@@ -43,14 +56,13 @@ body {
 
 /* Central Card */
 .main-card {
-  background: rgba(17, 56, 38, 0.85);
+  background: #113826;
   padding: 2.5rem;
   border-radius: 20px;
   text-align: center;
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
   width: 100%;
   max-width: 400px;
-  backdrop-filter: blur(6px);
   animation: fadeIn 1.2s ease forwards;
 }
 
@@ -167,5 +179,15 @@ button:hover {
   button {
     font-size: 0.95rem;
     padding: 0.7rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }

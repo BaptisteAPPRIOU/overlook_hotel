@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <section
+      th:fragment="fidelitySection"
+      class="dashboard-panel fidelity-panel"
+      id="fidelity"
+      data-dashboard-section>
+      <div class="fidelity-page">
+        <div class="fidelity-heading">
+          <h1>Loyalty program</h1>
+          <button
+            class="fidelity-refresh"
+            type="button"
+            id="refreshFidelityButton">
+            Refresh
+          </button>
+        </div>
+
+        <div class="fidelity-hero" aria-live="polite">
+          <div class="fidelity-pass">
+            <div class="fidelity-pass-top">
+              <span>Overlookhostel</span>
+              <strong id="fidelityLevelName">Loading</strong>
+            </div>
+            <div class="fidelity-pass-main">
+              <div class="fidelity-medal" aria-hidden="true">
+                <span>OLH</span>
+              </div>
+              <div class="fidelity-points-display">
+                <span class="fidelity-label">Current balance</span>
+                <strong id="fidelityCurrentPoints">...</strong>
+              </div>
+            </div>
+            <div class="fidelity-pass-bottom">
+              <span>Points earned from validated stays</span>
+            </div>
+          </div>
+
+          <div class="fidelity-info">
+            <p class="fidelity-intro">
+              Turn your stays into points and redeem them for Overlookhostel rewards.
+            </p>
+            <div class="fidelity-progress-copy">
+              <span class="fidelity-label">Next level</span>
+              <strong id="fidelityNextLevel">...</strong>
+            </div>
+            <div
+              class="fidelity-progress-track"
+              role="progressbar"
+              aria-label="Loyalty progress"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+              id="fidelityProgressTrack">
+              <span id="fidelityProgressBar"></span>
+            </div>
+            <p id="fidelityProgressText">Loading progression...</p>
+
+            <div class="fidelity-discount">
+              <span class="fidelity-label">Member discount</span>
+              <strong id="fidelityDiscount">...</strong>
+            </div>
+          </div>
+        </div>
+
+        <section class="fidelity-card" aria-labelledby="fidelityRewardsTitle">
+          <div class="fidelity-card-title">
+            <h2 id="fidelityRewardsTitle">Available rewards</h2>
+            <span id="fidelityRewardsCount">...</span>
+          </div>
+          <div
+            class="fidelity-rewards-list"
+            id="fidelityRewardsList"
+            aria-live="polite">
+            <div class="fidelity-loading">Loading rewards...</div>
+          </div>
+        </section>
+
+        <section class="fidelity-card compact" aria-labelledby="fidelityRulesTitle">
+          <div class="fidelity-card-title">
+            <h2 id="fidelityRulesTitle">How points are earned</h2>
+          </div>
+          <ul class="fidelity-rules">
+            <li>
+              <strong>10 points</strong>
+              <span>per paid night</span>
+            </li>
+            <li>
+              <strong>+50 points</strong>
+              <span>for stays longer than 7 nights</span>
+            </li>
+            <li>
+              <strong>+25 points</strong>
+              <span>for bookings made more than 30 days ahead</span>
+            </li>
+          </ul>
+        </section>
+
+        <p class="fidelity-status" id="fidelityStatus" role="status"></p>
+      </div>
+    </section>
+  </body>
+</html>

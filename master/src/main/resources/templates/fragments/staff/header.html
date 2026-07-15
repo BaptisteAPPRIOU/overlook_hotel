@@ -6,7 +6,7 @@
       th:fragment="staffHeader">
       <a class="employee-brand" href="/employeeDashboard" aria-label="Overlook Hotel">
         <img
-          th:src="@{/image/logo_noBg.png}"
+          th:src="@{/image/logo_noBg.webp}"
           alt="Overlookhostel"
           width="230"
           height="64"
@@ -18,11 +18,7 @@
           class="fw-bold"
           th:text="${currentUser != null ? currentUser.firstName + ' ' + currentUser.lastName : 'Admin User'}"
           >Admin User</span>
-        <img
-          alt="Admin"
-          class="user-avatar"
-          th:src="@{/image/Employee_logo.png}"
-        />
+        <span class="user-avatar" aria-hidden="true">E</span>
       </div>
     </div>
   </body>

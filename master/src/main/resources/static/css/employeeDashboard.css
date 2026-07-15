@@ -281,10 +281,17 @@ body::before {
 }
 
 .user-avatar {
+  display: inline-grid;
   width: 70px;
   height: 70px;
-  border-radius: 0;
-  object-fit: contain;
+  place-items: center;
+  border: 2px solid rgba(248, 249, 250, 0.7);
+  border-radius: 50%;
+  color: var(--employee-green-dark);
+  background: var(--employee-white);
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1;
 }
 
 @media (max-width: 860px) {

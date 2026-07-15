@@ -1,13 +1,26 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
   <head>
+    <meta charset="UTF-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <meta
+      name="description"
+      content="Create an Overlookhostel client account to book rooms and manage reservations."
+    />
     <title>Register</title>
-    <link rel="stylesheet" th:href="@{/css/authPage.css}" />
+    <link rel="stylesheet" th:href="@{/css/authPage.css(v='auth-bg-5')}" />
     <script defer th:src="@{/js/register.js}"></script>
   </head>
   <body>
     <div class="main-card">
-      <img alt="Logo" class="logo" th:src="@{/image/logo_noBg_no_name.png}" />
+      <img
+        alt="Overlookhostel"
+        class="logo"
+        width="120"
+        decoding="async"
+        fetchpriority="high"
+        th:src="@{/image/logo_noBg_no_name.webp}"
+      />
       <h1>Create Account</h1>
 
       <form id="registerForm">

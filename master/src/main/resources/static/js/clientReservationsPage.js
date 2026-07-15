@@ -173,7 +173,7 @@ function getReservationImage(reservation, matchingRoom) {
     reservation.roomImage ||
     reservation.imageUrl ||
     matchingRoom?.imageUrl ||
-    "/image/logo_noBg_no_name.png"
+    "/image/logo_noBg_no_name.webp"
   );
 }
 
