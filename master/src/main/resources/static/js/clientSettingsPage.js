@@ -245,7 +245,9 @@ function syncHeaderUser(user) {
   }
 
   if (clientAvatar) {
-    clientAvatar.alt = `${displayName} profile`;
+    clientAvatar.textContent =
+      String(displayName || "Client").trim().charAt(0).toUpperCase() || "C";
+    clientAvatar.setAttribute("aria-label", `${displayName} profile`);
   }
 }
 

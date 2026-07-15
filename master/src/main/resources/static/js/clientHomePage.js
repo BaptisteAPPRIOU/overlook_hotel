@@ -169,12 +169,21 @@ async function loadCurrentUser() {
 
     clientName.textContent = displayName;
     if (clientAvatar) {
-      clientAvatar.alt = `${displayName} profile`;
+      clientAvatar.textContent = getUserInitial(displayName);
+      clientAvatar.setAttribute("aria-label", `${displayName} profile`);
     }
   } catch (error) {
     console.error("Error loading current user:", error);
     clientName.textContent = "Client";
+    if (clientAvatar) {
+      clientAvatar.textContent = "C";
+      clientAvatar.setAttribute("aria-label", "Client profile");
+    }
   }
+}
+
+function getUserInitial(value) {
+  return String(value || "Client").trim().charAt(0).toUpperCase() || "C";
 }
 
 function searchRooms() {
@@ -342,7 +351,7 @@ function getRoomStatusText(status) {
 }
 
 function getRoomImage(room) {
-  return room.imageUrl || "/image/logo_noBg_no_name.png";
+  return room.imageUrl || "/image/logo_noBg_no_name.webp";
 }
 
 function formatCurrency(amount) {
