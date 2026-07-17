@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.3/dist/cdn.min.js"></script>
@@ -9,7 +9,7 @@
       content="Overlookhostel admin dashboard for employee, planning, room and leave approval management."
     />
     <title>Admin Dashboard</title>
-    <link rel="stylesheet" th:href="@{/css/employeeDashboard.css(v='staff-css-20260717-4')}" />
+    <link rel="stylesheet" th:href="@{/css/employeeDashboard.css}" />
     <link rel="stylesheet" th:href="@{/css/employeeRooms.css}" />
     <link rel="stylesheet" th:href="@{/css/employeeLeaveRequest.css}" />
     <link rel="stylesheet" th:href="@{/css/employeeWorkSchedule.css}" />
@@ -43,14 +43,14 @@
     <div th:replace="~{fragments/modals/addShiftModal :: addShiftModal}"></div>
     <div th:replace="~{fragments/modals/editShiftModal :: editShiftModal}"></div>
 
-    <script th:src="@{/js/employeeDashboard.js(v='staff-20260717-6')}"></script>
-    <script th:src="@{/js/employeeRooms.js(v='staff-20260717-6')}"></script>
-    <script th:src="@{/js/employeePlanning.js(v='staff-20260717-6')}"></script>
-    <script th:src="@{/js/leaveRequests.js(v='staff-20260717-6')}"></script>
-    <script th:src="@{/js/employeeWorkSchedule.js(v='staff-20260717-6')}"></script>
-    <script th:src="@{/js/employeeRoomReviews.js(v='staff-20260717-6')}"></script>
-    <script th:src="@{/js/employeeSettings.js(v='staff-20260717-6')}"></script>
-    <script th:src="@{/js/employeeManagement.js(v='staff-20260717-6')}"></script>
+    <script th:src="@{/js/employeeDashboard.js(v='staff-20260717-4')}"></script>
+    <script th:src="@{/js/employeeRooms.js(v='staff-20260717-4')}"></script>
+    <script th:src="@{/js/employeePlanning.js(v='staff-20260717-4')}"></script>
+    <script th:src="@{/js/leaveRequests.js(v='staff-20260717-4')}"></script>
+    <script th:src="@{/js/employeeWorkSchedule.js(v='staff-20260717-4')}"></script>
+    <script th:src="@{/js/employeeRoomReviews.js(v='staff-20260717-4')}"></script>
+    <script th:src="@{/js/employeeSettings.js(v='staff-20260717-4')}"></script>
+    <script th:src="@{/js/employeeManagement.js(v='staff-20260717-4')}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
