@@ -27,7 +27,7 @@
                     id="registerForm"
                     class="employee-management-form"
                     method="post"
-                    th:action="@{/employees}">
+                    action="/employees">
                     <div class="employee-management-two-columns">
                       <label>
                         <span>First name</span>
@@ -87,7 +87,7 @@
                   <form
                     class="employee-management-form"
                     method="post"
-                    th:action="@{/employees/update}">
+                    action="/employees/update">
                     <label>
                       <span>Select employee</span>
                       <select id="employeeManagementEditId" name="id" required>
@@ -133,7 +133,7 @@
                     id="employeeDeleteForm"
                     class="employee-management-form"
                     method="post"
-                    th:action="@{/employees/delete}">
+                    action="/employees/delete">
                     <label>
                       <span>Select employee</span>
                       <select id="employeeManagementDeleteId" name="id" required>

@@ -898,9 +898,6 @@ function planningData() {
 
 // Navigation functionality
 document.addEventListener("DOMContentLoaded", function () {
-  const navButtons = document.querySelectorAll(".nav-btn[data-cat]");
-  const sections = document.querySelectorAll(".main-card[data-cat]");
-
   // Time validation function for shift creation
   window.validateShiftTimes = function () {
     const startTimeInput = document.getElementById("shiftStartTime");
@@ -972,26 +969,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     return true;
   };
-
-  // Navigation handler
-  navButtons.forEach((button) => {
-    button.addEventListener("click", function () {
-      const category = this.getAttribute("data-cat");
-
-      // Update active button
-      navButtons.forEach((btn) => btn.classList.remove("active"));
-      this.classList.add("active");
-
-      // Show/hide sections
-      sections.forEach((section) => {
-        if (section.getAttribute("data-cat") === category) {
-          section.classList.remove("hidden");
-        } else {
-          section.classList.add("hidden");
-        }
-      });
-    });
-  });
 
   // Email concatenation for employee registration
   const emailPrefix = document.getElementById("emailPrefix");

@@ -1,17 +1,14 @@
-document.addEventListener("DOMContentLoaded", () => {
+runEmployeeRoomsWhenReady(() => {
   const API = "/api/v1/rooms";
-  const token = localStorage.getItem("jwtToken");
-
-  if (!token) {
-    alert("Please log in first.");
-    window.location.href = "/employeeLogin";
-    return;
-  }
+  const token = getJwtToken();
 
   const headers = {
-    Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
   };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
 
   const list = document.getElementById("roomsTableBody");
   const form = document.getElementById("roomForm");
@@ -51,22 +48,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
     list.innerHTML = '<div class="employee-rooms-empty">Loading rooms...</div>';
 
-    const res = await request(API);
-    if (!res.ok) {
-      console.error("Failed to load rooms:", res.status, await res.text());
+    try {
+      const res = await request(API);
+      if (!res.ok) {
+        console.error("Failed to load rooms:", res.status, await res.text());
+        list.innerHTML =
+          '<div class="employee-rooms-empty">Unable to load rooms.</div>';
+        return;
+      }
+
+      const rooms = await res.json();
+
+      if (!Array.isArray(rooms) || rooms.length === 0) {
+        list.innerHTML =
+          '<div class="employee-rooms-empty">No rooms found.</div>';
+        return;
+      }
+
+      list.innerHTML = rooms.map(createRoomRow).join("");
+    } catch (error) {
+      console.error("Unable to load rooms:", error);
       list.innerHTML =
         '<div class="employee-rooms-empty">Unable to load rooms.</div>';
-      return;
     }
-
-    const rooms = await res.json();
-
-    if (!Array.isArray(rooms) || rooms.length === 0) {
-      list.innerHTML = '<div class="employee-rooms-empty">No rooms found.</div>';
-      return;
-    }
-
-    list.innerHTML = rooms.map(createRoomRow).join("");
   }
 
   function createRoomRow(room) {
@@ -247,6 +251,15 @@ document.addEventListener("DOMContentLoaded", () => {
   loadRooms();
 });
 
+function runEmployeeRoomsWhenReady(callback) {
+  if (document.readyState === "loading" && !document.body) {
+    document.addEventListener("DOMContentLoaded", callback, { once: true });
+    return;
+  }
+
+  callback();
+}
+
 function getSnowflakeIcon() {
   return `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -306,4 +319,13 @@ function escapeHtml(value) {
 
 function escapeAttribute(value) {
   return escapeHtml(value).replaceAll("`", "&#096;");
+}
+
+function getJwtToken() {
+  const cookieToken = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith("jwtToken="))
+    ?.split("=")[1];
+
+  return cookieToken || localStorage.getItem("jwtToken") || "";
 }
