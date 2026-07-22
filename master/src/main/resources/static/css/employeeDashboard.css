@@ -357,7 +357,7 @@ body::before {
   place-items: center;
   border: 2px solid rgba(248, 249, 250, 0.7);
   border-radius: 50%;
-  color: var(--employee-green-dark);
+  color: var(--employee-green-900, #113826);
   background: var(--employee-white);
   font-size: 1.5rem;
   font-weight: 900;

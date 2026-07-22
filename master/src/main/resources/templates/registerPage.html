@@ -8,18 +8,18 @@
       content="Create an Overlookhostel client account to book rooms and manage reservations."
     />
     <title>Register</title>
-    <link rel="stylesheet" th:href="@{/css/authPage.css(v='auth-bg-5')}" />
-    <script defer th:src="@{/js/register.js}"></script>
+    <link rel="stylesheet" th:href="@{/css/authPage.css(v='auth-ui-6')}" />
+    <script defer th:src="@{/js/register.js(v='auth-ui-6')}"></script>
   </head>
   <body>
     <div class="main-card">
       <img
         alt="Overlookhostel"
         class="logo"
-        width="120"
+        width="90"
         decoding="async"
         fetchpriority="high"
-        th:src="@{/image/logo_noBg_no_name.webp}"
+        th:src="@{/image/logo_noBg_no_name.webp(v='transparent-1')}"
       />
       <h1>Create Account</h1>
 
@@ -54,7 +54,12 @@
         <button type="submit">Register</button>
       </form>
 
-      <div id="message" style="color: red; margin-top: 10px"></div>
+      <div
+        aria-live="polite"
+        class="form-message"
+        id="message"
+        role="alert"
+      ></div>
     </div>
   </body>
 </html>

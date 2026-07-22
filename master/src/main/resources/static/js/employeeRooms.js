@@ -82,7 +82,7 @@ runEmployeeRoomsWhenReady(() => {
     return `
       <div class="employee-room-row" role="row">
         <span class="employee-room-number" role="cell">${escapeHtml(number)}</span>
-        <span class="employee-room-type" role="cell">${escapeHtml(type)}</span>
+        <span class="employee-room-type" role="cell">${escapeHtml(formatRoomType(type))}</span>
         <span class="employee-room-capacity" role="cell">${escapeHtml(room.capacity ?? "-")}</span>
         <span class="employee-room-features" role="cell">
           ${featureIcon("air", Boolean(room.hasAirConditioning), getSnowflakeIcon(), "A/C")}
@@ -315,6 +315,10 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function formatRoomType(value) {
+  return String(value ?? "-").replaceAll("_", " ");
 }
 
 function escapeAttribute(value) {

@@ -32,8 +32,8 @@ body {
 
 .logo {
   display: block;
-  width: 120px;
-  max-width: 120px;
+  width: 90px;
+  max-width: 90px;
   height: auto !important;
   margin-inline: auto;
   margin-bottom: 1.5rem;
@@ -115,6 +115,32 @@ button {
 button:hover {
   background-color: rgb(156, 121, 69);
   transform: translateY(-2px);
+}
+
+.form-message {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.form-message:empty {
+  display: none;
+}
+
+.form-message.error {
+  border-color: #f3a6a6;
+  background-color: #fde8e8;
+  color: #8f1d1d;
+}
+
+.form-message.success {
+  border-color: #9fd3af;
+  background-color: #e7f6ec;
+  color: #185c2e;
 }
 
 /* Responsive */
