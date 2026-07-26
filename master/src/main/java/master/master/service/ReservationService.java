@@ -77,6 +77,24 @@ public class ReservationService {
     return repo.findByClientId(userId).stream().map(this::convertReservationToMap).toList();
   }
 
+  @Transactional
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = "clientReservations", key = "#userId"),
+        @CacheEvict(cacheNames = "clientReservationDtos", key = "#userId")
+      })
+  public void deleteForUser(Long userId, Long reservationId) {
+    Reservation reservation =
+        repo.findById(reservationId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found"));
+
+    if (reservation.getClient() == null || !userId.equals(reservation.getClient().getId())) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+    }
+
+    repo.delete(reservation);
+  }
+
   private Map<String, Object> convertReservationToMap(Reservation reservation) {
     Map<String, Object> data = new LinkedHashMap<>();
     data.put("id", reservation.getId());

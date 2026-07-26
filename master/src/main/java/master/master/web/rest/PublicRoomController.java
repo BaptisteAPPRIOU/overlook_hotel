@@ -5,6 +5,7 @@ import java.util.Optional;
 import master.master.domain.Room;
 import master.master.domain.RoomType;
 import master.master.repository.RoomRepository;
+import master.master.web.rest.dto.RoomDto;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,8 +37,8 @@ public class PublicRoomController {
    * @return List of all rooms
    */
   @GetMapping
-  public List<Room> getAllRooms() {
-    return roomRepository.findAll();
+  public List<RoomDto> getAllRooms() {
+    return roomRepository.findAllWithPhotosOrderByRoomNumber().stream().map(this::toDto).toList();
   }
 
   /**
@@ -47,10 +48,12 @@ public class PublicRoomController {
    * @return List of rooms matching the type
    */
   @GetMapping("/type/{type}")
-  public List<Room> getRoomsByType(@PathVariable String type) {
+  public List<RoomDto> getRoomsByType(@PathVariable String type) {
     try {
       RoomType roomType = RoomType.valueOf(type.toUpperCase());
-      return roomRepository.findByTypeOrderByNumber(roomType);
+      return roomRepository.findByRoomTypeWithPhotosOrderByRoomNumber(roomType).stream()
+          .map(this::toDto)
+          .toList();
     } catch (IllegalArgumentException e) {
       return List.of(); // Return empty list for invalid type
     }
@@ -63,8 +66,8 @@ public class PublicRoomController {
    * @return Room details or empty if not found
    */
   @GetMapping("/{id}")
-  public Optional<Room> getRoomById(@PathVariable Long id) {
-    return roomRepository.findById(id);
+  public Optional<RoomDto> getRoomById(@PathVariable Long id) {
+    return roomRepository.findByIdWithPhotos(id).map(this::toDto);
   }
 
   /**
@@ -74,7 +77,30 @@ public class PublicRoomController {
    * @return List of rooms with at least the specified capacity
    */
   @GetMapping("/capacity/{minCapacity}")
-  public List<Room> getRoomsByCapacity(@PathVariable Integer minCapacity) {
-    return roomRepository.findByCapacityGreaterThanEqualOrderByCapacityAsc(minCapacity);
+  public List<RoomDto> getRoomsByCapacity(@PathVariable Integer minCapacity) {
+    return roomRepository
+        .findByCapacityGreaterThanEqualWithPhotosOrderByCapacityAsc(minCapacity.shortValue())
+        .stream()
+        .map(this::toDto)
+        .toList();
+  }
+
+  private RoomDto toDto(Room room) {
+    return RoomDto.builder()
+        .id(room.getId())
+        .number(room.getNumber())
+        .type(room.getType() == null ? null : room.getType().name())
+        .capacity(room.getCapacity() == null ? null : room.getCapacity().intValue())
+        .description(room.getDescription())
+        .floor_number(room.getFloorNumber())
+        .has_air_conditionning(Boolean.TRUE.equals(room.getHasAirConditioning()))
+        .has_projector(Boolean.TRUE.equals(room.getHasProjector()))
+        .has_video_conference(Boolean.TRUE.equals(room.getHasVideoConference()))
+        .has_whiteboard(Boolean.TRUE.equals(room.getHasWhiteboard()))
+        .name(room.getName())
+        .imageUrl(room.getImageUrl())
+        .price(room.getPrice())
+        .status(room.getStatus() == null ? null : room.getStatus().name())
+        .build();
   }
 }
