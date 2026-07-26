@@ -76,6 +76,8 @@ public class SecurityConfig {
                     .authenticated()
                     .requestMatchers("/api/v1/users/**")
                     .authenticated()
+                    .requestMatchers(HttpMethod.DELETE, "/api/v1/clients/me/reservations/**")
+                    .hasAuthority("CLIENT")
                     .requestMatchers(HttpMethod.DELETE, "/api/v1/clients/**")
                     .hasAuthority("ADMIN")
 

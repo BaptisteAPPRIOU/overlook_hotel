@@ -89,16 +89,69 @@ async function fetchRoomDetails(roomId, fallbackRoom) {
   }
 }
 
-function bookRoomFromPage(button, roomId, checkIn, checkOut, adults, children, totalPrice) {
+async function bookRoomFromPage(button, roomId, checkIn, checkOut, adults, children, totalPrice) {
   const originalText = button.textContent;
   button.textContent = "Booking...";
   button.disabled = true;
 
-  window.setTimeout(() => {
+  try {
+    await createClientReservation(roomId, checkIn, checkOut);
+    reservationsLoaded = false;
     showReservationConfirmation();
+
+    if (typeof showDashboardSection === "function") {
+      showDashboardSection("reservations");
+      window.location.hash = "reservations";
+    }
+
+    if (typeof loadClientReservations === "function") {
+      await loadClientReservations(true);
+    }
+  } catch (error) {
+    console.error("Error creating reservation:", error);
+    alert(error.message || "Unable to create the reservation for now.");
+  } finally {
     button.textContent = originalText;
     button.disabled = false;
-  }, 650);
+  }
+}
+
+async function createClientReservation(roomId, checkIn, checkOut) {
+  const token = localStorage.getItem("jwtToken");
+
+  if (!token) {
+    window.location.href = "/clientLogin";
+    throw new Error("Please login before booking a room.");
+  }
+
+  const response = await fetch("/api/v1/clients/me/reservations", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      roomId: Number(roomId),
+      reservationDateStart: checkIn,
+      reservationDateEnd: checkOut,
+    }),
+  });
+
+  if (!response.ok) {
+    const message = await readApiErrorMessage(response);
+    throw new Error(message || "Unable to create the reservation for now.");
+  }
+
+  return response.json();
+}
+
+async function readApiErrorMessage(response) {
+  try {
+    const error = await response.json();
+    return error.message || error.error || "";
+  } catch (parseError) {
+    return "";
+  }
 }
 
 async function loadBookingFeedback(limit) {

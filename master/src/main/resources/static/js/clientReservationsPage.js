@@ -227,9 +227,26 @@ function setupReservationModals() {
 
   document
     .getElementById("confirmDeleteReservation")
-    ?.addEventListener("click", function () {
-      closeReservationModals();
-      notifyReservationAction("Delete reservation");
+    ?.addEventListener("click", async function () {
+      const button = this;
+      const originalContent = button.innerHTML;
+
+      button.textContent = "Deleting...";
+      button.disabled = true;
+
+      try {
+        await deleteClientReservation(activeReservation?.id);
+        closeReservationModals();
+        reservationsLoaded = false;
+        await loadClientReservations(true);
+        notifyReservationAction("Reservation deleted");
+      } catch (error) {
+        console.error("Error deleting reservation:", error);
+        alert(error.message || "Unable to delete the reservation for now.");
+      } finally {
+        button.innerHTML = originalContent;
+        button.disabled = false;
+      }
     });
 
   document
@@ -312,6 +329,44 @@ function notifyReservationAction(label) {
   window.setTimeout(() => {
     document.querySelector(".toast-message")?.remove();
   }, 4200);
+}
+
+async function deleteClientReservation(reservationId) {
+  if (!reservationId) {
+    throw new Error("Missing reservation id.");
+  }
+
+  const token = localStorage.getItem("jwtToken");
+
+  if (!token) {
+    window.location.href = "/clientLogin";
+    throw new Error("Please login before deleting a reservation.");
+  }
+
+  const response = await fetch(
+    `/api/v1/clients/me/reservations/${encodeURIComponent(reservationId)}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    },
+  );
+
+  if (!response.ok) {
+    const message = await readReservationApiErrorMessage(response);
+    throw new Error(message || "Unable to delete the reservation for now.");
+  }
+}
+
+async function readReservationApiErrorMessage(response) {
+  try {
+    const error = await response.json();
+    return error.message || error.error || "";
+  } catch (parseError) {
+    return "";
+  }
 }
 
 function getTrashIcon() {
