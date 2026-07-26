@@ -1,7 +1,42 @@
 services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DOCKER_POSTGRES_DB:-overlookhoteldb}
+      POSTGRES_USER: ${DOCKER_POSTGRES_USER:?DOCKER_POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${DOCKER_POSTGRES_PASSWORD:?DOCKER_POSTGRES_PASSWORD is required}
+    volumes:
+      - overlook-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - overlook-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   app:
     image: ${DOCKER_IMAGE:-overlook-hotel:prod}
+    build:
+      context: ./master
+      dockerfile: Dockerfile
     restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:?SPRING_DATASOURCE_URL is required}
@@ -15,5 +50,26 @@ services:
       APP_JWT_SECRET: ${APP_JWT_SECRET:?APP_JWT_SECRET is required}
       APP_JWT_EXPIRATION_MS: ${APP_JWT_EXPIRATION_MS:-86400000}
       APP_SEED_ENABLED: ${APP_SEED_ENABLED:-false}
+    expose:
+      - "8080"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:?SITE_DOMAIN is required}
     ports:
-      - "${APP_PORT:-8080}:8080"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  overlook-postgres-data:
+  overlook-redis-data:
+  caddy-data:
+  caddy-config:
