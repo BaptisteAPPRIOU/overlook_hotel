@@ -1,5 +1,6 @@
 package master.master.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -16,6 +17,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "rooms")
+@JsonIgnoreProperties({"amenities", "photos", "unavailabilities", "reservations", "imageUrl"})
 public class Room implements Serializable {
 
   @Id
@@ -42,6 +44,18 @@ public class Room implements Serializable {
 
   @Column(name = "description", columnDefinition = "TEXT")
   private String description;
+
+  @Column(name = "has_projector", nullable = false)
+  private Boolean hasProjector = false;
+
+  @Column(name = "has_whiteboard", nullable = false)
+  private Boolean hasWhiteboard = false;
+
+  @Column(name = "has_video_conference", nullable = false)
+  private Boolean hasVideoConference = false;
+
+  @Column(name = "has_air_conditioning", nullable = false)
+  private Boolean hasAirConditioning = true;
 
   @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(
@@ -129,28 +143,36 @@ public class Room implements Serializable {
   public void setFloorNumber(Integer ignoredFloorNumber) {}
 
   public Boolean getHasProjector() {
-    return false;
+    return Boolean.TRUE.equals(hasProjector);
   }
 
-  public void setHasProjector(Boolean ignored) {}
+  public void setHasProjector(Boolean hasProjector) {
+    this.hasProjector = Boolean.TRUE.equals(hasProjector);
+  }
 
   public Boolean getHasWhiteboard() {
-    return false;
+    return Boolean.TRUE.equals(hasWhiteboard);
   }
 
-  public void setHasWhiteboard(Boolean ignored) {}
+  public void setHasWhiteboard(Boolean hasWhiteboard) {
+    this.hasWhiteboard = Boolean.TRUE.equals(hasWhiteboard);
+  }
 
   public Boolean getHasVideoConference() {
-    return false;
+    return Boolean.TRUE.equals(hasVideoConference);
   }
 
-  public void setHasVideoConference(Boolean ignored) {}
+  public void setHasVideoConference(Boolean hasVideoConference) {
+    this.hasVideoConference = Boolean.TRUE.equals(hasVideoConference);
+  }
 
   public Boolean getHasAirConditioning() {
-    return true;
+    return Boolean.TRUE.equals(hasAirConditioning);
   }
 
-  public void setHasAirConditioning(Boolean ignored) {}
+  public void setHasAirConditioning(Boolean hasAirConditioning) {
+    this.hasAirConditioning = Boolean.TRUE.equals(hasAirConditioning);
+  }
 
   public void setAmenities(java.util.List<String> ignoredAmenities) {}
 
@@ -240,19 +262,23 @@ public class Room implements Serializable {
       return this;
     }
 
-    public RoomBuilder hasProjector(Boolean ignored) {
+    public RoomBuilder hasProjector(Boolean hasProjector) {
+      room.setHasProjector(hasProjector);
       return this;
     }
 
-    public RoomBuilder hasVideoConference(Boolean ignored) {
+    public RoomBuilder hasVideoConference(Boolean hasVideoConference) {
+      room.setHasVideoConference(hasVideoConference);
       return this;
     }
 
-    public RoomBuilder hasWhiteboard(Boolean ignored) {
+    public RoomBuilder hasWhiteboard(Boolean hasWhiteboard) {
+      room.setHasWhiteboard(hasWhiteboard);
       return this;
     }
 
-    public RoomBuilder hasAirConditioning(Boolean ignored) {
+    public RoomBuilder hasAirConditioning(Boolean hasAirConditioning) {
+      room.setHasAirConditioning(hasAirConditioning);
       return this;
     }
 

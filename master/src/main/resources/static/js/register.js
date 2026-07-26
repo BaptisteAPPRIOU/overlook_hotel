@@ -22,7 +22,7 @@ document
     const fullEmail = `${emailPrefix}@olh.fr`;
     document.getElementById("email").value = fullEmail;
 
-    messageElem.textContent = "";
+    showMessage(messageElem, "");
 
     try {
       const response = await fetch("/api/v1/register", {
@@ -39,20 +39,54 @@ document
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        messageElem.style.color = "red";
-        messageElem.textContent = errorText || "Registration failed";
+        showMessage(
+          messageElem,
+          await getApiErrorMessage(
+            response,
+            "Registration failed. Please try again.",
+          ),
+          "error",
+        );
         return;
       }
 
-      messageElem.style.color = "white";
-      messageElem.textContent = "Registration successful! Redirecting...";
+      showMessage(
+        messageElem,
+        "Registration successful! Redirecting...",
+        "success",
+      );
 
       setTimeout(() => {
         window.location.href = "/clientLogin";
       }, 2000);
     } catch (error) {
-      messageElem.style.color = "red";
-      messageElem.textContent = "Network error, please try again.";
+      showMessage(messageElem, "Network error. Please try again.", "error");
     }
   });
+
+async function getApiErrorMessage(response, fallback) {
+  try {
+    const error = await response.json();
+    const fieldMessages = Object.entries(error.errors || {}).map(
+      ([field, message]) => `${formatFieldName(field)}: ${message}`,
+    );
+
+    return fieldMessages.length > 0
+      ? fieldMessages.join(" ")
+      : error.message || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function formatFieldName(field) {
+  return field.replace(/([A-Z])/g, " $1").replace(/^./, (letter) =>
+    letter.toUpperCase(),
+  );
+}
+
+function showMessage(element, text, type) {
+  element.textContent = text;
+  element.classList.toggle("error", type === "error");
+  element.classList.toggle("success", type === "success");
+}

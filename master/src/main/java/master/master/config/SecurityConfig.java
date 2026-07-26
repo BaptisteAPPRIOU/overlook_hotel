@@ -1,19 +1,30 @@
 package master.master.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import master.master.filter.JwtAuthenticationFilter;
 import master.master.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Configuration
 @EnableWebSecurity
@@ -22,42 +33,64 @@ public class SecurityConfig {
 
   private final CustomUserDetailsService userDetailsService;
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
+  private final ObjectMapper objectMapper;
 
   public SecurityConfig(
       CustomUserDetailsService userDetailsService,
-      JwtAuthenticationFilter jwtAuthenticationFilter) {
+      JwtAuthenticationFilter jwtAuthenticationFilter,
+      ObjectMapper objectMapper) {
     this.userDetailsService = userDetailsService;
     this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    this.objectMapper = objectMapper;
   }
 
   // Security filter chain configuration
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http.csrf(csrf -> csrf.disable())
+    http.csrf(
+            csrf ->
+                csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                    .ignoringRequestMatchers(
+                        "/api/**",
+                        "/employees",
+                        "/employees/**",
+                        "/planning/create-default"))
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers(
-                        "/", "/clientLogin", "/employeeLogin", "/register", "employeeDashboard")
+                auth.requestMatchers("/", "/clientLogin", "/employeeLogin", "/register")
+                    .permitAll()
+                    .requestMatchers("/logout")
                     .permitAll()
                     .requestMatchers("/css/**", "/js/**", "/image/**", "/favicon.ico")
                     .permitAll()
+                    .requestMatchers("/actuator/health", "/actuator/health/**")
+                    .permitAll()
+                    .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**")
+                    .permitAll()
                     .requestMatchers("/api/v1/login", "/api/v1/register", "/error")
+                    .permitAll()
+                    .requestMatchers("/api/public/**")
                     .permitAll()
                     .requestMatchers("/api/v1/logout")
                     .authenticated()
+                    .requestMatchers("/api/v1/users/**")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.DELETE, "/api/v1/clients/me/reservations/**")
+                    .hasAuthority("CLIENT")
                     .requestMatchers(HttpMethod.DELETE, "/api/v1/clients/**")
                     .hasAuthority("ADMIN")
 
                     // Employee Dashboard and related pages - Only EMPLOYEE and ADMIN can
                     // access
                     .requestMatchers("/employeeDashboard")
-                    .hasAnyAuthority("EMPLOYEE", "ADMIN")
+                    .hasAnyAuthority("EMPLOYEE", "RESPONSABLE", "ADMIN")
                     .requestMatchers("/roomManagement")
                     .hasAnyAuthority("EMPLOYEE", "ADMIN")
                     .requestMatchers("/planning")
-                    .hasAnyAuthority("EMPLOYEE", "ADMIN")
+                    .hasAnyAuthority("RESPONSABLE", "ADMIN")
                     .requestMatchers("/my-planning")
-                    .hasAnyAuthority("EMPLOYEE", "ADMIN")
+                    .hasAnyAuthority("EMPLOYEE", "RESPONSABLE", "ADMIN")
 
                     // Employee API endpoints - Only EMPLOYEE and ADMIN can access
                     .requestMatchers("/api/v1/employees/**")
@@ -67,7 +100,11 @@ public class SecurityConfig {
                     .requestMatchers("/api/dashboard/**")
                     .hasAnyAuthority("EMPLOYEE", "ADMIN")
                     .requestMatchers("/planning/**")
-                    .hasAnyAuthority("EMPLOYEE", "ADMIN")
+                    .hasAnyAuthority("RESPONSABLE", "ADMIN")
+                    .requestMatchers("/api/planning/**")
+                    .hasAnyAuthority("EMPLOYEE", "RESPONSABLE", "ADMIN")
+                    .requestMatchers("/api/v1/leave-requests/**")
+                    .hasAnyAuthority("EMPLOYEE", "RESPONSABLE", "ADMIN")
 
                     // Time tracking endpoints - Only EMPLOYEE and ADMIN can access
                     .requestMatchers("/api/v1/time-tracking/**")
@@ -76,6 +113,8 @@ public class SecurityConfig {
                     // Room management API - Only EMPLOYEE and ADMIN can access
                     .requestMatchers("/api/v1/rooms/**")
                     .hasAnyAuthority("EMPLOYEE", "ADMIN")
+                    .requestMatchers("/api/v1/room-reviews/**")
+                    .hasAnyAuthority("EMPLOYEE", "RESPONSABLE", "ADMIN")
 
                     // Client API endpoints
                     .requestMatchers("/api/v1/clients/**")
@@ -105,12 +144,28 @@ public class SecurityConfig {
                 exceptions
                     .accessDeniedHandler(
                         (request, response, accessDeniedException) -> {
-                          // Redirect to login page with error message for access denied
+                          if (isApiRequest(request)) {
+                            writeApiError(
+                                response,
+                                HttpStatus.FORBIDDEN,
+                                "ACCESS_DENIED",
+                                "Access denied",
+                                request.getRequestURI());
+                            return;
+                          }
                           response.sendRedirect("/?error=access_denied");
                         })
                     .authenticationEntryPoint(
                         (request, response, authException) -> {
-                          // Redirect to login page for unauthenticated requests
+                          if (isApiRequest(request)) {
+                            writeApiError(
+                                response,
+                                HttpStatus.UNAUTHORIZED,
+                                "NOT_AUTHENTICATED",
+                                "Authentication required",
+                                request.getRequestURI());
+                            return;
+                          }
                           response.sendRedirect("/?error=not_authenticated");
                         }))
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
@@ -118,6 +173,27 @@ public class SecurityConfig {
         .httpBasic(basic -> basic.disable());
 
     return http.build();
+  }
+
+  private boolean isApiRequest(HttpServletRequest request) {
+    return request.getRequestURI().startsWith("/api/");
+  }
+
+  private void writeApiError(
+      HttpServletResponse response, HttpStatus status, String code, String message, String path)
+      throws IOException {
+    response.setStatus(status.value());
+    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+    response.setCharacterEncoding("UTF-8");
+
+    Map<String, Object> body = new LinkedHashMap<>();
+    body.put("status", status.value());
+    body.put("code", code);
+    body.put("message", message);
+    body.put("timestamp", LocalDateTime.now().toString());
+    body.put("path", path);
+
+    objectMapper.writeValue(response.getWriter(), body);
   }
 
   // Bean for PasswordEncoder

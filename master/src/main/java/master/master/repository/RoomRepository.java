@@ -43,6 +43,23 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
   @Query("SELECT r FROM Room r WHERE r.roomStatus = master.master.domain.RoomStatus.AVAILABLE ORDER BY r.roomNumber")
   List<Room> findAvailableRooms();
 
+  @Query("SELECT DISTINCT r FROM Room r LEFT JOIN FETCH r.photos ORDER BY r.roomNumber")
+  List<Room> findAllWithPhotosOrderByRoomNumber();
+
+  @Query(
+      "SELECT DISTINCT r FROM Room r LEFT JOIN FETCH r.photos "
+          + "WHERE r.roomType = :roomType ORDER BY r.roomNumber")
+  List<Room> findByRoomTypeWithPhotosOrderByRoomNumber(@Param("roomType") RoomType roomType);
+
+  @Query("SELECT DISTINCT r FROM Room r LEFT JOIN FETCH r.photos WHERE r.id = :id")
+  Optional<Room> findByIdWithPhotos(@Param("id") Long id);
+
+  @Query(
+      "SELECT DISTINCT r FROM Room r LEFT JOIN FETCH r.photos "
+          + "WHERE r.capacity >= :minCapacity ORDER BY r.capacity ASC, r.roomNumber ASC")
+  List<Room> findByCapacityGreaterThanEqualWithPhotosOrderByCapacityAsc(
+      @Param("minCapacity") Short minCapacity);
+
   default Optional<Room> findByNumber(String number) {
     return findByRoomNumber(number);
   }

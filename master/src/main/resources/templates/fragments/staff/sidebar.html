@@ -1,0 +1,39 @@
+﻿<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <nav class="col-md-2 sidebar" th:fragment="staffSidebar(mode)">
+      <div class="sidebar-logo">
+        <img alt="Company Logo" th:src="@{/image/logo_noBg_no_name.webp}" />
+      </div>
+      <div class="sidebar-main-nav">
+        <button class="nav-btn active" data-cat="booking">Rooms management</button>
+        <button class="nav-btn" data-cat="leave">Leave Request</button>
+        <button class="nav-btn" data-cat="schedule">Work Schedule</button>
+        <button
+          class="nav-btn"
+          data-cat="attendance"
+          th:if="${mode == 'admin' and (currentUser.role == 'RESPONSABLE' or currentUser.role == 'ADMIN')}">
+          Planning Management
+        </button>
+        <button class="nav-btn" data-cat="reviews">Room Reviews</button>
+        <button
+          class="nav-btn"
+          data-cat="employees"
+          th:if="${mode == 'admin' and currentUser.role == 'ADMIN'}">
+          Employee Management
+        </button>
+        <button
+          class="nav-btn"
+          data-cat="approval"
+          th:if="${mode == 'admin' and (currentUser.role == 'RESPONSABLE' or currentUser.role == 'ADMIN')}">
+          Leave Approval
+        </button>
+      </div>
+      <div class="sidebar-actions">
+        <hr />
+        <button class="nav-btn" data-cat="settings">Settings</button>
+        <button class="nav-btn" type="button" data-logout-link>Logout</button>
+      </div>
+    </nav>
+  </body>
+</html>

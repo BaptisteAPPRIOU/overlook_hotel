@@ -1,0 +1,45 @@
+﻿<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <div th:fragment="workScheduleSection">
+<!-- 3) Work Schedule -->
+          <section class="main-card hidden" data-cat="schedule">
+            <div class="employee-schedule-card">
+              <div class="employee-schedule-topbar">
+                <button
+                  class="employee-schedule-nav"
+                  type="button"
+                  id="employeeSchedulePreviousWeek"
+                  aria-label="Previous week">
+                  <span aria-hidden="true">&lsaquo;</span>
+                </button>
+                <div class="employee-schedule-date" id="employeeScheduleWeekLabel">
+                  --/--
+                </div>
+                <button
+                  class="employee-schedule-nav"
+                  type="button"
+                  id="employeeScheduleNextWeek"
+                  aria-label="Next week">
+                  <span aria-hidden="true">&rsaquo;</span>
+                </button>
+              </div>
+
+              <div
+                class="employee-schedule-list"
+                id="employeeScheduleList"
+                aria-live="polite">
+                <div class="employee-schedule-empty">Loading schedule...</div>
+              </div>
+
+              <button
+                class="employee-schedule-save"
+                type="button"
+                id="employeeScheduleSave">
+                Save
+              </button>
+            </div>
+          </section>
+    </div>
+  </body>
+</html>

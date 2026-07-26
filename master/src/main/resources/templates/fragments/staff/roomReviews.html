@@ -1,0 +1,66 @@
+﻿<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <div th:fragment="roomReviewsSection">
+<!-- 5) Room Reviews -->
+          <section class="main-card hidden" data-cat="reviews">
+            <div class="employee-reviews-card">
+              <div class="employee-reviews-heading">
+                <div>
+                  <p>Guest Feedback</p>
+                  <h1>Room Reviews</h1>
+                </div>
+                <div class="employee-reviews-score" aria-label="Average rating">
+                  <span id="employeeReviewsAverage">0.0</span>
+                  <small>/ 5</small>
+                </div>
+              </div>
+
+              <div class="employee-reviews-stats" aria-label="Review statistics">
+                <article>
+                  <span id="employeeReviewsTotal">0</span>
+                  <p>Total reviews</p>
+                </article>
+                <article>
+                  <span id="employeeReviewsVerified">0</span>
+                  <p>Verified</p>
+                </article>
+                <article>
+                  <span id="employeeReviewsVisibleCount">0</span>
+                  <p>Displayed</p>
+                </article>
+              </div>
+
+              <div class="employee-reviews-toolbar">
+                <label>
+                  <span class="visually-hidden">Search reviews</span>
+                  <input
+                    id="employeeReviewSearch"
+                    type="search"
+                    placeholder="Search room, author, comment"
+                  />
+                </label>
+                <label>
+                  <span class="visually-hidden">Filter by rating</span>
+                  <select id="employeeReviewRatingFilter">
+                    <option value="">All ratings</option>
+                    <option value="5">5 stars</option>
+                    <option value="4">4 stars</option>
+                    <option value="3">3 stars</option>
+                    <option value="2">2 stars</option>
+                    <option value="1">1 star</option>
+                  </select>
+                </label>
+              </div>
+
+              <div
+                class="employee-reviews-list"
+                id="employeeRoomReviewsList"
+                aria-live="polite">
+                <div class="employee-reviews-empty">Loading reviews...</div>
+              </div>
+            </div>
+          </section>
+    </div>
+  </body>
+</html>

@@ -1,104 +1,413 @@
-/* employeeRooms.css */
-
-.card {
-  background-color: #143d26; /* dark green */
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  max-width: 480px;
-  margin: 3rem auto;
-  color: #ffffff;
-  font-family: "Segoe UI", sans-serif;
+:root {
+  --employee-green-900: #113826;
+  --employee-green-800: #1e2a26;
+  --employee-green-700: #2e3d37;
+  --employee-gold: #9c7945;
+  --employee-white: #f8f9fa;
+  --employee-grey: #2d3130;
+  --employee-line: #636464;
 }
 
-.card h1 {
-  margin-bottom: 1.5rem;
-  font-size: 1.8rem;
+.employee-rooms-card {
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: clamp(20px, 3vw, 28px);
+  border: 2px solid var(--employee-green-700);
+  border-radius: 18px;
+  color: var(--employee-white);
+  background: rgba(17, 56, 38, 0.32);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.24);
 }
 
-.rooms-table {
+.employee-rooms-card h1 {
+  margin: 0 0 22px;
+  color: var(--employee-white);
+  font-size: clamp(2.1rem, 5vw, 3rem);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+}
+
+.employee-rooms-table {
+  overflow: hidden;
+  border: 3px solid var(--employee-line);
+  border-radius: 8px;
+  background: var(--employee-white);
+}
+
+.employee-rooms-header,
+.employee-room-row {
+  display: grid;
+  grid-template-columns:
+    minmax(74px, 0.6fr)
+    minmax(190px, 1.45fr)
+    minmax(72px, 0.55fr)
+    minmax(88px, 0.75fr)
+    minmax(100px, 0.75fr)
+    minmax(108px, 0.8fr)
+    minmax(82px, 0.55fr);
+  align-items: center;
+}
+
+.employee-rooms-header {
+  min-height: 54px;
+  padding: 0 22px;
+  border-bottom: 3px solid var(--employee-line);
+  color: var(--employee-grey);
+  background: var(--employee-white);
+  font-size: 0.88rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+}
+
+.employee-room-row {
+  min-height: 72px;
+  padding: 0 22px;
+  border-bottom: 3px solid rgba(45, 49, 48, 0.7);
+  color: var(--employee-grey);
+  background: var(--employee-white);
+  font-size: clamp(0.92rem, 1.8vw, 1rem);
+  letter-spacing: 0.16em;
+}
+
+.employee-room-row:last-child {
+  border-bottom: 0;
+}
+
+.employee-room-type,
+.employee-room-status {
+  text-transform: uppercase;
+}
+
+.employee-room-type {
+  min-width: 0;
+  padding-right: 12px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.employee-room-features {
+  display: grid;
+  grid-template-columns: repeat(2, 24px);
+  gap: 4px 8px;
+  align-items: center;
+}
+
+.employee-room-feature {
+  display: inline-grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  color: var(--employee-grey);
+  opacity: 0.24;
+}
+
+.employee-room-feature.active {
+  opacity: 1;
+}
+
+.employee-room-feature svg {
+  width: 24px;
+  height: 24px;
+  stroke: currentColor;
+}
+
+.employee-room-actions {
+  display: inline-flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.employee-room-action {
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  color: var(--employee-grey);
+  background: transparent;
+  cursor: pointer;
+}
+
+.employee-room-action:hover,
+.employee-room-action:focus-visible {
+  color: var(--employee-gold);
+  outline: none;
+}
+
+.employee-room-action svg {
+  width: 25px;
+  height: 25px;
+  stroke: currentColor;
+}
+
+.employee-rooms-empty {
+  padding: 28px;
+  color: var(--employee-grey);
+  text-align: center;
+}
+
+.employee-room-form {
+  display: grid;
+  grid-template-columns: repeat(4, 86px) minmax(250px, 1fr);
+  gap: 10px;
+  align-items: start;
+  margin-top: 36px;
+}
+
+.employee-room-form label {
+  min-width: 0;
+}
+
+.employee-room-form input,
+.employee-room-form select {
   width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 1.5rem;
+  min-height: 40px;
+  margin: 0;
+  padding: 8px;
+  border: 0;
+  border-radius: 6px;
+  color: var(--employee-grey);
+  background: var(--employee-white);
+  font: inherit;
+  letter-spacing: 0.12em;
 }
 
-.rooms-table thead {
-  background-color: #0f2a19;
+.employee-room-form input:focus-visible,
+.employee-room-form select:focus-visible {
+  outline: 3px solid rgba(156, 121, 69, 0.72);
+  outline-offset: 2px;
 }
 
-.rooms-table th,
-.rooms-table td {
-  padding: 0.75rem 1rem;
-  text-align: left;
+.employee-room-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px 16px;
+  align-items: center;
+  min-height: 40px;
 }
 
-.rooms-table th {
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: #ffffff;
+.employee-room-toggles label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--employee-white);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
 }
 
-.rooms-table tbody tr {
-  border-bottom: 1px solid #0f2a19;
-  transition: background-color 0.2s;
+.employee-room-toggles input {
+  width: 18px;
+  min-height: 18px;
+  accent-color: var(--employee-gold);
 }
 
-.rooms-table tbody tr:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+.employee-room-submit {
+  grid-column: 1 / 2;
+  justify-self: start;
+  width: 104px;
+  min-height: 32px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 8px;
+  color: var(--employee-white);
+  background: var(--employee-gold);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
 }
 
-.btn-icon {
-  background-color: #b08968; /* gold */
-  border: none;
-  border-radius: 50%;
-  width: 2.5rem;
-  height: 2.5rem;
+.employee-room-delete-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: none;
+  place-items: center;
+  padding: 18px;
+}
+
+.employee-room-delete-modal.active {
+  display: grid;
+}
+
+.employee-room-delete-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 13, 11, 0.62);
+  backdrop-filter: blur(5px);
+}
+
+.employee-room-delete-card {
+  position: relative;
+  display: grid;
+  width: min(850px, 100%);
+  min-height: 360px;
+  gap: 24px;
+  align-content: start;
+  padding: 18px clamp(24px, 5vw, 74px) 40px;
+  border: 3px solid #030907;
+  border-radius: 26px;
+  background:
+    radial-gradient(
+      ellipse 180px 260px at 6% 4%,
+      rgba(156, 121, 69, 0.34) 0%,
+      rgba(156, 121, 69, 0.16) 38%,
+      rgba(156, 121, 69, 0) 74%
+    ),
+    radial-gradient(
+      ellipse 210px 180px at 96% 92%,
+      rgba(156, 121, 69, 0.34) 0%,
+      rgba(156, 121, 69, 0.14) 42%,
+      rgba(156, 121, 69, 0) 76%
+    ),
+    rgba(46, 61, 55, 0.96);
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.4);
+}
+
+.employee-room-delete-logo {
+  justify-self: center;
+  width: min(260px, 72vw);
+  height: auto;
+}
+
+.employee-room-delete-message {
+  display: grid;
+  min-height: 190px;
+  padding: 24px 52px;
+  place-items: center;
+  border: 3px solid var(--employee-line);
+  border-radius: 30px;
+  color: var(--employee-grey);
+  background: var(--employee-white);
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.45;
+  text-align: center;
+}
+
+.employee-room-delete-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(190px, 270px));
+  justify-content: space-between;
+  gap: 22px;
+}
+
+.employee-room-delete-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-height: 44px;
+  padding: 0 22px;
+  border: 3px solid #030907;
+  border-radius: 999px;
+  color: var(--employee-grey);
+  font-size: clamp(1.2rem, 3vw, 1.7rem);
+  letter-spacing: 0;
   cursor: pointer;
-  transition: background-color 0.2s;
-  margin-right: 0.5rem;
 }
 
-.btn-icon:hover {
-  background-color: #caa16b;
+.employee-room-delete-button.light {
+  background: var(--employee-white);
 }
 
-#roomForm input,
-#roomForm select {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  margin-bottom: 1rem;
-  border: 1px solid #0f2a19;
-  border-radius: 8px;
-  font-size: 1rem;
+.employee-room-delete-button.gold {
+  background: var(--employee-gold);
 }
 
-#roomForm label {
-  display: flex;
-  align-items: center;
-  margin-bottom: 1rem;
-  font-size: 0.95rem;
+@media (max-width: 1040px) {
+  .employee-rooms-header {
+    display: none;
+  }
+
+  .employee-room-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 12px;
+    padding: 14px;
+    letter-spacing: 0.08em;
+  }
+
+  .employee-room-row > span::before {
+    display: block;
+    color: var(--employee-line);
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .employee-room-number::before {
+    content: "Number";
+  }
+
+  .employee-room-type::before {
+    content: "Type";
+  }
+
+  .employee-room-capacity::before {
+    content: "Capacity";
+  }
+
+  .employee-room-price::before {
+    content: "Price";
+  }
+
+  .employee-room-status::before {
+    content: "Status";
+  }
+
+  .employee-room-features::before {
+    content: "Features";
+    grid-column: 1 / -1;
+    color: var(--employee-line);
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .employee-room-actions {
+    justify-content: flex-start;
+  }
+
+  .employee-room-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .employee-room-toggles,
+  .employee-room-submit {
+    grid-column: 1 / -1;
+  }
+
+  .employee-room-submit {
+    width: min(100%, 180px);
+  }
+
+  .employee-room-toggles {
+    justify-content: flex-start;
+  }
 }
 
-#roomForm label input[type="checkbox"] {
-  margin-right: 0.5rem;
-}
+@media (max-width: 560px) {
+  .employee-rooms-card {
+    padding: 16px 10px;
+  }
 
-#roomForm button {
-  width: 100%;
-  padding: 0.75rem;
-  background-color: #b08968;
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
+  .employee-room-row,
+  .employee-room-form {
+    grid-template-columns: 1fr;
+  }
 
-#roomForm button:hover {
-  background-color: #caa16b;
+  .employee-room-submit {
+    width: 100%;
+  }
+
+  .employee-room-delete-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .employee-room-delete-message {
+    min-height: 150px;
+    padding: 20px;
+    font-size: 1.8rem;
+  }
 }

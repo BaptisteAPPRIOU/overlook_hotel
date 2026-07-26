@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <header th:fragment="clientHeader" class="topbar">
+      <a class="brand" href="/clientHomePage" aria-label="Overlook Hotel">
+        <img
+          th:src="@{/image/logo_noBg.webp}"
+          alt="Overlookhostel"
+          width="210"
+          height="58"
+        />
+      </a>
+
+      <div class="profile-chip" aria-label="Current client">
+        <span id="clientName">Client</span>
+        <span
+          class="profile-avatar"
+          id="clientAvatar"
+          aria-hidden="true">C</span>
+      </div>
+    </header>
+  </body>
+</html>

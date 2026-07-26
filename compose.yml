@@ -1,0 +1,59 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${DOCKER_POSTGRES_DB:-overlookhoteldb}
+      POSTGRES_USER: ${DOCKER_POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${DOCKER_POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "${DOCKER_POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - overlook-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${DOCKER_REDIS_PORT:-6379}:6379"
+    volumes:
+      - overlook-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    image: overlook-hotel:dev
+    build:
+      context: ./master
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DOCKER_POSTGRES_DB:-overlookhoteldb}
+      SPRING_DATASOURCE_USERNAME: ${DOCKER_POSTGRES_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${DOCKER_POSTGRES_PASSWORD:-postgres}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_PASSWORD: ""
+      SPRING_SECURITY_USER_NAME: ${DOCKER_SECURITY_USER_NAME:-dev}
+      SPRING_SECURITY_USER_PASSWORD: ${DOCKER_SECURITY_USER_PASSWORD:-dev-password}
+      APP_JWT_SECRET: ${DOCKER_APP_JWT_SECRET:-local_docker_jwt_secret_with_32_chars_min}
+      APP_JWT_EXPIRATION_MS: ${APP_JWT_EXPIRATION_MS:-86400000}
+      APP_SEED_ENABLED: ${APP_SEED_ENABLED:-true}
+    ports:
+      - "${APP_PORT:-8080}:8080"
+
+volumes:
+  overlook-postgres-data:
+  overlook-redis-data:

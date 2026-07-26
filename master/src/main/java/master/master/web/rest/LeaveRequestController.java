@@ -2,12 +2,14 @@ package master.master.web.rest;
 
 import java.util.List;
 import java.util.Map;
+import master.master.service.EmployeeAuthorizationService;
 import master.master.service.LeaveRequestService;
 import master.master.web.rest.dto.CreateLeaveRequestDto;
 import master.master.web.rest.dto.LeaveRequestDto;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,26 +30,26 @@ import org.springframework.web.bind.annotation.RestController;
 @CrossOrigin(origins = "*")
 public class LeaveRequestController {
 
-  @Autowired private LeaveRequestService leaveRequestService;
+  private final LeaveRequestService leaveRequestService;
+  private final EmployeeAuthorizationService authorizationService;
+
+  public LeaveRequestController(
+      LeaveRequestService leaveRequestService,
+      EmployeeAuthorizationService authorizationService) {
+    this.leaveRequestService = leaveRequestService;
+    this.authorizationService = authorizationService;
+  }
 
   /** Submit a new leave request. POST /api/v1/leave-requests/submit */
   @PostMapping("/submit")
-  public ResponseEntity<?> submitLeaveRequest(@RequestBody CreateLeaveRequestDto request) {
+  public ResponseEntity<?> submitLeaveRequest(
+      @RequestBody CreateLeaveRequestDto request, Authentication authentication) {
+    Long currentEmployeeId = authorizationService.requireCurrentEmployee(authentication);
+    if (request.getEmployeeId() != null && !currentEmployeeId.equals(request.getEmployeeId())) {
+      throw new AccessDeniedException("Cannot submit leave for another employee");
+    }
+    request.setEmployeeId(currentEmployeeId);
     try {
-      // Get current user's employee ID from security context
-      // For now, we'll use the employeeId from the request or a default value
-      if (request.getEmployeeId() == null) {
-        // You might want to get this from the authentication context
-        request =
-            CreateLeaveRequestDto.builder()
-                .employeeId(1L) // Default employee ID for testing
-                .startDate(request.getStartDate())
-                .endDate(request.getEndDate())
-                .reason(request.getReason())
-                .type(request.getType())
-                .build();
-      }
-
       LeaveRequestDto createdRequest = leaveRequestService.createLeaveRequest(request);
       return ResponseEntity.ok(
           Map.of(
@@ -72,11 +74,13 @@ public class LeaveRequestController {
 
   /** Get all leave requests for the current employee. GET /api/v1/leave-requests/my-requests */
   @GetMapping("/my-requests")
-  public ResponseEntity<?> getMyLeaveRequests(@RequestParam(required = false) Long employeeId) {
+  public ResponseEntity<?> getMyLeaveRequests(
+      @RequestParam(required = false) Long employeeId, Authentication authentication) {
+    Long currentEmployeeId = authorizationService.requireCurrentEmployee(authentication);
+    if (employeeId != null && !currentEmployeeId.equals(employeeId)) {
+      throw new AccessDeniedException("Cannot access another employee's leave requests");
+    }
     try {
-      // Get current user's employee ID from security context or use default
-      Long currentEmployeeId = employeeId != null ? employeeId : 1L; // Default for testing
-
       List<LeaveRequestDto> requests =
           leaveRequestService.getEmployeeLeaveRequests(currentEmployeeId);
       return ResponseEntity.ok(Map.of("success", true, "data", requests));
@@ -92,7 +96,8 @@ public class LeaveRequestController {
    * Get all pending leave requests for approval (managers only). GET /api/v1/leave-requests/pending
    */
   @GetMapping("/pending")
-  public ResponseEntity<?> getPendingLeaveRequests() {
+  public ResponseEntity<?> getPendingLeaveRequests(Authentication authentication) {
+    authorizationService.requireManager(authentication);
     try {
       List<LeaveRequestDto> pendingRequests = leaveRequestService.getPendingLeaveRequests();
       return ResponseEntity.ok(Map.of("success", true, "data", pendingRequests));
@@ -109,7 +114,8 @@ public class LeaveRequestController {
 
   /** Get all leave requests for admin oversight. GET /api/v1/leave-requests/all */
   @GetMapping("/all")
-  public ResponseEntity<?> getAllLeaveRequests() {
+  public ResponseEntity<?> getAllLeaveRequests(Authentication authentication) {
+    authorizationService.requireManager(authentication);
     try {
       List<LeaveRequestDto> allRequests = leaveRequestService.getAllLeaveRequests();
       return ResponseEntity.ok(Map.of("success", true, "data", allRequests));
@@ -126,13 +132,12 @@ public class LeaveRequestController {
 
   /** Approve a leave request. PUT /api/v1/leave-requests/{requestId}/approve */
   @PutMapping("/{requestId}/approve")
-  public ResponseEntity<?> approveLeaveRequest(@PathVariable Long requestId) {
+  public ResponseEntity<?> approveLeaveRequest(
+      @PathVariable Long requestId, Authentication authentication) {
+    authorizationService.requireManager(authentication);
     try {
-      // Get current user for approval tracking
-      String approvedBy = "Admin"; // You might want to get this from authentication context
-
       LeaveRequestDto approvedRequest =
-          leaveRequestService.approveLeaveRequest(requestId, approvedBy);
+          leaveRequestService.approveLeaveRequest(requestId, authentication.getName());
       return ResponseEntity.ok(
           Map.of(
               "success",
@@ -158,14 +163,16 @@ public class LeaveRequestController {
   @PutMapping("/{requestId}/reject")
   public ResponseEntity<?> rejectLeaveRequest(
       @PathVariable Long requestId,
-      @RequestBody(required = false) Map<String, String> requestBody) {
+      @RequestBody(required = false) Map<String, String> requestBody,
+      Authentication authentication) {
+    authorizationService.requireManager(authentication);
     try {
       // Get rejection reason if provided
       String rejectionReason = requestBody != null ? requestBody.get("reason") : null;
-      String rejectedBy = "Admin"; // You might want to get this from authentication context
 
       LeaveRequestDto rejectedRequest =
-          leaveRequestService.rejectLeaveRequest(requestId, rejectedBy, rejectionReason);
+          leaveRequestService.rejectLeaveRequest(
+              requestId, authentication.getName(), rejectionReason);
       return ResponseEntity.ok(
           Map.of(
               "success",
@@ -192,7 +199,10 @@ public class LeaveRequestController {
    * /api/v1/leave-requests/{requestId}
    */
   @DeleteMapping("/{requestId}")
-  public ResponseEntity<?> cancelLeaveRequest(@PathVariable Long requestId) {
+  public ResponseEntity<?> cancelLeaveRequest(
+      @PathVariable Long requestId, Authentication authentication) {
+    LeaveRequestDto leaveRequest = leaveRequestService.getLeaveRequestById(requestId);
+    authorizationService.requireSelfOrManager(leaveRequest.getEmployeeId(), authentication);
     try {
       leaveRequestService.deleteLeaveRequest(requestId);
       return ResponseEntity.ok(

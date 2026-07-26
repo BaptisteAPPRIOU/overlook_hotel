@@ -1,0 +1,133 @@
+﻿<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <div th:fragment="settingsSection">
+<!-- 7) Settings -->
+          <section class="main-card hidden" data-cat="settings">
+            <div class="employee-settings-card">
+              <form class="employee-settings-form" id="employeeSettingsForm">
+                <div class="employee-settings-user">
+                  <span
+                    class="employee-settings-avatar"
+                    aria-hidden="true">E</span>
+                  <h1 id="employeeSettingsDisplayName">Settings</h1>
+                </div>
+
+                <div class="employee-settings-grid">
+                  <label class="employee-settings-field">
+                    <span>First name</span>
+                    <input
+                      id="employeeSettingsFirstName"
+                      name="firstName"
+                      type="text"
+                      autocomplete="given-name"
+                      maxlength="100"
+                      required
+                    />
+                  </label>
+
+                  <label class="employee-settings-field">
+                    <span>Last name</span>
+                    <input
+                      id="employeeSettingsLastName"
+                      name="lastName"
+                      type="text"
+                      autocomplete="family-name"
+                      maxlength="100"
+                      required
+                    />
+                  </label>
+
+                  <label class="employee-settings-field">
+                    <span>Mail</span>
+                    <input
+                      id="employeeSettingsEmail"
+                      name="email"
+                      type="email"
+                      autocomplete="email"
+                      maxlength="255"
+                      required
+                    />
+                  </label>
+
+                  <div class="employee-settings-field">
+                    <span>Password</span>
+                    <button
+                      class="employee-settings-password-trigger"
+                      type="button"
+                      id="employeeOpenPasswordModal">
+                      <strong>********</strong>
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  class="employee-settings-save"
+                  id="employeeSettingsSaveButton"
+                  type="submit"
+                  disabled>
+                  Save
+                </button>
+              </form>
+
+              <div
+                class="employee-settings-modal"
+                id="employeePasswordSettingsModal"
+                aria-hidden="true">
+                <div
+                  class="employee-settings-modal-backdrop"
+                  data-employee-settings-modal-close></div>
+                <section
+                  class="employee-settings-modal-card"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="employeePasswordSettingsTitle">
+                  <img
+                    class="employee-settings-modal-logo"
+                    th:src="@{/image/logo_noBg.webp}"
+                    alt="Overlookhostel"
+                    width="270"
+                    height="72"
+                  />
+                  <h2 class="visually-hidden" id="employeePasswordSettingsTitle">
+                    Reset password
+                  </h2>
+
+                  <form
+                    class="employee-password-form"
+                    id="employeePasswordSettingsForm">
+                    <label class="employee-settings-field wide">
+                      <span>New password</span>
+                      <input
+                        id="employeeSettingsNewPassword"
+                        name="newPassword"
+                        type="password"
+                        autocomplete="new-password"
+                        minlength="8"
+                        required
+                      />
+                    </label>
+
+                    <label class="employee-settings-field wide">
+                      <span>Confirm password</span>
+                      <input
+                        id="employeeSettingsConfirmPassword"
+                        name="confirmPassword"
+                        type="password"
+                        autocomplete="new-password"
+                        minlength="8"
+                        required
+                      />
+                    </label>
+
+                    <button class="employee-settings-modal-save" type="submit">
+                      Save
+                    </button>
+                  </form>
+                </section>
+              </div>
+            </div>
+          </section>
+    </div>
+  </body>
+</html>

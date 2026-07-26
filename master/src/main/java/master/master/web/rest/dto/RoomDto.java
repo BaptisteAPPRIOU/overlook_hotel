@@ -25,6 +25,7 @@ public class RoomDto {
   private LocalDateTime last_maintenance_date;
   private LocalDateTime next_maintenance_date;
   private String name;
+  private String imageUrl;
   private Double price;
   private String status;
   private LocalDateTime created_at;

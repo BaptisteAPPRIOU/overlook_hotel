@@ -1,13 +1,18 @@
 package master.master.service;
 
-import java.util.List;
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import master.master.domain.*;
 import master.master.mapper.ReservationMapper;
 import master.master.repository.ClientRepository;
 import master.master.repository.ReservationRepository;
 import master.master.repository.RoomRepository;
 import master.master.web.rest.dto.ReservationDto;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +40,11 @@ public class ReservationService {
 
   // This method creates a new reservation for a user.
   @Transactional
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = "clientReservations", key = "#userId"),
+        @CacheEvict(cacheNames = "clientReservationDtos", key = "#userId")
+      })
   public ReservationDto.Info create(Long userId, ReservationDto.Create dto) {
     Client client =
         clientRepo
@@ -57,7 +67,68 @@ public class ReservationService {
   }
 
   // This method retrieves all reservations made by a specific user.
+  @Cacheable(cacheNames = "clientReservationDtos", key = "#userId")
   public List<ReservationDto.Info> findByUser(Long userId) {
     return repo.findByClientId(userId).stream().map(mapper::toDto).toList();
+  }
+
+  @Cacheable(cacheNames = "clientReservations", key = "#userId")
+  public List<Map<String, Object>> findReservationDataByUser(Long userId) {
+    return repo.findByClientId(userId).stream().map(this::convertReservationToMap).toList();
+  }
+
+  @Transactional
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = "clientReservations", key = "#userId"),
+        @CacheEvict(cacheNames = "clientReservationDtos", key = "#userId")
+      })
+  public void deleteForUser(Long userId, Long reservationId) {
+    Reservation reservation =
+        repo.findById(reservationId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found"));
+
+    if (reservation.getClient() == null || !userId.equals(reservation.getClient().getId())) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+    }
+
+    repo.delete(reservation);
+  }
+
+  private Map<String, Object> convertReservationToMap(Reservation reservation) {
+    Map<String, Object> data = new LinkedHashMap<>();
+    data.put("id", reservation.getId());
+    data.put("userId", reservation.getClient() != null ? reservation.getClient().getId() : null);
+    data.put("roomId", reservation.getRoom() != null ? reservation.getRoom().getId() : null);
+    data.put("roomName", reservation.getRoom() != null ? reservation.getRoom().getName() : "Unknown");
+    data.put("roomType", reservation.getRoom() != null ? reservation.getRoom().getType() : "Unknown");
+    data.put("roomImage", reservation.getRoom() != null ? reservation.getRoom().getImageUrl() : null);
+    data.put("totalAmount", reservation.getTotalAmount());
+    data.put("reservationDateStart", reservation.getStartDatetime().toLocalDate().toString());
+    data.put("reservationDateEnd", reservation.getEndDatetime().toLocalDate().toString());
+    data.put("payed", Boolean.TRUE.equals(reservation.getPaid()));
+    data.put(
+        "nights",
+        java.time.Duration.between(reservation.getStartDatetime(), reservation.getEndDatetime())
+            .toDays());
+    data.put("status", getReservationStatus(reservation));
+    data.put(
+        "createdAt", reservation.getCreatedAt() != null ? reservation.getCreatedAt().toString() : null);
+    return data;
+  }
+
+  private String getReservationStatus(Reservation reservation) {
+    if (!Boolean.TRUE.equals(reservation.getPaid())) {
+      return "PENDING_PAYMENT";
+    }
+
+    java.time.LocalDate today = java.time.LocalDate.now();
+    if (reservation.getEndDatetime().toLocalDate().isBefore(today)) {
+      return "COMPLETED";
+    } else if (reservation.getStartDatetime().toLocalDate().isAfter(today)) {
+      return "CONFIRMED";
+    } else {
+      return "ACTIVE";
+    }
   }
 }

@@ -1,12 +1,14 @@
 package master.master.web.rest;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import master.master.service.EmployeePlanningService;
+import master.master.service.EmployeeAuthorizationService;
 import master.master.service.EmployeeService;
 import master.master.web.rest.dto.CreateEmployeeRequestDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,17 +39,30 @@ public class PageController {
   private static final Logger log = LoggerFactory.getLogger(PageController.class);
   private final EmployeeService employeeService;
   private final EmployeePlanningService employeePlanningService;
+  private final EmployeeAuthorizationService authorizationService;
 
   public PageController(
-      EmployeeService employeeService, EmployeePlanningService employeePlanningService) {
+      EmployeeService employeeService,
+      EmployeePlanningService employeePlanningService,
+      EmployeeAuthorizationService authorizationService) {
     this.employeeService = employeeService;
     this.employeePlanningService = employeePlanningService;
+    this.authorizationService = authorizationService;
   }
 
   // Home page that redirects to the login page
   @GetMapping("/")
   public String homeLoginPage() {
     return "homeLoginPage";
+  }
+
+  @GetMapping("/logout")
+  public String logoutPage(HttpServletResponse response) {
+    Cookie jwtCookie = new Cookie("jwtToken", "");
+    jwtCookie.setPath("/");
+    jwtCookie.setMaxAge(0);
+    response.addCookie(jwtCookie);
+    return "redirect:/";
   }
 
   //  Client and Employee login pages
@@ -73,50 +88,38 @@ public class PageController {
 
   // Employee dashboard page
   @GetMapping("/employeeDashboard")
-  public String employeeDashboardPage(Model model) {
-    // Add title
+  public String employeeDashboardPage(Model model, Authentication authentication) {
     model.addAttribute("title", "Employee Dashboard");
 
-    // Add actual employees from database
-    try {
-      var employees = employeeService.getAllEmployees();
-      model.addAttribute("employees", employees);
-      log.info("Loaded {} employees for dashboard", employees.size());
-    } catch (Exception e) {
-      log.error("Error loading employees: ", e);
-      model.addAttribute("employees", java.util.Collections.emptyList());
-    }
-
-    // Add empty collections to prevent template errors
     model.addAttribute("leaveRequests", java.util.Collections.emptyList());
     model.addAttribute("myLeaveRequests", java.util.Collections.emptyList());
     model.addAttribute("room", java.util.Collections.emptyList());
     model.addAttribute("reviews", java.util.Collections.emptyList());
 
-    // Get current authenticated user information
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication != null && authentication.isAuthenticated()) {
-      java.util.Map<String, String> currentUser = new java.util.HashMap<>();
-      currentUser.put("email", authentication.getName());
+    var user = authorizationService.requireCurrentUser(authentication);
+    String role = authentication.getAuthorities().iterator().next().getAuthority();
+    java.util.Map<String, String> currentUser = new java.util.HashMap<>();
+    currentUser.put("email", authentication.getName());
+    currentUser.put("firstName", user.getFirstName());
+    currentUser.put("lastName", user.getLastName());
+    currentUser.put("role", role);
+    model.addAttribute("currentUser", currentUser);
 
-      // Get user role from authorities
-      String role = authentication.getAuthorities().iterator().next().getAuthority();
-      currentUser.put("role", role);
-
-      // Set default names (you might want to fetch these from a User entity later)
-      currentUser.put("firstName", "Current");
-      currentUser.put("lastName", "User");
-
-      model.addAttribute("currentUser", currentUser);
-      log.info("Current user: {} with role: {}", authentication.getName(), role);
+    if ("RESPONSABLE".equals(role) || "ADMIN".equals(role)) {
+      try {
+        var employees = employeeService.getAllEmployees();
+        model.addAttribute("employees", employees);
+        log.info("Loaded {} employees for dashboard", employees.size());
+      } catch (Exception e) {
+        log.error("Error loading employees: ", e);
+        model.addAttribute("employees", java.util.Collections.emptyList());
+      }
     } else {
-      // Fallback for testing (should not happen with proper security config)
-      java.util.Map<String, String> currentUser = new java.util.HashMap<>();
-      currentUser.put("firstName", "Test");
-      currentUser.put("lastName", "User");
-      currentUser.put("role", "EMPLOYEE");
-      model.addAttribute("currentUser", currentUser);
-      log.warn("No authentication found, using fallback user data");
+      model.addAttribute("employees", java.util.Collections.emptyList());
+    }
+
+    if ("ADMIN".equals(role) || "RESPONSABLE".equals(role)) {
+      return "adminDashboard";
     }
 
     return "employeeDashboard";
@@ -168,16 +171,54 @@ public class PageController {
     return "redirect:/employeeDashboard";
   }
 
+  @PostMapping("/employees/update")
+  public String updateEmployee(
+      @RequestParam Long id,
+      @RequestParam String firstName,
+      @RequestParam String lastName,
+      Model model) {
+    try {
+      var employee = employeeService.getEmployee(id);
+      CreateEmployeeRequestDto requestDto =
+          CreateEmployeeRequestDto.builder()
+              .firstName(firstName == null || firstName.isBlank() ? employee.getFirstName() : firstName)
+              .lastName(lastName == null || lastName.isBlank() ? employee.getLastName() : lastName)
+              .email(employee.getEmail())
+              .build();
+
+      employeeService.updateEmployee(id, requestDto);
+      model.addAttribute("message", "Employee updated successfully");
+    } catch (Exception e) {
+      log.error("Error updating employee: ", e);
+      model.addAttribute("error", "Failed to update employee: " + e.getMessage());
+    }
+
+    return "redirect:/employeeDashboard";
+  }
+
+  @PostMapping("/employees/delete")
+  public String deleteEmployee(@RequestParam Long id, Model model) {
+    try {
+      employeeService.deleteEmployee(id);
+      model.addAttribute("message", "Employee deleted successfully");
+    } catch (Exception e) {
+      log.error("Error deleting employee: ", e);
+      model.addAttribute("error", "Failed to delete employee: " + e.getMessage());
+    }
+
+    return "redirect:/employeeDashboard";
+  }
+
   // Employee Planning Management endpoints
   @GetMapping("/planning")
-  public String planningPage(Model model) {
+  public String planningPage(Model model, Authentication authentication) {
+    authorizationService.requireManager(authentication);
     model.addAttribute("title", "Employee Planning Management");
 
-    // Add current user for access control
     java.util.Map<String, String> currentUser = new java.util.HashMap<>();
-    currentUser.put("firstName", "Manager");
-    currentUser.put("lastName", "User");
-    currentUser.put("role", "ADMIN"); // Only ADMIN can manage planning
+    currentUser.put("email", authentication.getName());
+    currentUser.put(
+        "role", authentication.getAuthorities().iterator().next().getAuthority());
     model.addAttribute("currentUser", currentUser);
 
     // Load all employees for planning management
@@ -205,7 +246,9 @@ public class PageController {
 
   // Endpoint to create default planning for an employee
   @PostMapping("/planning/create-default")
-  public String createDefaultPlanning(@RequestParam Long employeeId, Model model) {
+  public String createDefaultPlanning(
+      @RequestParam Long employeeId, Model model, Authentication authentication) {
+    authorizationService.requireManager(authentication);
     log.info("Creating default 35h/week planning for employee ID: {}", employeeId);
 
     try {
@@ -222,19 +265,17 @@ public class PageController {
 
   // Endpoint to view the current user's planning
   @GetMapping("/my-planning")
-  public String myPlanningPage(Model model) {
+  public String myPlanningPage(Model model, Authentication authentication) {
     model.addAttribute("title", "My Work Schedule");
 
-    // Add current user (in real app, get from security context)
+    Long employeeId = authorizationService.requireCurrentEmployee(authentication);
+    var employee = employeeService.getEmployee(employeeId);
     java.util.Map<String, String> currentUser = new java.util.HashMap<>();
-    currentUser.put("firstName", "John");
-    currentUser.put("lastName", "Doe");
-    currentUser.put("role", "EMPLOYEE");
+    currentUser.put("firstName", employee.getFirstName());
+    currentUser.put("lastName", employee.getLastName());
+    currentUser.put(
+        "role", authentication.getAuthorities().iterator().next().getAuthority());
     model.addAttribute("currentUser", currentUser);
-
-    // For demo purposes, we'll show planning for employee ID 1
-    // In a real app, get the employee ID from the authenticated user
-    Long employeeId = 1L;
 
     try {
       var planning = employeePlanningService.getEmployeePlanning(employeeId);

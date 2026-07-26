@@ -1,0 +1,43 @@
+﻿<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <meta
+      name="description"
+      content="Overlookhostel employee dashboard for room management, schedules, leave requests and reviews."
+    />
+    <title>Employee Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/employeeDashboard.css}" />
+    <link rel="stylesheet" th:href="@{/css/employeeRooms.css}" />
+    <link rel="stylesheet" th:href="@{/css/employeeLeaveRequest.css}" />
+    <link rel="stylesheet" th:href="@{/css/employeeWorkSchedule.css}" />
+    <link rel="stylesheet" th:href="@{/css/employeeRoomReviews.css}" />
+    <link rel="stylesheet" th:href="@{/css/employeeSettings.css}" />
+  </head>
+  <body>
+    <div id="notificationContainer" class="position-fixed" style="top: 20px; right: 20px; z-index: 9999"></div>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div th:replace="~{fragments/staff/sidebar :: staffSidebar('employee')}"></div>
+
+        <main class="col-md-10 content">
+          <div th:replace="~{fragments/staff/header :: staffHeader}"></div>
+          <div th:replace="~{fragments/staff/roomManagement :: roomManagementSection}"></div>
+          <div th:replace="~{fragments/staff/leaveRequest :: leaveRequestSection}"></div>
+          <div th:replace="~{fragments/staff/workSchedule :: workScheduleSection}"></div>
+          <div th:replace="~{fragments/staff/roomReviews :: roomReviewsSection}"></div>
+          <div th:replace="~{fragments/staff/settings :: settingsSection}"></div>
+        </main>
+      </div>
+    </div>
+
+    <script th:src="@{/js/employeeDashboard.js(v='staff-20260717-4')}"></script>
+    <script th:src="@{/js/employeeRooms.js(v='staff-20260717-4')}"></script>
+    <script th:src="@{/js/leaveRequests.js(v='staff-20260717-4')}"></script>
+    <script th:src="@{/js/employeeWorkSchedule.js(v='staff-20260717-4')}"></script>
+    <script th:src="@{/js/employeeRoomReviews.js(v='staff-20260717-4')}"></script>
+    <script th:src="@{/js/employeeSettings.js(v='staff-20260717-4')}"></script>
+  </body>
+</html>

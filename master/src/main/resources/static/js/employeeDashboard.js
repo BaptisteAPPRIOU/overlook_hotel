@@ -1,23 +1,8 @@
-const buttons = document.querySelectorAll(".nav-btn");
-const sections = document.querySelectorAll(".main-card");
-
-buttons.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    // active button
-    buttons.forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
-
-    // show only the matching section
-    const cat = btn.dataset.cat;
-    sections.forEach((sec) => {
-      sec.classList.toggle("hidden", sec.dataset.cat !== cat);
-    });
-  });
-});
-
 // Handle Add Shift form submission
-document.addEventListener("DOMContentLoaded", function () {
+runWhenReady(function () {
+  setupStaffNavigation();
   const addShiftForm = document.getElementById("addShiftForm");
+  setupEmployeeLogout();
 
   if (addShiftForm) {
     addShiftForm.addEventListener("submit", async function (e) {
@@ -123,6 +108,77 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
+function runWhenReady(callback) {
+  if (document.readyState === "loading" && !document.body) {
+    document.addEventListener("DOMContentLoaded", callback, { once: true });
+    return;
+  }
+
+  callback();
+}
+
+function setupStaffNavigation() {
+  showStaffSection(
+    document.querySelector(".nav-btn.active[data-cat]")?.dataset.cat ||
+      "booking",
+  );
+
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest(".nav-btn[data-cat]");
+
+    if (!button || button.matches("[data-logout-link]")) {
+      return;
+    }
+
+    event.preventDefault();
+    showStaffSection(button.dataset.cat);
+  });
+}
+
+function showStaffSection(category) {
+  document.querySelectorAll(".nav-btn[data-cat]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.cat === category);
+  });
+
+  document.querySelectorAll(".main-card[data-cat]").forEach((section) => {
+    section.classList.toggle("hidden", section.dataset.cat !== category);
+  });
+
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+}
+
+function setupEmployeeLogout() {
+  document.addEventListener("click", async function (event) {
+    const logoutLink = event.target.closest("[data-logout-link]");
+
+    if (!logoutLink) {
+      return;
+    }
+
+    event.preventDefault();
+    const token = getStaffJwtToken();
+
+    if (token) {
+      try {
+        await fetch("/api/v1/logout", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+      } catch (error) {
+        console.error("Logout request failed:", error);
+      }
+    }
+
+    localStorage.removeItem("jwtToken");
+    localStorage.removeItem("userRole");
+    document.cookie = "jwtToken=; path=/; max-age=0; samesite=strict";
+    window.location.href = "/";
+  });
+}
+
 // Global utility functions for leave requests and other features
 window.showNotification = function (message, type) {
   // Create a simple notification system
@@ -156,3 +212,12 @@ window.isCurrentUserAdmin = function () {
 };
 
 window.showMessage = window.showNotification; // Alias for compatibility
+
+function getStaffJwtToken() {
+  const cookieToken = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith("jwtToken="))
+    ?.split("=")[1];
+
+  return cookieToken || localStorage.getItem("jwtToken") || "";
+}

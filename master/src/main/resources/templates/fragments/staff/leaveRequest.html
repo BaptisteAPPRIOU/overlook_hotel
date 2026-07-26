@@ -1,0 +1,163 @@
+﻿<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <div th:fragment="leaveRequestSection">
+<!-- 2) Leave Request -->
+          <section class="main-card hidden" data-cat="leave">
+            <div class="employee-leave-card">
+              <h1>Leave Request</h1>
+              <form
+                id="leaveRequestForm"
+                class="employee-leave-form">
+                <div class="employee-leave-row">
+                  <label class="employee-leave-field employee-leave-date" for="leaveStartDate">
+                    <span>Starting from</span>
+                    <input
+                      class="employee-leave-control employee-leave-display-date"
+                      id="leaveStartDateDisplay"
+                      placeholder="jj / mm / aaaa"
+                      readonly
+                      type="text"
+                    />
+                    <input
+                      class="employee-leave-native-date"
+                      id="leaveStartDate"
+                      name="startDate"
+                      type="date"
+                    />
+                    <button
+                      class="employee-leave-calendar"
+                      type="button"
+                      data-date-picker="leaveStartDate"
+                      aria-label="Open start date picker">
+                      <svg
+                        aria-hidden="true"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M8 2v4" />
+                        <path d="M16 2v4" />
+                        <rect width="18" height="18" x="3" y="4" rx="2" />
+                        <path d="M3 10h18" />
+                        <path d="M8 14h.01" />
+                        <path d="M12 14h.01" />
+                        <path d="M16 14h.01" />
+                        <path d="M8 18h.01" />
+                        <path d="M12 18h.01" />
+                        <path d="M16 18h.01" />
+                      </svg>
+                    </button>
+                  </label>
+
+                  <label class="employee-leave-field employee-leave-select" for="leaveStartPeriod">
+                    <span class="visually-hidden">Start period</span>
+                    <select
+                      class="employee-leave-control"
+                      id="leaveStartPeriod"
+                      name="startPeriod">
+                      <option value="Morning">Morning</option>
+                      <option value="Noon" selected>Noon</option>
+                      <option value="Afternoon">Afternoon</option>
+                    </select>
+                  </label>
+
+                  <label class="employee-leave-field employee-leave-select" for="leaveType">
+                    <span class="visually-hidden">Leave Type</span>
+                    <select
+                      class="employee-leave-control"
+                      id="leaveType"
+                      name="type"
+                      required>
+                      <option value="SICK" selected>Sick leave</option>
+                      <option value="VACATION">Vacation</option>
+                      <option value="PERSONAL">Personal leave</option>
+                      <option value="MATERNITY">Maternity leave</option>
+                      <option value="PATERNITY">Paternity leave</option>
+                      <option value="BEREAVEMENT">Bereavement leave</option>
+                      <option value="EMERGENCY">Emergency leave</option>
+                      <option value="STUDY">Study leave</option>
+                      <option value="UNPAID">Unpaid leave</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div class="employee-leave-row employee-leave-row-secondary">
+                  <label class="employee-leave-field employee-leave-date" for="leaveEndDate">
+                    <span>Up to</span>
+                    <input
+                      class="employee-leave-control employee-leave-display-date"
+                      id="leaveEndDateDisplay"
+                      placeholder="jj / mm / aaaa"
+                      readonly
+                      type="text"
+                    />
+                    <input
+                      class="employee-leave-native-date"
+                      id="leaveEndDate"
+                      name="endDate"
+                      type="date"
+                    />
+                    <button
+                      class="employee-leave-calendar"
+                      type="button"
+                      data-date-picker="leaveEndDate"
+                      aria-label="Open end date picker">
+                      <svg
+                        aria-hidden="true"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M8 2v4" />
+                        <path d="M16 2v4" />
+                        <rect width="18" height="18" x="3" y="4" rx="2" />
+                        <path d="M3 10h18" />
+                        <path d="M8 14h.01" />
+                        <path d="M12 14h.01" />
+                        <path d="M16 14h.01" />
+                        <path d="M8 18h.01" />
+                        <path d="M12 18h.01" />
+                        <path d="M16 18h.01" />
+                      </svg>
+                    </button>
+                  </label>
+
+                  <label class="employee-leave-field employee-leave-select" for="leaveEndPeriod">
+                    <span class="visually-hidden">End period</span>
+                    <select
+                      class="employee-leave-control"
+                      id="leaveEndPeriod"
+                      name="endPeriod">
+                      <option value="Morning" selected>Morning</option>
+                      <option value="Noon">Noon</option>
+                      <option value="Afternoon">Afternoon</option>
+                    </select>
+                  </label>
+                </div>
+
+                <input
+                  id="leaveReason"
+                  name="reason"
+                  type="hidden"
+                  value=""
+                />
+                <span id="reasonCharCount" hidden>0</span>
+
+                <button
+                  class="employee-leave-submit"
+                  type="submit"
+                  id="submitLeaveRequestBtn"
+                  data-default-text="Save">
+                  Save
+                </button>
+              </form>
+            </div>
+          </section>
+    </div>
+  </body>
+</html>

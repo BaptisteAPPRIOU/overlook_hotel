@@ -18,7 +18,7 @@ document
     const password = document.getElementById("password").value.trim();
     const messageElem = document.getElementById("message");
 
-    messageElem.textContent = "";
+    showMessage(messageElem, "");
 
     try {
       const response = await fetch("/api/v1/login", {
@@ -30,8 +30,11 @@ document
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        messageElem.textContent = errorText || "Login failed";
+        showMessage(
+          messageElem,
+          await getApiErrorMessage(response, "Login failed. Please try again."),
+          "error",
+        );
         return;
       }
 
@@ -39,23 +42,47 @@ document
       const { token, role } = data;
 
       if (!token) {
-        messageElem.textContent = "Token not received.";
+        showMessage(messageElem, "Unable to sign in. Please try again.", "error");
         return;
       }
 
       localStorage.setItem("jwtToken", token);
+      localStorage.setItem("userRole", role);
 
       // Also set as cookie for server-side pages (remove secure flag for localhost)
       document.cookie = `jwtToken=${token}; path=/; samesite=strict`;
 
-      if (role === "EMPLOYEE" || role === "ADMIN") {
+      if (
+        role === "EMPLOYEE" ||
+        role === "RESPONSABLE" ||
+        role === "ADMIN"
+      ) {
         window.location.href = "/employeeDashboard";
       } else if (role === "CLIENT") {
         window.location.href = "/clientDashboard";
       } else {
-        messageElem.textContent = "Unauthorized role for this page.";
+        showMessage(messageElem, "Unauthorized role for this page.", "error");
       }
     } catch (error) {
-      messageElem.textContent = "Network error, please try again.";
+      showMessage(messageElem, "Network error. Please try again.", "error");
     }
   });
+
+async function getApiErrorMessage(response, fallback) {
+  try {
+    const error = await response.json();
+    const fieldMessages = Object.values(error.errors || {});
+
+    return fieldMessages.length > 0
+      ? fieldMessages.join(" ")
+      : error.message || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function showMessage(element, text, type) {
+  element.textContent = text;
+  element.classList.toggle("error", type === "error");
+  element.classList.toggle("success", type === "success");
+}

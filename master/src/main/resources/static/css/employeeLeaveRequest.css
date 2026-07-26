@@ -1,0 +1,184 @@
+:root {
+  --employee-green-900: #113826;
+  --employee-green-800: #1e2a26;
+  --employee-green-700: #2e3d37;
+  --employee-gold: #9c7945;
+  --employee-white: #f8f9fa;
+  --employee-grey: #2d3130;
+  --employee-line: #636464;
+}
+
+.employee-leave-card {
+  position: relative;
+  overflow: hidden;
+  width: min(100%, 980px);
+  min-height: min(60dvh, 520px);
+  margin: 0 auto;
+  padding: clamp(20px, 3vw, 28px);
+  border: 2px solid var(--employee-green-700);
+  border-radius: 18px;
+  color: var(--employee-white);
+  background:
+    radial-gradient(
+      ellipse 155px 260px at 9% 5%,
+      rgba(156, 121, 69, 0.38) 0%,
+      rgba(156, 121, 69, 0.2) 36%,
+      rgba(156, 121, 69, 0) 78%
+    ),
+    radial-gradient(
+      ellipse 210px 190px at 97% 91%,
+      rgba(156, 121, 69, 0.36) 0%,
+      rgba(156, 121, 69, 0.15) 43%,
+      rgba(156, 121, 69, 0) 79%
+    ),
+    rgba(17, 56, 38, 0.34);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.24);
+}
+
+.employee-leave-card h1 {
+  margin: 0 0 clamp(34px, 5vw, 48px);
+  color: var(--employee-white);
+  font-size: clamp(2.1rem, 5vw, 3rem);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+}
+
+.employee-leave-form {
+  display: grid;
+  width: min(100%, 700px);
+  margin: 0 auto;
+  gap: clamp(34px, 6vw, 52px);
+}
+
+.employee-leave-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 104px 116px;
+  gap: clamp(18px, 3vw, 36px);
+  align-items: end;
+}
+
+.employee-leave-row-secondary {
+  grid-template-columns: minmax(220px, 1fr) 104px 116px;
+}
+
+.employee-leave-row-secondary .employee-leave-select:last-child {
+  grid-column: 2 / 3;
+}
+
+.employee-leave-field {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  margin: 0;
+  color: var(--employee-white);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+}
+
+.employee-leave-control {
+  width: 100%;
+  min-height: 36px;
+  margin: 0;
+  padding: 6px 12px;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  color: var(--employee-grey);
+  background-color: var(--employee-white);
+  font: inherit;
+  font-size: 0.88rem;
+  letter-spacing: 0.12em;
+}
+
+.employee-leave-control:focus-visible {
+  border-color: var(--employee-gold);
+  outline: 2px solid rgba(156, 121, 69, 0.52);
+  outline-offset: 2px;
+}
+
+.employee-leave-display-date {
+  padding-right: 42px;
+  cursor: default;
+}
+
+.employee-leave-native-date {
+  position: absolute;
+  right: 8px;
+  bottom: 5px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.employee-leave-calendar {
+  position: absolute;
+  right: 8px;
+  bottom: 5px;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  color: var(--employee-grey);
+  background: transparent;
+  cursor: pointer;
+}
+
+.employee-leave-calendar:focus-visible {
+  outline: 2px solid var(--employee-gold);
+  outline-offset: 2px;
+}
+
+.employee-leave-calendar svg {
+  width: 24px;
+  height: 24px;
+  stroke: currentColor;
+}
+
+.employee-leave-submit {
+  justify-self: center;
+  width: min(100%, 260px);
+  min-height: 44px;
+  margin-top: 18px;
+  border: 3px solid #030907;
+  border-radius: 999px;
+  color: var(--employee-grey);
+  background: var(--employee-gold);
+  font-size: clamp(1.2rem, 2.5vw, 1.45rem);
+  font-weight: 500;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+
+.employee-leave-submit:disabled {
+  opacity: 0.62;
+  cursor: progress;
+}
+
+@media (max-width: 860px) {
+  .employee-leave-card {
+    min-height: auto;
+  }
+
+  .employee-leave-form,
+  .employee-leave-row,
+  .employee-leave-row-secondary {
+    width: 100%;
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .employee-leave-row-secondary .employee-leave-select:last-child {
+    grid-column: auto;
+  }
+
+  .employee-leave-submit {
+    width: 100%;
+  }
+}

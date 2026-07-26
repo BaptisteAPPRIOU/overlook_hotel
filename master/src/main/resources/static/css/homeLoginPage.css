@@ -7,7 +7,8 @@
 
 body {
   font-family: Arial, sans-serif;
-  background-image: url("../image/home_bg_login_choice.png");
+  background-color: #020807;
+  background-image: url("../image/home_bg_login_choice_640.webp");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -17,9 +18,21 @@ body {
   height: 100vh;
 }
 
+@media (min-width: 768px) {
+  body {
+    background-image: url("../image/home_bg_login_choice_1024.webp");
+  }
+}
+
+@media (min-width: 1280px) {
+  body {
+    background-image: url("../image/home_bg_login_choice_1600.webp");
+  }
+}
+
 /* Conteneur principal */
 .main-card {
-  background: rgba(17, 56, 38, 0.8);
+  background: #113826;
   padding: 2.5rem 2rem;
   border-radius: 20px;
   text-align: center;
@@ -44,12 +57,10 @@ body {
 
 /* Styled cards */
 .card {
-  background: rgba(156, 121, 69, 0.6);
+  background: #766b39;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
   text-align: center;
   text-decoration: none;
   color: white;
@@ -89,13 +100,12 @@ body {
   background-color: rgba(156, 121, 69);
 }
 
-/* Card icons */
 .card img {
+  display: block;
   width: 128px;
   height: 128px;
-  margin-top: 1.2rem;
+  margin: 1.2rem auto 0;
   object-fit: contain;
-  background: transparent;
 }
 
 /* Titre */
@@ -143,5 +153,15 @@ body {
 
   .card h3 {
     font-size: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }

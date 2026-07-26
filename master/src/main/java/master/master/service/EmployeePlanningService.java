@@ -10,18 +10,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import master.master.domain.Employee;
+import master.master.domain.LeaveStatus;
 import master.master.domain.MonthlySchedule;
 import master.master.domain.ScheduleStatus;
 import master.master.domain.ShiftStatus;
 import master.master.domain.ShiftType;
 import master.master.domain.WorkShift;
 import master.master.repository.EmployeeRepository;
+import master.master.repository.LeaveRequestRepository;
 import master.master.repository.MonthlyScheduleRepository;
 import master.master.repository.WorkShiftRepository;
 import master.master.web.rest.dto.CreatePlanningRequestDto;
 import master.master.web.rest.dto.EmployeePlanningDto;
 import master.master.web.rest.dto.HourlyPlanningRequestDto;
 import master.master.web.rest.dto.WeeklyHourlyPlanningDto;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -33,16 +38,26 @@ public class EmployeePlanningService {
   private final WorkShiftRepository workShiftRepository;
   private final EmployeeRepository employeeRepository;
   private final MonthlyScheduleRepository monthlyScheduleRepository;
+  private final LeaveRequestRepository leaveRequestRepository;
 
   public EmployeePlanningService(
       WorkShiftRepository workShiftRepository,
       EmployeeRepository employeeRepository,
-      MonthlyScheduleRepository monthlyScheduleRepository) {
+      MonthlyScheduleRepository monthlyScheduleRepository,
+      LeaveRequestRepository leaveRequestRepository) {
     this.workShiftRepository = workShiftRepository;
     this.employeeRepository = employeeRepository;
     this.monthlyScheduleRepository = monthlyScheduleRepository;
+    this.leaveRequestRepository = leaveRequestRepository;
   }
 
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = "employeePlanning", key = "#employeeId"),
+        @CacheEvict(cacheNames = "employeePlannings", allEntries = true),
+        @CacheEvict(cacheNames = "employeeWeeklySchedule", allEntries = true),
+        @CacheEvict(cacheNames = "employeeHourlyPlanning", allEntries = true)
+      })
   public EmployeePlanningDto createDefaultPlanning(Long employeeId) {
     CreatePlanningRequestDto request =
         CreatePlanningRequestDto.builder()
@@ -60,6 +75,13 @@ public class EmployeePlanningService {
     return createOrUpdatePlanning(request);
   }
 
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = "employeePlanning", key = "#request.employeeId"),
+        @CacheEvict(cacheNames = "employeePlannings", allEntries = true),
+        @CacheEvict(cacheNames = "employeeWeeklySchedule", allEntries = true),
+        @CacheEvict(cacheNames = "employeeHourlyPlanning", allEntries = true)
+      })
   public EmployeePlanningDto createOrUpdatePlanning(CreatePlanningRequestDto request) {
     Employee employee = getEmployee(request.getEmployeeId());
     workShiftRepository.deleteByEmployeeId(employee.getId());
@@ -84,7 +106,14 @@ public class EmployeePlanningService {
       double hours = working ? Math.max(0, java.time.Duration.between(start, end).toMinutes() - breakMinutes) / 60.0 : 0.0;
       weeklyHours += hours;
       if (working) {
-        saveShift(employee, nextDate(day), start, end, breakMinutes, ShiftType.FULL_DAY);
+        saveShift(
+            employee,
+            nextDate(day),
+            start,
+            end,
+            breakMinutes,
+            ShiftType.FULL_DAY,
+            "EMPLOYEE");
       }
       days.add(
           EmployeePlanningDto.WorkDayPlanningDto.builder()
@@ -93,6 +122,8 @@ public class EmployeePlanningService {
               .isWorking(working)
               .startTime(working ? start : null)
               .endTime(working ? end : null)
+              .shiftType(working ? ShiftType.FULL_DAY.name() : null)
+              .service(working ? "EMPLOYEE" : null)
               .breakDurationMinutes(working ? breakMinutes : null)
               .dailyHours(hours)
               .build());
@@ -108,6 +139,7 @@ public class EmployeePlanningService {
         .build();
   }
 
+  @Cacheable(cacheNames = "employeePlanning", key = "#employeeId")
   public EmployeePlanningDto getEmployeePlanning(Long employeeId) {
     Employee employee = getEmployee(employeeId);
     List<WorkShift> shifts = workShiftRepository.findByEmployeeId(employeeId);
@@ -133,6 +165,11 @@ public class EmployeePlanningService {
               .isWorking(working)
               .startTime(working ? shift.getPlannedStartTime() : null)
               .endTime(working ? shift.getPlannedEndTime() : null)
+              .shiftType(working ? shift.getShiftType().name() : null)
+              .service(
+                  working
+                      ? (shift.getService() != null ? shift.getService() : "EMPLOYEE")
+                      : null)
               .breakDurationMinutes(null)
               .dailyHours(hours)
               .build());
@@ -147,26 +184,53 @@ public class EmployeePlanningService {
         .build();
   }
 
+  @Cacheable(cacheNames = "employeePlannings", key = "'all'")
   public List<EmployeePlanningDto> getAllEmployeePlannings() {
     return employeeRepository.findAll().stream().map(employee -> getEmployeePlanning(employee.getId())).toList();
   }
 
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = "employeePlanning", key = "#employeeId"),
+        @CacheEvict(cacheNames = "employeePlannings", allEntries = true),
+        @CacheEvict(cacheNames = "employeeWeeklySchedule", allEntries = true),
+        @CacheEvict(cacheNames = "employeeHourlyPlanning", allEntries = true)
+      })
   public void deleteEmployeePlanning(Long employeeId) {
     workShiftRepository.deleteByEmployeeId(employeeId);
   }
 
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = "employeePlanning", key = "#request.employeeId"),
+        @CacheEvict(cacheNames = "employeePlannings", allEntries = true),
+        @CacheEvict(cacheNames = "employeeWeeklySchedule", allEntries = true),
+        @CacheEvict(cacheNames = "employeeHourlyPlanning", allEntries = true)
+      })
   public EmployeePlanningDto createOrUpdateHourlyPlanning(HourlyPlanningRequestDto request) {
     return getEmployeePlanning(request.getEmployeeId());
   }
 
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = "employeePlanning", key = "#request.employeeId"),
+        @CacheEvict(cacheNames = "employeePlannings", allEntries = true),
+        @CacheEvict(cacheNames = "employeeWeeklySchedule", allEntries = true),
+        @CacheEvict(
+            cacheNames = "employeeHourlyPlanning",
+            key = "#request.employeeId + ':' + #request.weekStart",
+            condition = "#request.employeeId != null && #request.weekStart != null")
+      })
   public boolean saveHourlyPlanning(WeeklyHourlyPlanningDto request) {
     return true;
   }
 
+  @Cacheable(cacheNames = "employeeHourlyPlanning", key = "#employeeId + ':' + #weekStart")
   public Map<String, List<Integer>> getHourlyPlanning(Long employeeId, String weekStart) {
     return new HashMap<>();
   }
 
+  @Cacheable(cacheNames = "employeeWeeklySchedule", key = "#startDateStr")
   public Map<Long, Map<String, List<Map<String, Object>>>> getWeeklyScheduleForPlanning(
       String startDateStr) {
     LocalDate start = LocalDate.parse(startDateStr);
@@ -186,18 +250,69 @@ public class EmployeePlanningService {
                   "endTime", shift.getPlannedEndTime().toString(),
                   "status", shift.getShiftStatus().name()));
     }
+    leaveRequestRepository.findLeaveRequestsInDateRange(start, end).stream()
+        .filter(leave -> leave.getCurrentStatus() == LeaveStatus.APPROVED)
+        .forEach(
+            leave -> {
+              LocalDate absenceStart =
+                  leave.getStartDate().isBefore(start) ? start : leave.getStartDate();
+              LocalDate absenceEnd =
+                  leave.getEndDate().isAfter(end) ? end : leave.getEndDate();
+              for (LocalDate date = absenceStart;
+                  !date.isAfter(absenceEnd);
+                  date = date.plusDays(1)) {
+                result
+                    .computeIfAbsent(
+                        leave.getEmployeeRequester().getId(), ignored -> new HashMap<>())
+                    .computeIfAbsent(date.toString(), ignored -> new ArrayList<>())
+                    .add(
+                        Map.of(
+                            "id", -leave.getId(),
+                            "type", "ABSENCE",
+                            "position", leave.getLeaveType().name(),
+                            "startTime", "",
+                            "endTime", "",
+                            "status", leave.getCurrentStatus().name()));
+              }
+            });
     return result;
   }
 
+  @Caching(
+      evict = {
+        @CacheEvict(
+            cacheNames = "employeePlanning",
+            key = "T(java.lang.Long).valueOf(#shiftData['employeeId'].toString())"),
+        @CacheEvict(cacheNames = "employeePlannings", allEntries = true),
+        @CacheEvict(cacheNames = "employeeWeeklySchedule", allEntries = true),
+        @CacheEvict(cacheNames = "employeeHourlyPlanning", allEntries = true)
+      })
   public Map<String, Object> createShiftFromMap(Map<String, Object> shiftData) {
     Long employeeId = Long.valueOf(shiftData.get("employeeId").toString());
     LocalDate date = LocalDate.parse(shiftData.get("date").toString());
     LocalTime start = LocalTime.parse(shiftData.get("startTime").toString());
     LocalTime end = LocalTime.parse(shiftData.get("endTime").toString());
-    WorkShift shift = saveShift(getEmployee(employeeId), date, start, end, 60, ShiftType.FULL_DAY);
+    String service =
+        shiftData.get("position") != null ? shiftData.get("position").toString() : "EMPLOYEE";
+    WorkShift shift =
+        saveShift(
+            getEmployee(employeeId),
+            date,
+            start,
+            end,
+            60,
+            ShiftType.FULL_DAY,
+            service);
     return Map.of("success", true, "id", shift.getId(), "message", "Shift created successfully");
   }
 
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = "employeePlanning", key = "#employeeId"),
+        @CacheEvict(cacheNames = "employeePlannings", allEntries = true),
+        @CacheEvict(cacheNames = "employeeWeeklySchedule", allEntries = true),
+        @CacheEvict(cacheNames = "employeeHourlyPlanning", allEntries = true)
+      })
   public Map<String, Object> updateShiftFromMap(
       Long employeeId, String dateStr, Map<String, Object> shiftData) {
     LocalDate date = LocalDate.parse(dateStr);
@@ -205,10 +320,24 @@ public class EmployeePlanningService {
     return createShiftFromMap(shiftData);
   }
 
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = "employeePlanning", key = "#employeeId"),
+        @CacheEvict(cacheNames = "employeePlannings", allEntries = true),
+        @CacheEvict(cacheNames = "employeeWeeklySchedule", allEntries = true),
+        @CacheEvict(cacheNames = "employeeHourlyPlanning", allEntries = true)
+      })
   public void deleteEmployeeWorkday(Long employeeId, LocalDate date) {
     workShiftRepository.deleteByEmployeeIdAndWorkDate(employeeId, date);
   }
 
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = "employeePlanning", key = "#employeeId"),
+        @CacheEvict(cacheNames = "employeePlannings", allEntries = true),
+        @CacheEvict(cacheNames = "employeeWeeklySchedule", allEntries = true),
+        @CacheEvict(cacheNames = "employeeHourlyPlanning", allEntries = true)
+      })
   public void deleteSpecificShift(Long employeeId, LocalDate date, Integer weekday) {
     deleteEmployeeWorkday(employeeId, date);
   }
@@ -220,7 +349,13 @@ public class EmployeePlanningService {
   }
 
   private WorkShift saveShift(
-      Employee employee, LocalDate date, LocalTime start, LocalTime end, Integer breakMinutes, ShiftType type) {
+      Employee employee,
+      LocalDate date,
+      LocalTime start,
+      LocalTime end,
+      Integer breakMinutes,
+      ShiftType type,
+      String service) {
     WorkShift shift = new WorkShift();
     shift.setEmployee(employee);
     shift.setMonthlySchedule(scheduleFor(date));
@@ -228,6 +363,7 @@ public class EmployeePlanningService {
     shift.setPlannedStartTime(start);
     shift.setPlannedEndTime(end);
     shift.setShiftType(type);
+    shift.setService(service);
     shift.setShiftStatus(ShiftStatus.PLANNED);
     return workShiftRepository.save(shift);
   }
